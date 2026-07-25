@@ -105,7 +105,7 @@
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
         p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 24px; }
 
-        /* --- EVERY SCREEN HAS TRANSITION / ANIMATION --- */
+        /* --- SCREEN TRANSITIONS --- */
         .screen {
             display: none;
             width: 100%;
@@ -147,6 +147,7 @@
         .btn:active:not(:disabled) { transform: scale(0.96); }
         .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .btn-tertiary { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
+        .btn-danger { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
 
         /* Wheel Container & Animated Flapper */
@@ -277,7 +278,6 @@
             animation: correctPulse 0.6s var(--md-sys-motion-easing-bounce) !important;
         }
         
-        /* NO SHAKE ANIMATION FOR WRONG ANSWERS */
         .option-btn.wrong {
             background: var(--md-sys-color-error-container) !important;
             color: var(--md-sys-color-on-error-container) !important;
@@ -331,14 +331,38 @@
         .key.wide-key { max-width: 80px; font-size: 0.9rem; }
         .key.space-key { max-width: 260px; }
 
-        /* Result Screen */
+        /* --- RESULT SCREEN SPECIFIC ENTRANCE TRANSITIONS --- */
         .result-card {
             background: var(--md-sys-color-surface-container);
             border-radius: var(--md-sys-shape-corner-extra-large);
             padding: 48px; text-align: center; width: 100%; max-width: 500px;
             margin-bottom: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.05);
         }
+
+        #resultScreen.active .result-card {
+            animation: resultCardPop 0.6s var(--md-sys-motion-easing-bounce) forwards;
+        }
+        @keyframes resultCardPop {
+            0% { opacity: 0; transform: scale(0.75) translateY(30px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
         .score-display { font-size: 4rem; font-weight: 800; color: var(--md-sys-color-primary); margin: 16px 0; }
+        #resultScreen.active .score-display {
+            animation: scoreScale 0.5s 0.2s var(--md-sys-motion-easing-bounce) both;
+        }
+        @keyframes scoreScale {
+            0% { opacity: 0; transform: scale(0.4); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        #resultScreen.active #resultVerdict {
+            animation: verdictSlide 0.5s 0.35s var(--md-sys-motion-easing-emphasized) both;
+        }
+        @keyframes verdictSlide {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
 
         /* Bottom Sheet for Mobile */
         .scrim {
@@ -358,7 +382,7 @@
         .bottom-sheet .drag-handle { width: 48px; height: 6px; border-radius: 3px; background: #CAC4D0; margin: -16px auto 24px auto; }
         .lost-list-container {
             width: 100%; overflow-y: auto; text-align: left;
-            background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px;
+            background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; margin-bottom: 16px;
         }
         .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
@@ -374,7 +398,7 @@
     <div id="wheelScreen" class="screen animate-content-size active">
         <div class="wheel-wrapper">
             <h1>Common Ball Quiz</h1>
-            <p class="subtitle">Spin the wheel to select a student!</p>
+            <p class="subtitle" id="studentCountSubtitle">Spin the wheel to select a student!</p>
             
             <div class="wheel-container">
                 <div class="wheel-pointer" id="wheelPointer"></div>
@@ -442,7 +466,8 @@
         <div class="lost-list-container" id="lostListContainer">
             <!-- Lost items added here -->
         </div>
-        <button id="closeSheetBtn" class="btn btn-secondary" style="margin-top: 24px;">Close List</button>
+        <button id="resetWheelBtn" class="btn btn-danger" style="margin-bottom: 8px;">Reset Wheel Progress</button>
+        <button id="closeSheetBtn" class="btn btn-secondary">Close List</button>
     </div>
 
 <script>
@@ -460,8 +485,39 @@
         {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
     ];
 
+    // Exclude LOO CHIN SIANG
     let students = rawStudents.map(s => s.name);
     let lostList = [];
+
+    // --- LOCAL STORAGE PERSISTENCE ---
+    const STORAGE_KEY_STUDENTS = 'md3_quiz_students_2026';
+    const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        localStorage.setItem(STORAGE_KEY_LOST, JSON.stringify(lostList));
+        updateStudentCountUI();
+    }
+
+    function loadState() {
+        const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+        const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
+
+        if (savedStudents) {
+            try { students = JSON.parse(savedStudents); } catch(e) {}
+        }
+        if (savedLost) {
+            try { lostList = JSON.parse(savedLost); } catch(e) {}
+        }
+        updateStudentCountUI();
+    }
+
+    function updateStudentCountUI() {
+        const subtitle = document.getElementById('studentCountSubtitle');
+        if (subtitle) {
+            subtitle.innerText = `Spin the wheel! (${students.length} students remaining)`;
+        }
+    }
 
     const hardStudentKeywords = ["YEOW JIA WEI", "ALOYSIUS", "LEXUS", "XANXUS", "TAY KIM YAW", "RAYSON"];
 
@@ -469,7 +525,7 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
-    // --- NORMAL QUESTION POOL (Includes MCQ & Typing Grammar) ---
+    // --- NORMAL QUESTION POOL ---
     const normalCompactQuestions = [
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
@@ -523,7 +579,7 @@
         "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain"
     ];
 
-    // --- HARD QUESTION POOL (Includes Advanced MCQ & Advanced Typing) ---
+    // --- HARD QUESTION POOL ---
     const hardCompactQuestions = [
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
         "T|Complete the grammar: Neither of the boys _____ (be) present.|was",
@@ -584,7 +640,6 @@
     function playTick() {
         if (!audioCtx) return;
         try {
-            // Animate wheel pointer flick
             wheelPointer.classList.remove('flick');
             void wheelPointer.offsetWidth; // Force CSS reflow
             wheelPointer.classList.add('flick');
@@ -647,6 +702,7 @@
     const bottomSheet = document.getElementById('bottomSheet');
     const scrim = document.getElementById('scrim');
     const closeSheetBtn = document.getElementById('closeSheetBtn');
+    const resetWheelBtn = document.getElementById('resetWheelBtn');
     const lostListContainer = document.getElementById('lostListContainer');
 
     // --- WHEEL DRAWING ---
@@ -789,7 +845,6 @@
         confirmBtn.disabled = currentTypedText.trim().length === 0;
     }
 
-    // Enable physical keyboard support on Desktop!
     window.addEventListener('keydown', (e) => {
         const q = currentQuestions[currentQuestionIndex];
         if (!q || q.type !== 'typing' || quizScreen.classList.contains('active') === false) return;
@@ -933,7 +988,6 @@
                 }
             }
         } else {
-            // Typing Evaluation
             const isCorrect = currentTypedText.trim().toLowerCase() === q.ans.trim().toLowerCase();
             if (isCorrect) {
                 typingDisplay.classList.add('correct');
@@ -963,7 +1017,9 @@
 
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
+        // Remove student and save state!
         students = students.filter(s => s !== currentStudent);
+        
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = score;
         
@@ -978,6 +1034,7 @@
             lostList.push(`${currentStudent} - ${score} Pts`);
         }
 
+        saveState(); // Save state to localStorage!
         showScreen(resultScreen);
     }
 
@@ -1007,6 +1064,20 @@
         finishQuiz(true);
     });
 
+    resetWheelBtn.addEventListener('click', () => {
+        if (confirm("Reset wheel progress and restore all students?")) {
+            localStorage.removeItem(STORAGE_KEY_STUDENTS);
+            localStorage.removeItem(STORAGE_KEY_LOST);
+            students = rawStudents.map(s => s.name);
+            lostList = [];
+            saveState();
+            drawWheel();
+            spinBtn.disabled = false;
+            updateLostListUI();
+            closeBottomSheet();
+        }
+    });
+
     // --- BOTTOM SHEET LOGIC ---
     function updateLostListUI() {
         lostListContainer.innerHTML = '';
@@ -1032,7 +1103,8 @@
     closeSheetBtn.addEventListener('click', closeBottomSheet);
     scrim.addEventListener('click', closeBottomSheet);
 
-    // Init App
+    // Load saved state from localStorage on init!
+    loadState();
     drawWheel();
 </script>
 </body>
