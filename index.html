@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MD3 Expressive Common Ball Quiz</title>
+    <!-- Google Fonts & Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    
     <style>
         :root {
             /* MD3 Expressive Colors */
@@ -42,6 +45,11 @@
             padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
             -webkit-tap-highlight-color: transparent;
+        }
+
+        .material-symbols-outlined {
+            vertical-align: middle;
+            line-height: 1;
         }
 
         /* --- IMMERSIVE ANIMATED BACKGROUND --- */
@@ -163,7 +171,7 @@
             z-index: 10;
         }
 
-        /* --- RICH ANIMATED QUIZ UI --- */
+        /* --- QUIZ UI --- */
         .quiz-header {
             width: 100%; display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 16px; padding: 0 8px; gap: 8px;
@@ -212,13 +220,14 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Options Grid & Animations */
+        /* Options Grid */
         .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; margin-bottom: 24px; }
         @media (max-width: 650px) {
             .options-grid { grid-template-columns: 1fr; gap: 12px; }
             .question-card { padding: 28px 20px; }
         }
 
+        /* FIXED: Base opacity set to 1 so options never vanish */
         .option-btn {
             background: var(--md-sys-color-surface-container);
             color: var(--md-sys-color-on-surface);
@@ -227,11 +236,16 @@
             border: 3px solid transparent; text-align: center;
             cursor: pointer; transition: all 0.25s var(--md-sys-motion-easing-bounce);
             box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; min-height: 76px;
-            opacity: 0; transform: translateY(20px);
-            animation: slideUp 0.4s var(--md-sys-motion-easing-emphasized) forwards;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .option-btn.animate-in {
+            animation: slideUp 0.4s var(--md-sys-motion-easing-emphasized) both;
         }
 
         @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -335,7 +349,9 @@
                 <span id="studentTurnLabel">Student</span>
                 <span class="hard-badge" id="hardBadge">HARD</span>
             </div>
-            <div style="font-weight: 800; font-size: 1.1rem;" id="timerText">⏱️ 20s</div>
+            <div style="font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 4px;" id="timerText">
+                <span class="material-symbols-outlined">timer</span> <span>20s</span>
+            </div>
             <button id="forfeitBtn" class="forfeit-btn">Forfeit</button>
         </div>
 
@@ -393,11 +409,9 @@
         {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
     ];
 
-    // Filter out LOO CHIN SIANG as requested
     let students = rawStudents.map(s => s.name);
     let lostList = [];
 
-    // Keywords identifying students assigned HARD mode
     const hardStudentKeywords = ["YEOW JIA WEI", "ALOYSIUS", "LEXUS", "XANXUS", "TAY KIM YAW", "RAYSON"];
 
     function isHardStudent(name) {
@@ -458,7 +472,7 @@
         "What color is an emerald?|Green|Blue|Red|Yellow"
     ];
 
-    // --- HARD QUESTION POOL (For targeted students) ---
+    // --- HARD QUESTION POOL ---
     const hardCompactQuestions = [
         "In what year was the Federation of Malaya Agreement signed forming the Federation?|1948|1957|1963|1946",
         "What is the speed of light in a vacuum approximately?|299,792 km/s|150,000 km/s|3,000,000 km/s|1,080,000 km/s",
@@ -513,7 +527,6 @@
         if (!audioCtx) return;
         try {
             const now = audioCtx.currentTime;
-            // Decay noise buffer simulates realistic wooden/plastic peg click
             const bufferSize = Math.floor(audioCtx.sampleRate * 0.012);
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
@@ -691,17 +704,17 @@
         timeLeft = 20;
         timerBarFill.style.width = '100%';
         timerBarFill.style.backgroundColor = 'var(--md-sys-color-primary)';
-        timerText.innerText = '⏱️ 20s';
+        timerText.innerHTML = `<span class="material-symbols-outlined">timer</span> <span>20s</span>`;
         
         timerInterval = setInterval(() => {
             timeLeft--;
-            timerText.innerText = `⏱️ ${timeLeft}s`;
+            timerText.innerHTML = `<span class="material-symbols-outlined">timer</span> <span>${timeLeft}s</span>`;
             timerBarFill.style.width = `${(timeLeft / 20) * 100}%`;
 
             if (timeLeft <= 10 && timeLeft > 5) {
-                timerBarFill.style.backgroundColor = '#E65100'; // Orange
+                timerBarFill.style.backgroundColor = '#E65100';
             } else if (timeLeft <= 5) {
-                timerBarFill.style.backgroundColor = 'var(--md-sys-color-error)'; // Red
+                timerBarFill.style.backgroundColor = 'var(--md-sys-color-error)';
             }
 
             if (timeLeft <= 0) {
@@ -723,7 +736,7 @@
 
         q.opts.forEach((opt, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'option-btn';
+            btn.className = 'option-btn animate-in';
             btn.style.animationDelay = `${idx * 0.08}s`;
             btn.innerText = opt;
             btn.onclick = () => selectOption(idx);
@@ -753,12 +766,20 @@
         allBtns.forEach(b => b.disabled = true);
 
         if (chosenIdx !== null && chosenIdx === q.ans) {
-            if(allBtns[chosenIdx]) allBtns[chosenIdx].classList.add('correct');
+            if(allBtns[chosenIdx]) {
+                allBtns[chosenIdx].classList.remove('animate-in');
+                allBtns[chosenIdx].classList.add('correct');
+            }
             score++;
         } else {
-            if (chosenIdx !== null && allBtns[chosenIdx]) allBtns[chosenIdx].classList.add('wrong');
-            // Always reveal correct answer
-            if(allBtns[q.ans]) allBtns[q.ans].classList.add('correct');
+            if (chosenIdx !== null && allBtns[chosenIdx]) {
+                allBtns[chosenIdx].classList.remove('animate-in');
+                allBtns[chosenIdx].classList.add('wrong');
+            }
+            if(allBtns[q.ans]) {
+                allBtns[q.ans].classList.remove('animate-in');
+                allBtns[q.ans].classList.add('correct');
+            }
         }
 
         setTimeout(() => {
@@ -771,7 +792,7 @@
     function handleTimeout() {
         confirmBtn.disabled = true;
         confirmBtn.innerText = "Time's Up!";
-        submitAnswer(null); // Timeout fails question automatically
+        submitAnswer(null);
     }
 
     confirmBtn.addEventListener('click', () => {
@@ -787,15 +808,13 @@
         resultScore.innerText = score;
         
         if (isForfeit) {
-            resultVerdict.innerText = "❌ FORFEITED! ❌";
-            resultVerdict.style.color = "var(--md-sys-color-error)";
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">flag</span> FORFEITED!`;
             lostList.push(`${currentStudent} - Forfeit`);
         } else if (score >= 6) {
-            resultVerdict.innerText = "🎉 YOU WIN! 🎉";
-            resultVerdict.style.color = "var(--md-sys-color-success)";
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">celebration</span> YOU WIN!`;
+            lostList.push(`${currentStudent} - ${score} Pts (WON)`);
         } else {
-            resultVerdict.innerText = "❌ YOU LOSE! ❌";
-            resultVerdict.style.color = "var(--md-sys-color-error)";
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">cancel</span> YOU LOSE!`;
             lostList.push(`${currentStudent} - ${score} Pts`);
         }
 
@@ -832,7 +851,7 @@
     function updateLostListUI() {
         lostListContainer.innerHTML = '';
         if(lostList.length === 0) {
-            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No one has lost yet!</div>';
+            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No one on the lost list yet!</div>';
         } else {
             lostList.forEach(item => {
                 const div = document.createElement('div');
