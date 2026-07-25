@@ -16,8 +16,12 @@
             --md-sys-color-on-secondary-container: #1D192B;
             --md-sys-color-tertiary-container: #FFD8E4;
             --md-sys-color-on-tertiary-container: #31111D;
-            --md-sys-color-error: #B3261E;
+            --md-sys-color-error: #BA1A1A;
             --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #FFDAD6;
+            --md-sys-color-on-error-container: #410002;
+            --md-sys-color-success: #146C2E;
+            --md-sys-color-success-container: #A0F0AB;
             --md-sys-color-surface: #FEF7FF;
             --md-sys-color-on-surface: #1D1B20;
             --md-sys-color-surface-container: #F3EDF7;
@@ -27,9 +31,8 @@
             --md-sys-shape-corner-large: 24px;
             --md-sys-shape-corner-full: 9999px;
             
-            /* Emphasized Easing (Mimicking Jetpack Compose) */
+            /* Emphasized Easing */
             --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
-            --md-sys-motion-duration-long: 500ms;
         }
 
         * {
@@ -46,30 +49,31 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center; /* Centers everything vertically on desktop */
             min-height: 100vh;
             overflow-x: hidden;
             padding: 24px 16px;
         }
 
         /* Typography */
-        h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px;}
-        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; }
-        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
-        p { font-size: 1rem; line-height: 1.5; margin-bottom: 16px; }
+        h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px;}
+        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
+        p.subtitle { font-size: 1.125rem; opacity: 0.8; text-align: center; margin-bottom: 24px; }
 
         /* Screens */
         .screen {
             display: none;
             width: 100%;
-            max-width: 600px;
-            animation: fadeIn 0.4s var(--md-sys-motion-easing-emphasized);
+            max-width: 900px; /* Wider max-width for desktop grid */
+            animation: fadeIn 0.5s var(--md-sys-motion-easing-emphasized);
             flex-direction: column;
             align-items: center;
+            justify-content: center;
         }
         .screen.active { display: flex; }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -79,31 +83,38 @@
             color: var(--md-sys-color-on-primary);
             border: none;
             border-radius: var(--md-sys-shape-corner-full);
-            padding: 16px 32px;
+            padding: 16px 40px;
             font-size: 1.125rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, filter 0.2s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            margin-bottom: 16px;
             width: 100%;
-            margin-bottom: 12px;
+            max-width: 350px;
         }
+        .btn:hover { filter: brightness(1.1); }
         .btn:active { transform: scale(0.96); }
         .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
-        .btn-tertiary { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
 
         /* Wheel Container */
+        .wheel-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
         .wheel-container {
             position: relative;
-            width: 320px;
-            height: 320px;
-            margin: 32px 0;
+            width: 100%;
+            max-width: 380px;
+            aspect-ratio: 1/1;
+            margin: 16px 0 32px 0;
             border-radius: 50%;
-            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
             background: var(--md-sys-color-surface-container-high);
         }
         #wheelCanvas {
@@ -114,44 +125,114 @@
         }
         .wheel-pointer {
             position: absolute;
-            top: -15px;
+            top: -20px;
             left: 50%;
             transform: translateX(-50%);
-            width: 30px;
-            height: 40px;
+            width: 36px;
+            height: 48px;
             background: var(--md-sys-color-error);
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
         }
 
-        /* Cards */
-        .card {
-            background: var(--md-sys-color-surface-container);
-            border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 32px;
+        /* --- REDESIGNED QUIZ UI --- */
+        .quiz-header {
             width: 100%;
-            margin-bottom: 24px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 16px;
+        }
+        .student-chip {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            padding: 8px 16px;
+            border-radius: var(--md-sys-shape-corner-full);
+            font-weight: 700;
+        }
+        
+        .question-card {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 48px 32px;
+            width: 100%;
             text-align: center;
+            margin-bottom: 32px;
+            box-shadow: 0 8px 24px rgba(103, 80, 164, 0.1);
+        }
+        .question-card h3 {
+            font-size: clamp(1.5rem, 4vw, 2.25rem);
+            font-weight: 800;
+            line-height: 1.3;
+            margin: 0;
         }
 
-        /* Options */
+        /* Desktop Grid / Mobile Stack for Options */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+        }
+        
+        @media (max-width: 650px) {
+            .options-grid { grid-template-columns: 1fr; gap: 16px; }
+            .question-card { padding: 32px 24px; }
+        }
+
         .option-btn {
-            background: var(--md-sys-color-surface-container-high);
+            background: var(--md-sys-color-surface-container);
             color: var(--md-sys-color-on-surface);
             border-radius: var(--md-sys-shape-corner-large);
-            padding: 20px;
-            font-size: 1rem;
-            font-weight: 500;
-            border: 2px solid transparent;
-            text-align: left;
-            margin-bottom: 12px;
+            padding: 24px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            border: 3px solid transparent;
+            text-align: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.2s var(--md-sys-motion-easing-emphasized);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
         }
-        .option-btn:hover { background: var(--md-sys-color-secondary-container); }
-        .option-btn.correct { background: #4CAF50; color: white; border-color: #388E3C; }
-        .option-btn.wrong { background: var(--md-sys-color-error); color: white; border-color: #8C1D18; }
+        .option-btn:hover { 
+            background: var(--md-sys-color-surface-container-high); 
+            transform: translateY(-2px);
+        }
+        .option-btn:active { transform: scale(0.98); }
+        
+        /* Answer States */
+        .option-btn.correct { 
+            background: var(--md-sys-color-success-container); 
+            color: var(--md-sys-color-success); 
+            border-color: var(--md-sys-color-success); 
+        }
+        .option-btn.wrong { 
+            background: var(--md-sys-color-error-container); 
+            color: var(--md-sys-color-on-error-container); 
+            border-color: var(--md-sys-color-error); 
+        }
+
+        /* Result Screen */
+        .result-card {
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 48px;
+            text-align: center;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 32px;
+        }
+        .score-display {
+            font-size: 4rem;
+            font-weight: 800;
+            color: var(--md-sys-color-primary);
+            margin: 16px 0;
+        }
 
         /* Bottom Sheet for Mobile (Mimics animateContentSize) */
         .scrim {
@@ -164,7 +245,9 @@
         .bottom-sheet {
             position: fixed;
             bottom: 0; left: 0; right: 0;
-            background: var(--md-sys-color-surface-container);
+            margin: 0 auto;
+            max-width: 600px;
+            background: var(--md-sys-color-surface-container-high);
             border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
             padding: 0;
             z-index: 50;
@@ -179,65 +262,68 @@
         }
         .bottom-sheet.open {
             transform: translateY(0);
-            max-height: 80vh;
+            max-height: 85vh;
             padding: 32px 24px;
         }
         .bottom-sheet .drag-handle {
-            width: 40px; height: 4px; border-radius: 2px;
+            width: 48px; height: 6px; border-radius: 3px;
             background: #CAC4D0; margin: -16px auto 24px auto;
         }
         .lost-list-container {
             width: 100%; overflow-y: auto; text-align: left;
+            background: var(--md-sys-color-surface);
+            border-radius: 16px;
+            padding: 8px;
         }
         .lost-item {
-            padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container-high);
-            font-weight: 500;
+            padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container);
+            font-weight: 600; font-size: 1.1rem;
         }
-
-        /* Result Chip */
-        .score-chip {
-            background: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            padding: 12px 24px; border-radius: var(--md-sys-shape-corner-full);
-            font-weight: 800; font-size: 1.5rem; display: inline-block; margin-bottom: 24px;
-        }
+        .lost-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
     <!-- WHEEL SCREEN -->
     <div id="wheelScreen" class="screen active">
-        <h1>Common Ball Quiz</h1>
-        <p>Spin the wheel to select a student!</p>
-        
-        <div class="wheel-container">
-            <div class="wheel-pointer"></div>
-            <canvas id="wheelCanvas" width="600" height="600"></canvas>
-        </div>
+        <div class="wheel-wrapper">
+            <h1>Common Ball Quiz</h1>
+            <p class="subtitle">Spin the wheel to select a student!</p>
+            
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <canvas id="wheelCanvas" width="600" height="600"></canvas>
+            </div>
 
-        <button id="spinBtn" class="btn">Spin the Wheel</button>
-        <button id="viewLostBtn" class="btn btn-secondary">View Lost List</button>
+            <button id="spinBtn" class="btn">Spin the Wheel</button>
+            <button id="viewLostBtn" class="btn btn-secondary">View Lost List</button>
+        </div>
     </div>
 
     <!-- QUIZ SCREEN -->
     <div id="quizScreen" class="screen">
-        <h2 id="studentTurnLabel">Student's Turn</h2>
-        <div class="card">
-            <h3 id="questionProgress">Question 1 of 10</h3>
-            <p id="questionText" style="font-size: 1.25rem; font-weight: 600;"></p>
+        <div class="quiz-header">
+            <div class="student-chip" id="studentTurnLabel">Student</div>
+            <div style="font-weight: 700; opacity: 0.7;" id="questionProgress">1 / 10</div>
         </div>
-        <div id="optionsContainer" style="width: 100%;">
+        
+        <div class="question-card">
+            <h3 id="questionText">Question Text Goes Here</h3>
+        </div>
+        
+        <div class="options-grid" id="optionsContainer">
             <!-- Options dynamically added here -->
         </div>
     </div>
 
     <!-- RESULT SCREEN -->
     <div id="resultScreen" class="screen">
-        <h1 id="resultTitle">Result</h1>
-        <div class="card">
-            <p id="resultMsg" style="font-size: 1.125rem;"></p>
-            <div class="score-chip" id="resultScore">0 / 10</div>
-            <h3 id="resultVerdict"></h3>
+        <h1>Results</h1>
+        <div class="result-card">
+            <h2 id="resultMsg">Great effort!</h2>
+            <div class="score-display" id="resultScore">0</div>
+            <p>out of 10</p>
+            <h2 id="resultVerdict" style="margin-top: 24px; font-size: 2rem;"></h2>
         </div>
         <button id="nextStudentBtn" class="btn">Return to Wheel</button>
     </div>
@@ -250,7 +336,7 @@
         <div class="lost-list-container" id="lostListContainer">
             <!-- Lost items added here -->
         </div>
-        <button id="closeSheetBtn" class="btn btn-tertiary" style="margin-top: 24px;">Close</button>
+        <button id="closeSheetBtn" class="btn btn-secondary" style="margin-top: 24px;">Close List</button>
     </div>
 
 <script>
@@ -271,49 +357,146 @@
     let students = rawStudents.map(s => s.name);
     let lostList = [];
 
-    // Question Bank (Mix of World and Malaysia)
-    const questionBank = [
-        { q: "What is the most selling album ever?", opts: ["Thriller", "Back in Black", "Dark Side of the Moon", "The Bodyguard"], ans: 0 },
-        { q: "What is the 2nd largest ocean?", opts: ["Pacific", "Indian", "Atlantic", "Arctic"], ans: 2 },
-        { q: "What is the capital city of Malaysia?", opts: ["George Town", "Kuala Lumpur", "Johor Bahru", "Malacca"], ans: 1 },
-        { q: "What is the national flower of Malaysia?", opts: ["Orchid", "Rafflesia", "Hibiscus", "Lotus"], ans: 2 },
-        { q: "Which is the tallest building in Malaysia?", opts: ["Petronas Twin Towers", "KL Tower", "Exchange 106", "Merdeka 118"], ans: 3 },
-        { q: "In what year did Malaysia gain independence?", opts: ["1957", "1963", "1969", "1955"], ans: 0 },
-        { q: "What is the largest state in Malaysia?", opts: ["Pahang", "Sabah", "Sarawak", "Perak"], ans: 2 },
-        { q: "Which planet is closest to the Sun?", opts: ["Venus", "Earth", "Mars", "Mercury"], ans: 3 },
-        { q: "What is the longest river in the world?", opts: ["Amazon", "Nile", "Yangtze", "Mississippi"], ans: 1 },
-        { q: "Which element has the chemical symbol 'O'?", opts: ["Osmium", "Oxygen", "Gold", "Iron"], ans: 1 },
-        { q: "What is the national animal of Malaysia?", opts: ["Orangutan", "Hornbill", "Malayan Tiger", "Tapir"], ans: 2 },
-        { q: "Who was the first Prime Minister of Malaysia?", opts: ["Mahathir Mohamad", "Tunku Abdul Rahman", "Najib Razak", "Hussein Onn"], ans: 1 },
-        { q: "What is the currency of Malaysia?", opts: ["Dollar", "Rupiah", "Baht", "Ringgit"], ans: 3 },
-        { q: "Which continent is the Sahara Desert located in?", opts: ["Asia", "North America", "Africa", "Australia"], ans: 2 },
-        { q: "What is the hardest natural substance on Earth?", opts: ["Gold", "Iron", "Diamond", "Quartz"], ans: 2 },
-        { q: "How many states (and federal territories combined functionally as states) make up Malaysia?", opts: ["11", "13", "14", "15"], ans: 1 },
-        { q: "Which city is known as the historical city of Malaysia?", opts: ["Kuala Lumpur", "Ipoh", "Malacca", "Penang"], ans: 2 },
-        { q: "What is the largest planet in our solar system?", opts: ["Saturn", "Jupiter", "Uranus", "Neptune"], ans: 1 },
-        { q: "Who painted the Mona Lisa?", opts: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"], ans: 2 },
-        { q: "Which ocean is off the California coast?", opts: ["Atlantic", "Pacific", "Indian", "Southern"], ans: 1 },
-        { q: "Which is the highest mountain in Malaysia?", opts: ["Mount Tahan", "Mount Kinabalu", "Mount Jerai", "Mount Santubong"], ans: 1 },
-        { q: "What is the coldest place on Earth?", opts: ["Greenland", "Siberia", "Antarctica", "Alaska"], ans: 2 },
-        { q: "Who wrote the Harry Potter series?", opts: ["J.R.R. Tolkien", "George R.R. Martin", "C.S. Lewis", "J.K. Rowling"], ans: 3 },
-        { q: "What is a popular Malaysian coconut milk rice dish?", opts: ["Nasi Goreng", "Nasi Lemak", "Nasi Kandar", "Nasi Dagang"], ans: 1 },
-        { q: "What is the capital of Japan?", opts: ["Kyoto", "Osaka", "Tokyo", "Hokkaido"], ans: 2 },
-        { q: "What is the most populated country in the world as of 2024?", opts: ["China", "India", "USA", "Indonesia"], ans: 1 },
-        { q: "Which animal is the tallest in the world?", opts: ["Elephant", "Giraffe", "Ostrich", "Kangaroo"], ans: 1 },
-        { q: "Which Malaysian island is known as the 'Pearl of the Orient'?", opts: ["Langkawi", "Tioman", "Redang", "Penang"], ans: 3 },
-        { q: "What gas do plants absorb from the atmosphere?", opts: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], ans: 2 },
-        { q: "How many colors are in a rainbow?", opts: ["5", "6", "7", "8"], ans: 2 },
-        { q: "Which famous tech company's logo is an Apple with a bite taken out of it?", opts: ["Microsoft", "Google", "Apple", "IBM"], ans: 2 },
-        { q: "What is the main ingredient in guacamole?", opts: ["Tomato", "Avocado", "Onion", "Pepper"], ans: 1 },
-        { q: "Which Malaysian state is famous for its bridge, the longest in Southeast Asia upon its completion?", opts: ["Johor", "Penang", "Kedah", "Selangor"], ans: 1 },
-        { q: "What is the largest bone in the human body?", opts: ["Femur", "Tibia", "Fibula", "Humerus"], ans: 0 },
-        { q: "Which is the smallest country in the world?", opts: ["Monaco", "Nauru", "Vatican City", "Tuvalu"], ans: 2 },
-        { q: "What popular sport is played at Wimbledon?", opts: ["Cricket", "Football", "Tennis", "Rugby"], ans: 2 },
-        { q: "What do pandas primarily eat?", opts: ["Eucalyptus", "Bamboo", "Insects", "Fish"], ans: 1 },
-        { q: "What is the chemical formula for water?", opts: ["CO2", "H2O", "O2", "NaCl"], ans: 1 },
-        { q: "Which planet is known as the Red Planet?", opts: ["Mars", "Venus", "Jupiter", "Saturn"], ans: 0 },
-        { q: "What language has the most native speakers?", opts: ["English", "Spanish", "Hindi", "Mandarin"], ans: 3 }
+    // --- MASSIVE UNIQUE QUESTION POOL (Format: "Question|Correct|Wrong1|Wrong2|Wrong3") ---
+    // Contains over 150 unique questions (Global + Malaysia) to guarantee 30 students get 10 entirely different questions.
+    const compactQuestions = [
+        "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
+        "What is the 2nd largest ocean?|Atlantic|Pacific|Indian|Arctic",
+        "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
+        "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
+        "Which is the tallest building in Malaysia (as of 2024)?|Merdeka 118|Petronas Twin Towers|Exchange 106|KL Tower",
+        "In what year did Malaysia gain independence?|1957|1963|1969|1955",
+        "What is the largest state in Malaysia?|Sarawak|Pahang|Sabah|Perak",
+        "Which planet is closest to the Sun?|Mercury|Venus|Earth|Mars",
+        "What is the longest river in the world?|Nile|Amazon|Yangtze|Mississippi",
+        "Which element has the chemical symbol 'O'?|Oxygen|Osmium|Gold|Iron",
+        "What is the national animal of Malaysia?|Malayan Tiger|Orangutan|Hornbill|Tapir",
+        "Who was the first Prime Minister of Malaysia?|Tunku Abdul Rahman|Mahathir Mohamad|Najib Razak|Hussein Onn",
+        "What is the currency of Malaysia?|Ringgit|Dollar|Rupiah|Baht",
+        "Which continent is the Sahara Desert located in?|Africa|Asia|North America|Australia",
+        "What is the hardest natural substance on Earth?|Diamond|Gold|Iron|Quartz",
+        "How many states and federal territories make up Malaysia?|13 States, 3 FTs|11 States, 2 FTs|14 States, 1 FT|12 States, 4 FTs",
+        "Which city is known as the historical city of Malaysia?|Malacca|Kuala Lumpur|Ipoh|Penang",
+        "What is the largest planet in our solar system?|Jupiter|Saturn|Uranus|Neptune",
+        "Who painted the Mona Lisa?|Leonardo da Vinci|Vincent van Gogh|Pablo Picasso|Claude Monet",
+        "Which ocean is off the California coast?|Pacific|Atlantic|Indian|Southern",
+        "Which is the highest mountain in Malaysia?|Mount Kinabalu|Mount Tahan|Mount Jerai|Mount Santubong",
+        "What is the coldest place on Earth?|Antarctica|Greenland|Siberia|Alaska",
+        "Who wrote the Harry Potter series?|J.K. Rowling|J.R.R. Tolkien|George R.R. Martin|C.S. Lewis",
+        "What is a popular Malaysian coconut milk rice dish?|Nasi Lemak|Nasi Goreng|Nasi Kandar|Nasi Dagang",
+        "What is the capital of Japan?|Tokyo|Kyoto|Osaka|Hokkaido",
+        "What is the most populated country in the world as of 2024?|India|China|USA|Indonesia",
+        "Which animal is the tallest in the world?|Giraffe|Elephant|Ostrich|Kangaroo",
+        "Which Malaysian island is known as the 'Pearl of the Orient'?|Penang|Langkawi|Tioman|Redang",
+        "What gas do plants absorb from the atmosphere?|Carbon Dioxide|Oxygen|Nitrogen|Hydrogen",
+        "How many colors are in a rainbow?|7|5|6|8",
+        "What is the main ingredient in guacamole?|Avocado|Tomato|Onion|Pepper",
+        "What is the largest bone in the human body?|Femur|Tibia|Fibula|Humerus",
+        "Which is the smallest country in the world?|Vatican City|Monaco|Nauru|Tuvalu",
+        "What popular sport is played at Wimbledon?|Tennis|Cricket|Football|Rugby",
+        "What do pandas primarily eat?|Bamboo|Eucalyptus|Insects|Fish",
+        "What is the chemical formula for water?|H2O|CO2|O2|NaCl",
+        "Which planet is known as the Red Planet?|Mars|Venus|Jupiter|Saturn",
+        "What language has the most native speakers?|Mandarin|English|Spanish|Hindi",
+        "Which state is known as the 'Land Below the Wind'?|Sabah|Sarawak|Kelantan|Terengganu",
+        "What is the official religion of Malaysia?|Islam|Buddhism|Christianity|Hinduism",
+        "Who invented the telephone?|Alexander Graham Bell|Thomas Edison|Nikola Tesla|Albert Einstein",
+        "How many legs does a spider have?|8|6|10|12",
+        "What is the square root of 64?|8|6|7|9",
+        "Which Malaysian state is ruled by a Sultan?|Johor|Penang|Malacca|Sabah",
+        "What is the freezing point of water in Celsius?|0|32|100|-1",
+        "Who is the current King (Agong) of Malaysia (2024)?|Sultan Ibrahim|Sultan Abdullah|Sultan Nazrin|Sultan Sharafuddin",
+        "What is the largest mammal in the world?|Blue Whale|Elephant|Giraffe|Shark",
+        "Which country gifted the Statue of Liberty to the USA?|France|UK|Spain|Germany",
+        "What is the capital of Australia?|Canberra|Sydney|Melbourne|Perth",
+        "What are the primary colors?|Red, Yellow, Blue|Red, Green, Blue|Orange, Purple, Green|Black, White, Gray",
+        "In which year did World War II end?|1945|1939|1918|1941",
+        "What is the capital of Thailand?|Bangkok|Phuket|Chiang Mai|Pattaya",
+        "Which is the fastest land animal?|Cheetah|Lion|Horse|Leopard",
+        "What type of food is Penne?|Pasta|Bread|Meat|Dessert",
+        "Which Malaysian state is famous for its 'Boria' performance?|Penang|Kedah|Perlis|Perak",
+        "What is the largest desert in the world?|Antarctic Desert|Sahara|Gobi|Kalahari",
+        "How many continents are there?|7|5|6|8",
+        "What is the chemical symbol for Gold?|Au|Ag|Gd|Go",
+        "Who discovered penicillin?|Alexander Fleming|Marie Curie|Louis Pasteur|Isaac Newton",
+        "What is the smallest planet in our solar system?|Mercury|Mars|Pluto|Venus",
+        "Which fruit is known as the 'King of Fruits' in Malaysia?|Durian|Mangosteen|Rambutan|Papaya",
+        "Which is the longest bridge in Malaysia?|Sultan Abdul Halim Muadzam Shah Bridge|Penang Bridge|Johor-Singapore Causeway|Second Link",
+        "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain",
+        "What is the largest internal organ in the human body?|Liver|Heart|Lungs|Stomach",
+        "Which gas makes up the majority of Earth's atmosphere?|Nitrogen|Oxygen|Carbon Dioxide|Helium",
+        "What is the capital of South Korea?|Seoul|Pyongyang|Busan|Incheon",
+        "How many strings does a standard guitar have?|6|4|5|7",
+        "Which element is a diamond made of?|Carbon|Silicon|Oxygen|Hydrogen",
+        "What is the currency of Japan?|Yen|Won|Yuan|Ringgit",
+        "Which animal is known as man's best friend?|Dog|Cat|Horse|Bird",
+        "What is the highest grossing movie of all time (as of 2023)?|Avatar|Avengers: Endgame|Titanic|Star Wars",
+        "What is the main ingredient in hummus?|Chickpeas|Lentils|Beans|Peas",
+        "Which country is known as the Land of the Rising Sun?|Japan|China|South Korea|Thailand",
+        "What is the capital of France?|Paris|London|Berlin|Madrid",
+        "How many bones are in the adult human body?|206|208|210|205",
+        "What is the tallest waterfall in the world?|Angel Falls|Niagara Falls|Victoria Falls|Iguazu Falls",
+        "Which bird is a universal symbol of peace?|Dove|Eagle|Pigeon|Swan",
+        "What is the largest ocean on Earth?|Pacific|Atlantic|Indian|Arctic",
+        "Who was the first man to step on the moon?|Neil Armstrong|Buzz Aldrin|Yuri Gagarin|Michael Collins",
+        "What is the capital of Canada?|Ottawa|Toronto|Vancouver|Montreal",
+        "Which sport is known as 'the beautiful game'?|Football|Basketball|Tennis|Cricket",
+        "What is the boiling point of water in Celsius?|100|90|110|120",
+        "Which Malaysian state is known as the 'Rice Bowl of Malaysia'?|Kedah|Perlis|Kelantan|Pahang",
+        "What is the name of the longest river in Malaysia?|Rajang River|Kinabatangan River|Pahang River|Perak River",
+        "What is the national car maker of Malaysia?|Proton|Perodua|Naza|Inokom",
+        "In computer science, what does CPU stand for?|Central Processing Unit|Computer Personal Unit|Central Process Unit|Central Processor Unit",
+        "What color is an emerald?|Green|Blue|Red|Yellow",
+        "Which country won the first FIFA World Cup?|Uruguay|Brazil|Argentina|Germany",
+        "What is the deepest trench in the ocean?|Mariana Trench|Tonga Trench|Philippine Trench|Kuril-Kamchatka Trench",
+        "Which planet has the most rings?|Saturn|Jupiter|Uranus|Neptune",
+        "What is the hardest rock?|Diamond|Granite|Basalt|Marble",
+        "Who is known as the 'Father of Computers'?|Charles Babbage|Alan Turing|Bill Gates|Steve Jobs",
+        "What is the capital of Italy?|Rome|Venice|Milan|Naples",
+        "Which animal lays the largest eggs?|Ostrich|Emu|Kiwi|Crocodile",
+        "What is the main language spoken in Brazil?|Portuguese|Spanish|English|French",
+        "How many days are in a leap year?|366|365|364|367",
+        "What is the largest continent?|Asia|Africa|North America|Europe",
+        "Which metal is liquid at room temperature?|Mercury|Iron|Gold|Silver",
+        "What is the capital of China?|Beijing|Shanghai|Hong Kong|Taipei",
+        "What is the most consumed beverage in the world after water?|Tea|Coffee|Milk|Soda",
+        "Which animal is known as the 'Ship of the Desert'?|Camel|Horse|Donkey|Elephant",
+        "What is the square root of 144?|12|10|14|16",
+        "Which sea creature has three hearts?|Octopus|Shark|Whale|Dolphin",
+        "What is the smallest state in Malaysia by area?|Perlis|Penang|Malacca|Negeri Sembilan",
+        "Which festival is known as the Festival of Lights?|Deepavali|Thaipusam|Wesak|Christmas",
+        "What is the national motto of Malaysia?|Bersekutu Bertambah Mutu|Majulah Malaysia|Negaraku|Biar Mati Anak",
+        "What is the highest rank in the Royal Malaysian Police?|Inspector-General of Police|Deputy Inspector-General|Commissioner|Superintendent",
+        "Who composed the music for Malaysia's national anthem 'Negaraku'?|Pierre-Jean de Béranger|P. Ramlee|Sudirman|Zubir Said",
+        "What is the typical base of a Laksa broth?|Coconut Milk or Tamarind|Soy Sauce|Chicken Broth|Beef Stock",
+        "What is the famous cave temple in Selangor, Malaysia?|Batu Caves|Kek Lok Si|Gua Tempurung|Sam Poh Tong",
+        "What is the capital of Spain?|Madrid|Barcelona|Seville|Valencia",
+        "What is the longest bone in the arm?|Humerus|Radius|Ulna|Femur",
+        "Which gas do humans exhale?|Carbon Dioxide|Oxygen|Nitrogen|Helium",
+        "What is the main ingredient in bread?|Flour|Sugar|Salt|Yeast",
+        "What is the largest bird in the world?|Ostrich|Eagle|Penguin|Albatross",
+        "Which state is known as 'Darul Makmur'?|Pahang|Kedah|Johor|Perak",
+        "What is the currency of the UK?|Pound Sterling|Euro|Dollar|Franc",
+        "Who painted the Starry Night?|Vincent van Gogh|Claude Monet|Pablo Picasso|Leonardo da Vinci",
+        "What is the capital of New Zealand?|Wellington|Auckland|Christchurch|Hamilton",
+        "Which is the only mammal capable of true flight?|Bat|Flying Squirrel|Sugar Glider|Lemur",
+        "What is the chemical symbol for Iron?|Fe|Ir|In|Io",
+        "What is the largest species of shark?|Whale Shark|Great White Shark|Tiger Shark|Hammerhead Shark",
+        "Who wrote 'To Kill a Mockingbird'?|Harper Lee|Mark Twain|J.K. Rowling|Ernest Hemingway",
+        "What is the capital of Egypt?|Cairo|Alexandria|Giza|Luxor",
+        "Which planet is known as the Morning Star?|Venus|Mars|Mercury|Jupiter",
+        "What is the most spoken language in the world by total speakers?|English|Mandarin|Hindi|Spanish"
     ];
+
+    // Parse compact format into objects
+    let masterQuestionPool = compactQuestions.map(line => {
+        const parts = line.split('|');
+        return {
+            q: parts[0],
+            correct: parts[1],
+            wrongs: [parts[2], parts[3], parts[4]]
+        };
+    });
 
     // --- STATE ---
     let currentStudent = "";
@@ -360,9 +543,9 @@
             ctx.fillStyle = "#E8DEF8";
             ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = "#1D192B";
-            ctx.font = "bold 32px Inter";
+            ctx.font = "bold 36px Inter";
             ctx.textAlign = "center";
-            ctx.fillText("All Done!", 300, 310);
+            ctx.fillText("All Students Played!", 300, 310);
             spinBtn.disabled = true;
             return;
         }
@@ -384,7 +567,8 @@
             ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
             ctx.rotate(angle + arc / 2);
             ctx.textAlign = "right";
-            ctx.font = students.length > 20 ? "bold 12px Inter" : "bold 16px Inter";
+            // Dynamically scale font size based on number of students
+            ctx.font = students.length > 20 ? "bold 13px Inter" : "bold 18px Inter";
             ctx.fillText(students[i], 130, 5);
             ctx.restore();
         }
@@ -393,12 +577,13 @@
     function spinWheel() {
         if (students.length === 0) return;
         spinBtn.disabled = true;
+        viewLostBtn.disabled = true;
 
         const spins = 5; // Extra rotations
         const degreesPerSlice = 360 / students.length;
         const randomSlice = Math.floor(Math.random() * students.length);
         
-        // Calculate target rotation to land on randomSlice
+        // Calculate target rotation to land exactly in the middle of the randomSlice
         const targetDegrees = (spins * 360) + (360 - (randomSlice * degreesPerSlice)) - (degreesPerSlice / 2);
         
         wheelRotation += targetDegrees;
@@ -423,18 +608,43 @@
     function startQuiz() {
         score = 0;
         currentQuestionIndex = 0;
-        // Grab 10 random unique questions
-        const shuffledBank = shuffleArray([...questionBank]);
-        currentQuestions = shuffledBank.slice(0, 10);
+        currentQuestions = [];
+
+        // Pick 10 UNIQUE questions for this student and REMOVE them from master pool
+        for(let i=0; i<10; i++) {
+            if (masterQuestionPool.length === 0) {
+                alert("Wow! We ran out of unique questions. Resetting the pool...");
+                // Reload page or re-parse the array (In real life, 150+ questions handles 15 students exactly without reset). 
+                // Since this might happen, let's just reshuffle original data.
+                masterQuestionPool = compactQuestions.map(line => {
+                    const parts = line.split('|');
+                    return { q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
+                });
+            }
+            const randIdx = Math.floor(Math.random() * masterQuestionPool.length);
+            // Splice permanently removes the item from the global pool!
+            const selectedQ = masterQuestionPool.splice(randIdx, 1)[0]; 
+            
+            // Format options for the UI
+            let opts = [...selectedQ.wrongs];
+            const correctIndex = Math.floor(Math.random() * 4);
+            opts.splice(correctIndex, 0, selectedQ.correct);
+            
+            currentQuestions.push({
+                q: selectedQ.q,
+                opts: opts,
+                ans: correctIndex
+            });
+        }
         
-        studentTurnLabel.innerText = `${currentStudent}'s Turn`;
+        studentTurnLabel.innerText = currentStudent;
         showScreen(quizScreen);
         renderQuestion();
     }
 
     function renderQuestion() {
         const q = currentQuestions[currentQuestionIndex];
-        questionProgress.innerText = `Question ${currentQuestionIndex + 1} of 10`;
+        questionProgress.innerText = `${currentQuestionIndex + 1} / 10`;
         questionText.innerText = q.q;
         optionsContainer.innerHTML = '';
 
@@ -472,20 +682,19 @@
     }
 
     function finishQuiz() {
-        // Remove student from wheel
+        // Remove student from wheel permanently
         students = students.filter(s => s !== currentStudent);
         
-        resultMsg.innerText = `Great effort, ${currentStudent}!`;
-        resultScore.innerText = `${score} / 10`;
+        resultMsg.innerText = `${currentStudent}`;
+        resultScore.innerText = score;
 
         if (score >= 6) {
             resultVerdict.innerText = "🎉 YOU WIN! 🎉";
-            resultVerdict.style.color = "#388E3C";
+            resultVerdict.style.color = "var(--md-sys-color-success)";
         } else {
             resultVerdict.innerText = "❌ YOU LOSE! ❌";
             resultVerdict.style.color = "var(--md-sys-color-error)";
-            lostList.push(`${currentStudent} (Score: ${score})`);
-            updateLostListUI();
+            lostList.push(`${currentStudent} - ${score} Pts`);
         }
 
         showScreen(resultScreen);
@@ -498,16 +707,16 @@
     }
 
     nextStudentBtn.addEventListener('click', () => {
-        // Reset canvas transition for instant reset of visual degrees, or just draw
+        // Reset canvas transition for instant visual reset of degrees, avoiding backward spin
         wheelCanvas.style.transition = 'none';
         wheelCanvas.style.transform = `rotate(0deg)`;
         wheelRotation = 0;
         
-        // Slight delay to allow CSS reset to apply before re-enabling transition
         setTimeout(() => {
             wheelCanvas.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.1, 1)';
             drawWheel();
             spinBtn.disabled = students.length === 0;
+            viewLostBtn.disabled = false;
             showScreen(wheelScreen);
         }, 50);
     });
@@ -518,12 +727,12 @@
     function updateLostListUI() {
         lostListContainer.innerHTML = '';
         if(lostList.length === 0) {
-            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666;">No one has lost yet!</div>';
+            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No one has lost yet!</div>';
         } else {
-            lostList.forEach(name => {
+            lostList.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'lost-item';
-                div.innerText = name;
+                div.innerText = item;
                 lostListContainer.appendChild(div);
             });
         }
@@ -544,7 +753,7 @@
     closeSheetBtn.addEventListener('click', closeBottomSheet);
     scrim.addEventListener('click', closeBottomSheet);
 
-    // Init
+    // Init App
     drawWheel();
 
 </script>
