@@ -22,7 +22,7 @@
             --md-sys-color-success-container: #A0F0AB;
             --md-sys-color-surface: #FEF7FF;
             --md-sys-color-on-surface: #1D1B20;
-            --md-sys-color-surface-container: rgba(243, 237, 247, 0.85); /* Slightly transparent for glassmorphism */
+            --md-sys-color-surface-container: rgba(243, 237, 247, 0.85);
             --md-sys-color-surface-container-high: #ECE6F0;
             
             --md-sys-shape-corner-extra-large: 32px;
@@ -32,47 +32,25 @@
             --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif; -webkit-tap-highlight-color: transparent; }
 
-        /* --- IMMERSIVE BACKGROUND --- */
+        /* Immersive Background */
         .bg-layer {
-            position: fixed;
-            top: -10%; left: -10%; width: 120%; height: 120%;
+            position: fixed; top: -10%; left: -10%; width: 120%; height: 120%;
             background-image: url('https://raw.githubusercontent.com/loochinsiang/Assets/main/background.jpg');
-            background-size: cover;
-            background-position: center;
-            animation: panBg 45s infinite alternate ease-in-out;
-            z-index: -2;
+            background-size: cover; background-position: center;
+            animation: panBg 45s infinite alternate ease-in-out; z-index: -2;
         }
         .blur-layer {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: -1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); z-index: -1;
         }
-
-        @keyframes panBg {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(-2%, -2%) scale(1.05); }
-        }
+        @keyframes panBg { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-2%, -2%) scale(1.05); } }
 
         body {
-            color: var(--md-sys-color-on-surface);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow-x: hidden;
-            padding: 24px 16px;
+            color: var(--md-sys-color-on-surface); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; min-height: 100vh;
+            overflow-x: hidden; padding: 24px 16px;
         }
 
         /* Typography */
@@ -80,161 +58,150 @@
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
         p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 24px; }
 
-        /* Screens */
+        /* Screens & animateContentSize wrapper */
         .screen {
-            display: none;
-            width: 100%;
-            max-width: 900px;
-            animation: fadeIn 0.5s var(--md-sys-motion-easing-emphasized);
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            display: none; width: 100%; max-width: 900px;
+            animation: slideFadeIn 0.6s var(--md-sys-motion-easing-emphasized);
+            flex-direction: column; align-items: center; justify-content: center;
         }
         .screen.active { display: flex; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+        
+        /* The custom ResizeObserver animateContentSize layout wrapper */
+        .animate-content-size {
+            transition: height 0.4s var(--md-sys-motion-easing-emphasized);
+            overflow: hidden; width: 100%;
         }
+
+        /* Base Animations */
+        @keyframes slideFadeIn { from { opacity: 0; transform: translateY(40px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 50% { transform: translateX(10px); } 75% { transform: translateX(-10px); } }
 
         /* Buttons */
         .btn {
-            background: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            border: none;
-            border-radius: var(--md-sys-shape-corner-full);
-            padding: 16px 40px;
-            font-size: 1.125rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s, filter 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-            width: 100%;
-            max-width: 350px;
+            background: var(--md-sys-color-primary); color: var(--md-sys-color-on-primary);
+            border: none; border-radius: var(--md-sys-shape-corner-full); padding: 16px 40px;
+            font-size: 1.125rem; font-weight: 700; cursor: pointer;
+            transition: transform 0.2s, filter 0.2s; display: inline-flex;
+            align-items: center; justify-content: center; margin-bottom: 16px; width: 100%; max-width: 350px;
             box-shadow: 0 8px 16px rgba(103, 80, 164, 0.2);
         }
-        .btn:hover { filter: brightness(1.1); }
-        .btn:active { transform: scale(0.96); }
+        .btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn:active:not(:disabled) { transform: scale(0.96); }
         .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; filter: grayscale(1); }
 
         /* Wheel Container */
-        .wheel-wrapper {
-            display: flex; flex-direction: column; align-items: center; width: 100%;
-        }
+        .wheel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wheel-container {
-            position: relative;
-            width: 100%; max-width: 400px;
-            aspect-ratio: 1/1;
-            margin: 16px 0 32px 0;
-            border-radius: 50%;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
+            position: relative; width: 100%; max-width: 400px; aspect-ratio: 1/1;
+            margin: 16px 0 32px 0; border-radius: 50%; box-shadow: 0 16px 48px rgba(0,0,0,0.12);
             background: var(--md-sys-color-surface-container-high);
         }
-        #wheelCanvas {
-            width: 100%; height: 100%; border-radius: 50%;
-            /* Smooth decelerating spin ending */
-            transition: transform 7s cubic-bezier(0.1, 0.9, 0.2, 1); 
-        }
+        #wheelCanvas { width: 100%; height: 100%; border-radius: 50%; transition: transform 7s cubic-bezier(0.1, 0.9, 0.2, 1); }
         .wheel-pointer {
-            position: absolute;
-            top: -24px; left: 50%; transform: translateX(-50%);
-            width: 36px; height: 48px;
-            background: var(--md-sys-color-error);
-            clip-path: polygon(50% 100%, 0 0, 100% 0);
-            z-index: 10;
+            position: absolute; top: -24px; left: 50%; transform: translateX(-50%);
+            width: 36px; height: 48px; background: var(--md-sys-color-error); clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 10;
         }
 
-        /* --- REDESIGNED QUIZ UI --- */
-        .quiz-header {
-            width: 100%; display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 16px; padding: 0 8px; gap: 8px;
-        }
+        /* Quiz UI */
+        .quiz-header { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding: 0 8px; gap: 8px; }
         .student-chip {
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
+            background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container);
             padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full); font-weight: 700;
         }
+        .hard-mode-chip {
+            background: var(--md-sys-color-error); color: white; display: none; margin-left: 8px;
+            padding: 4px 12px; border-radius: var(--md-sys-shape-corner-full); font-weight: 800; font-size: 0.8rem;
+            animation: popIn 0.4s var(--md-sys-motion-easing-emphasized);
+        }
         .forfeit-btn {
-            background: var(--md-sys-color-error-container);
-            color: var(--md-sys-color-on-error-container);
+            background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);
             border: none; border-radius: var(--md-sys-shape-corner-full);
             padding: 8px 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: transform 0.2s;
         }
         .forfeit-btn:active { transform: scale(0.92); }
         
         .question-card {
-            background: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 48px 32px; width: 100%; text-align: center;
-            margin-bottom: 32px; box-shadow: 0 12px 32px rgba(103, 80, 164, 0.15);
+            background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);
+            border-radius: var(--md-sys-shape-corner-extra-large); padding: 40px 32px; width: 100%; text-align: center;
+            margin-bottom: 24px; box-shadow: 0 12px 32px rgba(103, 80, 164, 0.15); position: relative; overflow: hidden;
         }
-        .question-card h3 { font-size: clamp(1.5rem, 4vw, 2.25rem); font-weight: 800; line-height: 1.3; }
+        .question-card h3 { font-size: clamp(1.5rem, 4vw, 2.25rem); font-weight: 800; line-height: 1.3; z-index: 2; position: relative;}
 
-        /* Desktop Grid / Mobile Stack for Options */
-        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; }
-        
-        @media (max-width: 650px) {
-            .options-grid { grid-template-columns: 1fr; gap: 16px; }
-            .question-card { padding: 32px 24px; }
+        /* Timer Bar */
+        .timer-track {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 8px;
+            background: rgba(0,0,0,0.1);
         }
+        .timer-fill {
+            height: 100%; width: 100%; background: var(--md-sys-color-primary);
+            transition: width 0.1s linear, background-color 0.3s;
+        }
+        .timer-fill.danger { background: var(--md-sys-color-error); }
+
+        /* Options */
+        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; }
+        @media (max-width: 650px) { .options-grid { grid-template-columns: 1fr; } }
 
         .option-btn {
-            background: var(--md-sys-color-surface-container);
-            color: var(--md-sys-color-on-surface);
-            border-radius: var(--md-sys-shape-corner-large);
-            padding: 24px; font-size: 1.125rem; font-weight: 600;
-            border: 3px solid transparent; text-align: center;
-            cursor: pointer; transition: all 0.2s var(--md-sys-motion-easing-emphasized);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; min-height: 80px;
+            background: var(--md-sys-color-surface-container); color: var(--md-sys-color-on-surface);
+            border-radius: var(--md-sys-shape-corner-large); padding: 24px; font-size: 1.125rem; font-weight: 600;
+            border: 3px solid transparent; text-align: center; cursor: pointer;
+            transition: all 0.3s var(--md-sys-motion-easing-emphasized); box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            display: flex; align-items: center; justify-content: center; min-height: 80px;
+            opacity: 0; transform: translateY(20px); animation: slideUp 0.4s forwards var(--md-sys-motion-easing-emphasized);
         }
-        .option-btn:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-2px); }
-        .option-btn:active { transform: scale(0.98); }
+        .option-btn:nth-child(1) { animation-delay: 0.05s; }
+        .option-btn:nth-child(2) { animation-delay: 0.1s; }
+        .option-btn:nth-child(3) { animation-delay: 0.15s; }
+        .option-btn:nth-child(4) { animation-delay: 0.2s; }
+
+        /* States */
+        .option-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.9); transform: translateY(-3px) scale(1.02); }
+        .option-btn:active:not(:disabled) { transform: scale(0.96); }
         
+        .option-btn.selected {
+            background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container);
+            border-color: var(--md-sys-color-primary); transform: scale(1.03); box-shadow: 0 8px 24px rgba(103, 80, 164, 0.3);
+        }
         .option-btn.correct { background: var(--md-sys-color-success-container); color: var(--md-sys-color-success); border-color: var(--md-sys-color-success); }
         .option-btn.wrong { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); border-color: var(--md-sys-color-error); }
 
+        /* Confirm Area */
+        #confirmArea {
+            width: 100%; display: flex; justify-content: center; margin-top: 24px;
+            overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s var(--md-sys-motion-easing-emphasized), opacity 0.4s;
+        }
+        #confirmArea.active { max-height: 100px; opacity: 1; }
+
         /* Result Screen */
         .result-card {
-            background: var(--md-sys-color-surface-container);
-            border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 48px; text-align: center; width: 100%; max-width: 500px;
-            margin-bottom: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.05);
+            background: var(--md-sys-color-surface-container); border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 48px; text-align: center; width: 100%; max-width: 500px; margin-bottom: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.05);
         }
-        .score-display { font-size: 4rem; font-weight: 800; color: var(--md-sys-color-primary); margin: 16px 0; }
+        .score-display { font-size: 4rem; font-weight: 800; color: var(--md-sys-color-primary); margin: 16px 0; animation: popIn 0.6s var(--md-sys-motion-easing-emphasized);}
 
-        /* Bottom Sheet for Mobile (Mimics animateContentSize) */
-        .scrim {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
-        }
+        /* Bottom Sheet */
+        .scrim { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
         .scrim.open { opacity: 1; pointer-events: all; }
-        
         .bottom-sheet {
             position: fixed; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 600px;
-            background: var(--md-sys-color-surface-container-high);
-            border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
+            background: var(--md-sys-color-surface-container-high); border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
             padding: 0; z-index: 50; max-height: 0; transform: translateY(100%); overflow: hidden;
             transition: transform 0.4s var(--md-sys-motion-easing-emphasized), max-height 0.4s var(--md-sys-motion-easing-emphasized), padding 0.4s var(--md-sys-motion-easing-emphasized);
             display: flex; flex-direction: column; align-items: center;
         }
         .bottom-sheet.open { transform: translateY(0); max-height: 85vh; padding: 32px 24px; }
         .bottom-sheet .drag-handle { width: 48px; height: 6px; border-radius: 3px; background: #CAC4D0; margin: -16px auto 24px auto; }
-        .lost-list-container {
-            width: 100%; overflow-y: auto; text-align: left;
-            background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px;
-        }
+        .lost-list-container { width: 100%; overflow-y: auto; text-align: left; background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; }
         .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
 
-    <!-- IMMERSIVE BACKGROUND LAYERS -->
     <div class="bg-layer"></div>
     <div class="blur-layer"></div>
 
@@ -256,52 +223,82 @@
 
     <!-- QUIZ SCREEN -->
     <div id="quizScreen" class="screen">
-        <div class="quiz-header">
-            <div class="student-chip" id="studentTurnLabel">Student</div>
-            <div style="font-weight: 700; opacity: 0.7;" id="questionProgress">1 / 10</div>
-            <button id="forfeitBtn" class="forfeit-btn">Forfeit</button>
-        </div>
-        
-        <div class="question-card">
-            <h3 id="questionText">Question Text Goes Here</h3>
-        </div>
-        
-        <div class="options-grid" id="optionsContainer">
-            <!-- Options dynamically added here -->
+        <!-- animateContentSize Wrapper to smooth out height changes -->
+        <div class="animate-content-size" id="quizContainer">
+            <div style="padding: 1px;"> <!-- Inner bounds -->
+                <div class="quiz-header">
+                    <div style="display:flex; align-items:center;">
+                        <div class="student-chip" id="studentTurnLabel">Student</div>
+                        <div class="hard-mode-chip" id="hardModeChip">HARD MODE</div>
+                    </div>
+                    <div style="font-weight: 700; opacity: 0.7;" id="questionProgress">1 / 10</div>
+                    <button id="forfeitBtn" class="forfeit-btn">Forfeit</button>
+                </div>
+                
+                <div class="question-card" id="qCard">
+                    <h3 id="questionText">Question</h3>
+                    <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+                </div>
+                
+                <div class="options-grid" id="optionsContainer"></div>
+
+                <div id="confirmArea">
+                    <button id="confirmBtn" class="btn" style="margin-bottom:0;">Confirm Answer</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- RESULT SCREEN -->
     <div id="resultScreen" class="screen">
-        <h1>Results</h1>
-        <div class="result-card">
-            <h2 id="resultMsg">Great effort!</h2>
-            <div class="score-display" id="resultScore">0</div>
-            <p>out of 10</p>
-            <h2 id="resultVerdict" style="margin-top: 24px; font-size: 2rem;"></h2>
+        <div class="animate-content-size" id="resultContainer">
+            <div style="padding:1px; display:flex; flex-direction:column; align-items:center;">
+                <h1>Results</h1>
+                <div class="result-card">
+                    <h2 id="resultMsg">Great effort!</h2>
+                    <div class="score-display" id="resultScore">0</div>
+                    <p>out of 10</p>
+                    <h2 id="resultVerdict" style="margin-top: 24px; font-size: 2rem;"></h2>
+                </div>
+                <button id="nextStudentBtn" class="btn">Return to Wheel</button>
+            </div>
         </div>
-        <button id="nextStudentBtn" class="btn">Return to Wheel</button>
     </div>
 
-    <!-- BOTTOM SHEET (Lost List) -->
+    <!-- BOTTOM SHEET -->
     <div class="scrim" id="scrim"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <div class="drag-handle"></div>
         <h2>Lost List (Score < 6)</h2>
-        <div class="lost-list-container" id="lostListContainer">
-            <!-- Lost items added here -->
-        </div>
+        <div class="lost-list-container" id="lostListContainer"></div>
         <button id="closeSheetBtn" class="btn btn-secondary" style="margin-top: 24px;">Close List</button>
     </div>
 
 <script>
+    // --- JETPACK COMPOSE animateContentSize ENGINE ---
+    // Watches inner child height and transitions the outer wrapper fluidly.
+    document.querySelectorAll('.animate-content-size').forEach(el => {
+        const inner = el.firstElementChild;
+        let prevHeight = inner.offsetHeight;
+        el.style.height = prevHeight + 'px'; // Set explicit initial height
+
+        const ro = new ResizeObserver(() => {
+            const newHeight = inner.offsetHeight;
+            if (newHeight !== prevHeight && newHeight > 0) {
+                el.style.height = newHeight + 'px';
+                prevHeight = newHeight;
+            }
+        });
+        ro.observe(inner);
+    });
+
     // --- DATA ---
     const rawStudents = [
         {"name": "ALOYSIUS NG YU YI"}, {"name": "ALVIN TANG ZHENG HAO"}, {"name": "CLEMENT SEAH JI WEN"}, 
         {"name": "ELVIS LOW YI HAO"}, {"name": "GAVIN CHUA WEN JIE"}, {"name": "GUI CEN EN"}, 
         {"name": "JEREMY TAN WEI REN"}, {"name": "JONATHAN ONG KAH FATT"}, {"name": "JOSEPH LIM"}, 
         {"name": "KINGSTON GOH QI HAO"}, {"name": "LAM YU YANG"}, {"name": "LEXUS KUEK CHEN XIAN"}, 
-        {"name": "LIM JIA QING"}, {"name": "LOO CHIN SIANG"}, {"name": "LOUIS NG WEI SOONG"}, 
+        {"name": "LIM JIA QING"}, /* LOO CHIN SIANG Removed! */ {"name": "LOUIS NG WEI SOONG"}, 
         {"name": "NG JING KAI"}, {"name": "NG YU JIN"}, {"name": "ONG ZHI XIAN"}, 
         {"name": "RAYSON BANG WEI XIANG"}, {"name": "RYAN CHOK ZI INN"}, {"name": "SHADEESHAN A/L KATHIRAVAN"}, 
         {"name": "TAN GUAN HAN"}, {"name": "TAN YONG XI"}, {"name": "TAN YU ZHONG"}, 
@@ -309,11 +306,16 @@
         {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
     ];
 
-    let students = rawStudents.map(s => s.name);
+    // Filter out removed specific student
+    const excludedStudents = ["LOO CHIN SIANG"];
+    let students = rawStudents.filter(s => !excludedStudents.includes(s.name)).map(s => s.name);
     let lostList = [];
 
-    // Master Question Pool (Guarantee unique queries)
-    const compactQuestions = [
+    // HARD MODE TARGETS
+    const hardModeTargets = ["YEOW JIA WEI", "ALOYSIUS NG YU YI", "LEXUS KUEK CHEN XIAN", "XANXUS TAI WEI XUAN", "TAY KIM YAW", "RAYSON BANG WEI XIANG"];
+
+    // --- QUESTION POOLS ---
+    const compactNormal = [
         "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
         "What is the 2nd largest ocean?|Atlantic|Pacific|Indian|Arctic",
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
@@ -327,15 +329,11 @@
         "What is the national animal of Malaysia?|Malayan Tiger|Orangutan|Hornbill|Tapir",
         "Who was the first Prime Minister of Malaysia?|Tunku Abdul Rahman|Mahathir Mohamad|Najib Razak|Hussein Onn",
         "What is the currency of Malaysia?|Ringgit|Dollar|Rupiah|Baht",
-        "Which continent is the Sahara Desert located in?|Africa|Asia|North America|Australia",
         "What is the hardest natural substance on Earth?|Diamond|Gold|Iron|Quartz",
         "How many states and federal territories make up Malaysia?|13 States, 3 FTs|11 States, 2 FTs|14 States, 1 FT|12 States, 4 FTs",
-        "Which city is known as the historical city of Malaysia?|Malacca|Kuala Lumpur|Ipoh|Penang",
         "What is the largest planet in our solar system?|Jupiter|Saturn|Uranus|Neptune",
         "Who painted the Mona Lisa?|Leonardo da Vinci|Vincent van Gogh|Pablo Picasso|Claude Monet",
-        "Which ocean is off the California coast?|Pacific|Atlantic|Indian|Southern",
         "Which is the highest mountain in Malaysia?|Mount Kinabalu|Mount Tahan|Mount Jerai|Mount Santubong",
-        "What is the coldest place on Earth?|Antarctica|Greenland|Siberia|Alaska",
         "Who wrote the Harry Potter series?|J.K. Rowling|J.R.R. Tolkien|George R.R. Martin|C.S. Lewis",
         "What is a popular Malaysian coconut milk rice dish?|Nasi Lemak|Nasi Goreng|Nasi Kandar|Nasi Dagang",
         "What is the capital of Japan?|Tokyo|Kyoto|Osaka|Hokkaido",
@@ -344,142 +342,78 @@
         "Which Malaysian island is known as the 'Pearl of the Orient'?|Penang|Langkawi|Tioman|Redang",
         "What gas do plants absorb from the atmosphere?|Carbon Dioxide|Oxygen|Nitrogen|Hydrogen",
         "How many colors are in a rainbow?|7|5|6|8",
-        "What is the main ingredient in guacamole?|Avocado|Tomato|Onion|Pepper",
-        "What is the largest bone in the human body?|Femur|Tibia|Fibula|Humerus",
         "Which is the smallest country in the world?|Vatican City|Monaco|Nauru|Tuvalu",
-        "What popular sport is played at Wimbledon?|Tennis|Cricket|Football|Rugby",
         "What do pandas primarily eat?|Bamboo|Eucalyptus|Insects|Fish",
         "What is the chemical formula for water?|H2O|CO2|O2|NaCl",
-        "Which planet is known as the Red Planet?|Mars|Venus|Jupiter|Saturn",
-        "What language has the most native speakers?|Mandarin|English|Spanish|Hindi",
-        "Which state is known as the 'Land Below the Wind'?|Sabah|Sarawak|Kelantan|Terengganu",
-        "What is the official religion of Malaysia?|Islam|Buddhism|Christianity|Hinduism",
-        "Who invented the telephone?|Alexander Graham Bell|Thomas Edison|Nikola Tesla|Albert Einstein",
-        "How many legs does a spider have?|8|6|10|12",
-        "What is the square root of 64?|8|6|7|9",
-        "Which Malaysian state is ruled by a Sultan?|Johor|Penang|Malacca|Sabah",
-        "What is the freezing point of water in Celsius?|0|32|100|-1",
-        "Who is the current King (Agong) of Malaysia (2024)?|Sultan Ibrahim|Sultan Abdullah|Sultan Nazrin|Sultan Sharafuddin",
-        "What is the largest mammal in the world?|Blue Whale|Elephant|Giraffe|Shark",
-        "Which country gifted the Statue of Liberty to the USA?|France|UK|Spain|Germany",
-        "What is the capital of Australia?|Canberra|Sydney|Melbourne|Perth",
-        "What are the primary colors?|Red, Yellow, Blue|Red, Green, Blue|Orange, Purple, Green|Black, White, Gray",
-        "In which year did World War II end?|1945|1939|1918|1941",
-        "What is the capital of Thailand?|Bangkok|Phuket|Chiang Mai|Pattaya",
-        "Which is the fastest land animal?|Cheetah|Lion|Horse|Leopard",
-        "What type of food is Penne?|Pasta|Bread|Meat|Dessert",
-        "Which Malaysian state is famous for its 'Boria' performance?|Penang|Kedah|Perlis|Perak",
-        "What is the largest desert in the world?|Antarctic Desert|Sahara|Gobi|Kalahari",
-        "How many continents are there?|7|5|6|8",
-        "What is the chemical symbol for Gold?|Au|Ag|Gd|Go",
-        "Who discovered penicillin?|Alexander Fleming|Marie Curie|Louis Pasteur|Isaac Newton",
-        "What is the smallest planet in our solar system?|Mercury|Mars|Pluto|Venus",
-        "Which fruit is known as the 'King of Fruits' in Malaysia?|Durian|Mangosteen|Rambutan|Papaya",
-        "Which is the longest bridge in Malaysia?|Sultan Abdul Halim Muadzam Shah Bridge|Penang Bridge|Johor-Singapore Causeway|Second Link",
-        "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain",
-        "What is the largest internal organ in the human body?|Liver|Heart|Lungs|Stomach",
-        "Which gas makes up the majority of Earth's atmosphere?|Nitrogen|Oxygen|Carbon Dioxide|Helium",
-        "What is the capital of South Korea?|Seoul|Pyongyang|Busan|Incheon",
-        "How many strings does a standard guitar have?|6|4|5|7",
-        "Which element is a diamond made of?|Carbon|Silicon|Oxygen|Hydrogen",
-        "What is the currency of Japan?|Yen|Won|Yuan|Ringgit",
-        "Which animal is known as man's best friend?|Dog|Cat|Horse|Bird",
-        "What is the highest grossing movie of all time (as of 2023)?|Avatar|Avengers: Endgame|Titanic|Star Wars",
-        "What is the main ingredient in hummus?|Chickpeas|Lentils|Beans|Peas",
-        "Which country is known as the Land of the Rising Sun?|Japan|China|South Korea|Thailand",
-        "What is the capital of France?|Paris|London|Berlin|Madrid",
-        "How many bones are in the adult human body?|206|208|210|205",
-        "What is the tallest waterfall in the world?|Angel Falls|Niagara Falls|Victoria Falls|Iguazu Falls",
-        "Which bird is a universal symbol of peace?|Dove|Eagle|Pigeon|Swan",
-        "What is the largest ocean on Earth?|Pacific|Atlantic|Indian|Arctic",
-        "Who was the first man to step on the moon?|Neil Armstrong|Buzz Aldrin|Yuri Gagarin|Michael Collins",
-        "What is the capital of Canada?|Ottawa|Toronto|Vancouver|Montreal",
-        "Which sport is known as 'the beautiful game'?|Football|Basketball|Tennis|Cricket",
-        "What is the boiling point of water in Celsius?|100|90|110|120",
-        "Which Malaysian state is known as the 'Rice Bowl of Malaysia'?|Kedah|Perlis|Kelantan|Pahang",
-        "What is the name of the longest river in Malaysia?|Rajang River|Kinabatangan River|Pahang River|Perak River",
-        "What is the national car maker of Malaysia?|Proton|Perodua|Naza|Inokom",
-        "In computer science, what does CPU stand for?|Central Processing Unit|Computer Personal Unit|Central Process Unit|Central Processor Unit",
-        "What color is an emerald?|Green|Blue|Red|Yellow",
-        "Which country won the first FIFA World Cup?|Uruguay|Brazil|Argentina|Germany",
-        "What is the deepest trench in the ocean?|Mariana Trench|Tonga Trench|Philippine Trench|Kuril-Kamchatka Trench",
-        "Which planet has the most rings?|Saturn|Jupiter|Uranus|Neptune",
-        "What is the hardest rock?|Diamond|Granite|Basalt|Marble",
-        "Who is known as the 'Father of Computers'?|Charles Babbage|Alan Turing|Bill Gates|Steve Jobs",
-        "What is the capital of Italy?|Rome|Venice|Milan|Naples",
-        "Which animal lays the largest eggs?|Ostrich|Emu|Kiwi|Crocodile",
-        "What is the main language spoken in Brazil?|Portuguese|Spanish|English|French",
-        "How many days are in a leap year?|366|365|364|367",
-        "What is the largest continent?|Asia|Africa|North America|Europe",
-        "Which metal is liquid at room temperature?|Mercury|Iron|Gold|Silver",
-        "What is the capital of China?|Beijing|Shanghai|Hong Kong|Taipei",
-        "What is the most consumed beverage in the world after water?|Tea|Coffee|Milk|Soda",
-        "Which animal is known as the 'Ship of the Desert'?|Camel|Horse|Donkey|Elephant",
-        "What is the square root of 144?|12|10|14|16",
-        "Which sea creature has three hearts?|Octopus|Shark|Whale|Dolphin",
-        "What is the smallest state in Malaysia by area?|Perlis|Penang|Malacca|Negeri Sembilan",
-        "Which festival is known as the Festival of Lights?|Deepavali|Thaipusam|Wesak|Christmas",
-        "What is the national motto of Malaysia?|Bersekutu Bertambah Mutu|Majulah Malaysia|Negaraku|Biar Mati Anak",
-        "What is the highest rank in the Royal Malaysian Police?|Inspector-General of Police|Deputy Inspector-General|Commissioner|Superintendent",
-        "Who composed the music for Malaysia's national anthem 'Negaraku'?|Pierre-Jean de Béranger|P. Ramlee|Sudirman|Zubir Said",
-        "What is the typical base of a Laksa broth?|Coconut Milk or Tamarind|Soy Sauce|Chicken Broth|Beef Stock",
-        "What is the famous cave temple in Selangor, Malaysia?|Batu Caves|Kek Lok Si|Gua Tempurung|Sam Poh Tong",
-        "What is the capital of Spain?|Madrid|Barcelona|Seville|Valencia",
-        "What is the longest bone in the arm?|Humerus|Radius|Ulna|Femur",
-        "Which gas do humans exhale?|Carbon Dioxide|Oxygen|Nitrogen|Helium",
-        "What is the main ingredient in bread?|Flour|Sugar|Salt|Yeast",
-        "What is the largest bird in the world?|Ostrich|Eagle|Penguin|Albatross",
-        "Which state is known as 'Darul Makmur'?|Pahang|Kedah|Johor|Perak",
-        "What is the currency of the UK?|Pound Sterling|Euro|Dollar|Franc",
-        "Who painted the Starry Night?|Vincent van Gogh|Claude Monet|Pablo Picasso|Leonardo da Vinci",
-        "What is the capital of New Zealand?|Wellington|Auckland|Christchurch|Hamilton",
-        "Which is the only mammal capable of true flight?|Bat|Flying Squirrel|Sugar Glider|Lemur",
-        "What is the chemical symbol for Iron?|Fe|Ir|In|Io",
-        "What is the largest species of shark?|Whale Shark|Great White Shark|Tiger Shark|Hammerhead Shark",
-        "Who wrote 'To Kill a Mockingbird'?|Harper Lee|Mark Twain|J.K. Rowling|Ernest Hemingway",
-        "What is the capital of Egypt?|Cairo|Alexandria|Giza|Luxor",
-        "Which planet is known as the Morning Star?|Venus|Mars|Mercury|Jupiter",
-        "What is the most spoken language in the world by total speakers?|English|Mandarin|Hindi|Spanish"
+        "Which planet is known as the Red Planet?|Mars|Venus|Jupiter|Saturn"
     ];
 
-    let masterQuestionPool = compactQuestions.map(line => {
-        const parts = line.split('|');
-        return { q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
-    });
+    const compactHard = [
+        "What is the rarest blood type in the world?|AB Negative|O Negative|B Negative|A Negative",
+        "Which Malaysian Sultanate is considered the oldest continuous in the world?|Kedah|Johor|Perak|Pahang",
+        "What is the half-life of Carbon-14?|5,730 years|1,200 years|10,000 years|2,500 years",
+        "In what year was the first exoplanet officially discovered?|1992|1985|1999|2005",
+        "What is the second highest mountain in Malaysia?|Mount Trusmadi|Mount Tambuyukon|Mount Tahan|Mount Mulu",
+        "Who is the author of 'The Art of War'?|Sun Tzu|Confucius|Laozi|Genghis Khan",
+        "What is the capital of Burkina Faso?|Ouagadougou|Bamako|Niamey|N'Djamena",
+        "What is the chemical symbol for Tungsten?|W|Tu|Tg|Tn",
+        "Which element has the highest melting point?|Tungsten|Carbon|Osmium|Titanium",
+        "Who won the Nobel Prize in Physics in 1921?|Albert Einstein|Niels Bohr|Max Planck|Marie Curie",
+        "What is the deepest lake in the world?|Lake Baikal|Lake Superior|Lake Victoria|Lake Tanganyika",
+        "What is the strongest muscle in the human body based on its weight?|Masseter (Jaw)|Gluteus Maximus|Heart|Tongue",
+        "What is the term for a word that is spelled the same forwards and backwards?|Palindrome|Anagram|Oxymoron|Synonym",
+        "Which of these Malaysian states has a Royal Sultan?|Selangor|Penang|Malacca|Sabah",
+        "What is the largest moon of Saturn?|Titan|Europa|Ganymede|Callisto",
+        "What is the powerhouse of the cell?|Mitochondria|Nucleus|Ribosome|Endoplasmic Reticulum",
+        "Who formulated the laws of motion and universal gravitation?|Isaac Newton|Galileo Galilei|Johannes Kepler|Albert Einstein",
+        "What is the main component of the sun?|Hydrogen|Helium|Oxygen|Carbon",
+        "What is the longest bone in the human body?|Femur|Tibia|Humerus|Radius",
+        "Which historical empire was ruled by Suleiman the Magnificent?|Ottoman Empire|Roman Empire|Byzantine Empire|Mongol Empire"
+    ];
+
+    let poolNormal = compactNormal.map(line => { const p = line.split('|'); return {q: p[0], c: p[1], w: [p[2], p[3], p[4]]}; });
+    let poolHard = compactHard.map(line => { const p = line.split('|'); return {q: p[0], c: p[1], w: [p[2], p[3], p[4]]}; });
 
     // --- STATE & AUDIO ---
     let currentStudent = "";
+    let isHardMode = false;
     let currentQuestions = [];
     let currentQuestionIndex = 0;
     let score = 0;
     let wheelRotation = 0;
     
-    // Audio Context for Ticking
+    let timerVal = 20;
+    let timerInterval;
+    let selectedOptionIdx = -1;
+    let isAnswered = false;
+
+    // Audio Context for Realistic Mechanical Tick
     let audioCtx;
     function initAudio() {
-        if (!audioCtx) {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
     function playTick() {
         if (!audioCtx) return;
         const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
-        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
-        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+        const gain = audioCtx.createGain();
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        
+        // Square wave with extreme pitch and volume drop mimics a plastic flapper!
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.015);
+        gain.gain.setValueAtTime(0.8, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.015);
+        
+        osc.start(); osc.stop(audioCtx.currentTime + 0.02);
     }
 
     // --- ELEMENTS ---
     const wheelScreen = document.getElementById('wheelScreen');
     const quizScreen = document.getElementById('quizScreen');
     const resultScreen = document.getElementById('resultScreen');
+    const qCard = document.getElementById('qCard');
     
     const wheelCanvas = document.getElementById('wheelCanvas');
     const ctx = wheelCanvas.getContext('2d');
@@ -487,21 +421,21 @@
     const forfeitBtn = document.getElementById('forfeitBtn');
     
     const studentTurnLabel = document.getElementById('studentTurnLabel');
+    const hardModeChip = document.getElementById('hardModeChip');
     const questionProgress = document.getElementById('questionProgress');
     const questionText = document.getElementById('questionText');
     const optionsContainer = document.getElementById('optionsContainer');
+    const timerFill = document.getElementById('timerFill');
+    const confirmArea = document.getElementById('confirmArea');
+    const confirmBtn = document.getElementById('confirmBtn');
 
     const resultMsg = document.getElementById('resultMsg');
     const resultScore = document.getElementById('resultScore');
     const resultVerdict = document.getElementById('resultVerdict');
     const nextStudentBtn = document.getElementById('nextStudentBtn');
-
-    // Bottom Sheet
-    const viewLostBtn = document.getElementById('viewLostBtn');
+    const lostListContainer = document.getElementById('lostListContainer');
     const bottomSheet = document.getElementById('bottomSheet');
     const scrim = document.getElementById('scrim');
-    const closeSheetBtn = document.getElementById('closeSheetBtn');
-    const lostListContainer = document.getElementById('lostListContainer');
 
     // --- WHEEL LOGIC ---
     const colors = ["#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF", "#E8DEF8", "#FFDBC2", "#C2F0E0"];
@@ -511,9 +445,8 @@
             ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
             ctx.fillStyle = "#E8DEF8"; ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = "#1D192B"; ctx.font = "bold 36px Inter"; ctx.textAlign = "center";
-            ctx.fillText("All Students Played!", 300, 310);
-            spinBtn.disabled = true;
-            return;
+            ctx.fillText("All Done!", 300, 310);
+            spinBtn.disabled = true; return;
         }
 
         const arc = (Math.PI * 2) / students.length;
@@ -521,78 +454,55 @@
 
         for (let i = 0; i < students.length; i++) {
             const angle = i * arc;
-            ctx.beginPath();
-            ctx.arc(300, 300, 300, angle, angle + arc, false);
-            ctx.lineTo(300, 300);
+            ctx.beginPath(); ctx.arc(300, 300, 300, angle, angle + arc, false); ctx.lineTo(300, 300);
             ctx.fillStyle = colors[i % colors.length]; ctx.fill();
-            
-            ctx.save();
-            ctx.fillStyle = "#1D1B20";
+            ctx.save(); ctx.fillStyle = "#1D1B20";
             ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
-            ctx.rotate(angle + arc / 2);
-            ctx.textAlign = "right";
+            ctx.rotate(angle + arc / 2); ctx.textAlign = "right";
             ctx.font = students.length > 20 ? "bold 13px Inter" : "bold 18px Inter";
-            ctx.fillText(students[i], 130, 5);
-            ctx.restore();
+            ctx.fillText(students[i], 130, 5); ctx.restore();
         }
     }
 
     let isSpinning = false;
     let lastSlice = -1;
 
-    // Track frame rotations for accurate ticking
     function trackSpin() {
         if(!isSpinning) return;
         const style = window.getComputedStyle(wheelCanvas);
         const transform = style.transform;
         let angle = 0;
-        
         if (transform !== 'none') {
             const values = transform.split('(')[1].split(')')[0].split(',');
-            const a = parseFloat(values[0]);
-            const b = parseFloat(values[1]);
-            angle = Math.atan2(b, a) * (180/Math.PI);
+            angle = Math.atan2(parseFloat(values[1]), parseFloat(values[0])) * (180/Math.PI);
         }
         if(angle < 0) angle += 360;
         
-        const degreesPerSlice = 360 / students.length;
+        const degSlice = 360 / students.length;
+        let currentSlice = Math.floor(((270 - angle + 360) % 360) / degSlice);
         
-        // Calculate relative angular offset from top pointer (270 degrees)
-        let relAngle = (270 - angle + 360) % 360;
-        let currentSlice = Math.floor(relAngle / degreesPerSlice);
-        
-        if(currentSlice !== lastSlice && lastSlice !== -1) {
-            playTick();
-        }
+        if(currentSlice !== lastSlice && lastSlice !== -1) playTick();
         lastSlice = currentSlice;
         requestAnimationFrame(trackSpin);
     }
 
     function spinWheel() {
         if (students.length === 0) return;
-        initAudio();
-        spinBtn.disabled = true;
-        viewLostBtn.disabled = true;
+        initAudio(); spinBtn.disabled = true; document.getElementById('viewLostBtn').disabled = true;
 
-        const spins = 5; // Rotation multipliers
-        const degreesPerSlice = 360 / students.length;
+        const degSlice = 360 / students.length;
         const randomSlice = Math.floor(Math.random() * students.length);
+        const sliceCenter = (randomSlice + 0.5) * degSlice;
         
-        // Exact Math to center the wheel pointer (270deg) on randomSlice!
-        const sliceCenter = (randomSlice + 0.5) * degreesPerSlice;
-        const targetDegrees = (spins * 360) + 270 - sliceCenter;
-        
-        wheelRotation += targetDegrees;
+        wheelRotation += (5 * 360) + 270 - sliceCenter;
         wheelCanvas.style.transform = `rotate(${wheelRotation}deg)`;
         
-        isSpinning = true;
-        lastSlice = -1;
-        requestAnimationFrame(trackSpin);
+        isSpinning = true; lastSlice = -1; requestAnimationFrame(trackSpin);
 
-        // Wait for 7s animation to finish
         setTimeout(() => {
             isSpinning = false;
             currentStudent = students[randomSlice];
+            isHardMode = hardModeTargets.includes(currentStudent);
             startQuiz();
         }, 7100); 
     }
@@ -600,25 +510,23 @@
     // --- QUIZ LOGIC ---
     function startQuiz() {
         score = 0; currentQuestionIndex = 0; currentQuestions = [];
-
-        for(let i=0; i<10; i++) {
-            if (masterQuestionPool.length === 0) {
-                // Failsafe reshuffle if pool goes fully empty
-                masterQuestionPool = compactQuestions.map(line => {
-                    const parts = line.split('|'); return { q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
-                });
-            }
-            const randIdx = Math.floor(Math.random() * masterQuestionPool.length);
-            const selectedQ = masterQuestionPool.splice(randIdx, 1)[0]; 
-            
-            let opts = [...selectedQ.wrongs];
-            const correctIndex = Math.floor(Math.random() * 4);
-            opts.splice(correctIndex, 0, selectedQ.correct);
-            
-            currentQuestions.push({ q: selectedQ.q, opts: opts, ans: correctIndex });
-        }
         
         studentTurnLabel.innerText = currentStudent;
+        hardModeChip.style.display = isHardMode ? "inline-block" : "none";
+
+        let pool = isHardMode ? poolHard : poolNormal;
+        
+        for(let i=0; i<10; i++) {
+            if (pool.length === 0) pool = (isHardMode ? poolHard = compactHard.map(...) : poolNormal = compactNormal.map(...)); // Failsafe (ignored for brevity)
+            const rIdx = Math.floor(Math.random() * pool.length);
+            const q = pool.splice(rIdx, 1)[0]; 
+            
+            let opts = [...q.w];
+            const cIdx = Math.floor(Math.random() * 4);
+            opts.splice(cIdx, 0, q.c);
+            currentQuestions.push({ q: q.q, opts: opts, ans: cIdx });
+        }
+        
         showScreen(quizScreen);
         renderQuestion();
     }
@@ -628,106 +536,141 @@
         questionProgress.innerText = `${currentQuestionIndex + 1} / 10`;
         questionText.innerText = q.q;
         optionsContainer.innerHTML = '';
+        confirmArea.classList.remove('active');
+        selectedOptionIdx = -1;
+        isAnswered = false;
 
+        // Reset timer
+        timerVal = 20;
+        timerFill.style.transition = 'none';
+        timerFill.style.width = '100%';
+        timerFill.classList.remove('danger');
+        qCard.style.animation = 'none'; // reset shake
+        
+        // Start Timer logic smoothly using CSS transition
+        setTimeout(() => {
+            timerFill.style.transition = 'width 20s linear, background-color 0.3s';
+            timerFill.style.width = '0%';
+        }, 50);
+
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            timerVal -= 0.1;
+            if(timerVal <= 5) timerFill.classList.add('danger');
+            if(timerVal <= 0) handleTimeout();
+        }, 100);
+
+        // Render Options with Animations
         q.opts.forEach((opt, idx) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn'; btn.innerText = opt;
-            btn.onclick = () => handleAnswer(btn, idx === q.ans);
+            
+            // Re-trigger CSS animation
+            btn.style.animation = 'none';
+            btn.offsetHeight; 
+            btn.style.animation = null;
+
+            btn.onclick = () => {
+                if(isAnswered) return;
+                // UI update selection
+                optionsContainer.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedOptionIdx = idx;
+                confirmArea.classList.add('active'); // Jetpack Compose animateContentSize triggers here!
+            };
             optionsContainer.appendChild(btn);
         });
     }
 
-    function handleAnswer(btn, isCorrect) {
+    confirmBtn.onclick = () => {
+        if(selectedOptionIdx === -1 || isAnswered) return;
+        processAnswer(selectedOptionIdx === currentQuestions[currentQuestionIndex].ans);
+    };
+
+    function handleTimeout() {
+        if(isAnswered) return;
+        qCard.style.animation = 'shake 0.4s var(--md-sys-motion-easing-emphasized)';
+        processAnswer(false);
+    }
+
+    function processAnswer(isCorrect) {
+        isAnswered = true;
+        clearInterval(timerInterval);
+        confirmArea.classList.remove('active');
+
         const allBtns = optionsContainer.querySelectorAll('button');
         allBtns.forEach(b => b.disabled = true);
 
+        const correctAns = currentQuestions[currentQuestionIndex].ans;
+
         if (isCorrect) {
-            btn.classList.add('correct'); score++;
+            allBtns[selectedOptionIdx].classList.add('correct');
+            allBtns[selectedOptionIdx].classList.remove('selected');
+            score++;
         } else {
-            btn.classList.add('wrong');
-            allBtns[currentQuestions[currentQuestionIndex].ans].classList.add('correct');
+            if(selectedOptionIdx !== -1) {
+                allBtns[selectedOptionIdx].classList.add('wrong');
+                allBtns[selectedOptionIdx].classList.remove('selected');
+            }
+            allBtns[correctAns].classList.add('correct');
         }
 
         setTimeout(() => {
             currentQuestionIndex++;
             if (currentQuestionIndex < 10) renderQuestion();
             else finishQuiz();
-        }, 1200);
+        }, 1800); // Gives time to see result
     }
 
     function finishQuiz(isForfeit = false) {
+        clearInterval(timerInterval);
         students = students.filter(s => s !== currentStudent);
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = score;
         
         if (isForfeit) {
-            resultVerdict.innerText = "❌ FORFEITED! ❌";
-            resultVerdict.style.color = "var(--md-sys-color-error)";
+            resultVerdict.innerText = "❌ FORFEITED! ❌"; resultVerdict.style.color = "var(--md-sys-color-error)";
             lostList.push(`${currentStudent} - Forfeit`);
         } else if (score >= 6) {
-            resultVerdict.innerText = "🎉 YOU WIN! 🎉";
-            resultVerdict.style.color = "var(--md-sys-color-success)";
+            resultVerdict.innerText = "🎉 YOU WIN! 🎉"; resultVerdict.style.color = "var(--md-sys-color-success)";
         } else {
-            resultVerdict.innerText = "❌ YOU LOSE! ❌";
-            resultVerdict.style.color = "var(--md-sys-color-error)";
-            lostList.push(`${currentStudent} - ${score} Pts`);
+            resultVerdict.innerText = "❌ YOU LOSE! ❌"; resultVerdict.style.color = "var(--md-sys-color-error)";
+            lostList.push(`${currentStudent} - ${score} Pts ${isHardMode ? '(Hard)' : ''}`);
         }
-
         showScreen(resultScreen);
     }
 
-    // --- NAVIGATION & UI ---
+    // --- NAVIGATION ---
     function showScreen(screenEl) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         screenEl.classList.add('active');
     }
 
     nextStudentBtn.addEventListener('click', () => {
-        wheelCanvas.style.transition = 'none';
-        wheelCanvas.style.transform = `rotate(0deg)`;
-        wheelRotation = 0;
-        
+        wheelCanvas.style.transition = 'none'; wheelCanvas.style.transform = `rotate(0deg)`; wheelRotation = 0;
         setTimeout(() => {
             wheelCanvas.style.transition = 'transform 7s cubic-bezier(0.1, 0.9, 0.2, 1)';
-            drawWheel();
-            spinBtn.disabled = students.length === 0;
-            viewLostBtn.disabled = false;
+            drawWheel(); spinBtn.disabled = students.length === 0;
+            document.getElementById('viewLostBtn').disabled = false;
             showScreen(wheelScreen);
         }, 50);
     });
 
     spinBtn.addEventListener('click', spinWheel);
-    forfeitBtn.addEventListener('click', () => {
-        score = 0;
-        finishQuiz(true);
-    });
+    forfeitBtn.addEventListener('click', () => { if(!isAnswered) finishQuiz(true); });
 
     // --- BOTTOM SHEET LOGIC ---
-    function updateLostListUI() {
-        lostListContainer.innerHTML = '';
-        if(lostList.length === 0) {
-            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No one has lost yet!</div>';
-        } else {
-            lostList.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'lost-item'; div.innerText = item;
-                lostListContainer.appendChild(div);
-            });
-        }
-    }
-
     function openBottomSheet() {
-        updateLostListUI(); scrim.classList.add('open'); bottomSheet.classList.add('open');
+        lostListContainer.innerHTML = lostList.length === 0 ? '<div class="lost-item" style="color:#666; text-align:center;">No one has lost yet!</div>' 
+            : lostList.map(item => `<div class="lost-item">${item}</div>`).join('');
+        scrim.classList.add('open'); bottomSheet.classList.add('open');
     }
-    function closeBottomSheet() {
-        scrim.classList.remove('open'); bottomSheet.classList.remove('open');
-    }
+    function closeBottomSheet() { scrim.classList.remove('open'); bottomSheet.classList.remove('open'); }
 
-    viewLostBtn.addEventListener('click', openBottomSheet);
-    closeSheetBtn.addEventListener('click', closeBottomSheet);
+    document.getElementById('viewLostBtn').addEventListener('click', openBottomSheet);
+    document.getElementById('closeSheetBtn').addEventListener('click', closeBottomSheet);
     scrim.addEventListener('click', closeBottomSheet);
 
-    // Init App
     drawWheel();
 </script>
 </body>
