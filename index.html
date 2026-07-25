@@ -14,8 +14,6 @@
             --md-sys-color-on-primary-container: #21005D;
             --md-sys-color-secondary-container: #E8DEF8;
             --md-sys-color-on-secondary-container: #1D192B;
-            --md-sys-color-tertiary-container: #FFD8E4;
-            --md-sys-color-on-tertiary-container: #31111D;
             --md-sys-color-error: #BA1A1A;
             --md-sys-color-on-error: #FFFFFF;
             --md-sys-color-error-container: #FFDAD6;
@@ -24,14 +22,13 @@
             --md-sys-color-success-container: #A0F0AB;
             --md-sys-color-surface: #FEF7FF;
             --md-sys-color-on-surface: #1D1B20;
-            --md-sys-color-surface-container: #F3EDF7;
+            --md-sys-color-surface-container: rgba(243, 237, 247, 0.85); /* Slightly transparent for glassmorphism */
             --md-sys-color-surface-container-high: #ECE6F0;
             
             --md-sys-shape-corner-extra-large: 32px;
             --md-sys-shape-corner-large: 24px;
             --md-sys-shape-corner-full: 9999px;
             
-            /* Emphasized Easing */
             --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
         }
 
@@ -43,13 +40,36 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        /* --- IMMERSIVE BACKGROUND --- */
+        .bg-layer {
+            position: fixed;
+            top: -10%; left: -10%; width: 120%; height: 120%;
+            background-image: url('https://raw.githubusercontent.com/loochinsiang/Assets/main/background.jpg');
+            background-size: cover;
+            background-position: center;
+            animation: panBg 45s infinite alternate ease-in-out;
+            z-index: -2;
+        }
+        .blur-layer {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: -1;
+        }
+
+        @keyframes panBg {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-2%, -2%) scale(1.05); }
+        }
+
         body {
-            background-color: var(--md-sys-color-surface);
             color: var(--md-sys-color-on-surface);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Centers everything vertically on desktop */
+            justify-content: center;
             min-height: 100vh;
             overflow-x: hidden;
             padding: 24px 16px;
@@ -58,13 +78,13 @@
         /* Typography */
         h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px;}
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
-        p.subtitle { font-size: 1.125rem; opacity: 0.8; text-align: center; margin-bottom: 24px; }
+        p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 24px; }
 
         /* Screens */
         .screen {
             display: none;
             width: 100%;
-            max-width: 900px; /* Wider max-width for desktop grid */
+            max-width: 900px;
             animation: fadeIn 0.5s var(--md-sys-motion-easing-emphasized);
             flex-direction: column;
             align-items: center;
@@ -94,23 +114,20 @@
             margin-bottom: 16px;
             width: 100%;
             max-width: 350px;
+            box-shadow: 0 8px 16px rgba(103, 80, 164, 0.2);
         }
         .btn:hover { filter: brightness(1.1); }
         .btn:active { transform: scale(0.96); }
-        .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+        .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; filter: none; }
 
         /* Wheel Container */
         .wheel-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
+            display: flex; flex-direction: column; align-items: center; width: 100%;
         }
         .wheel-container {
             position: relative;
-            width: 100%;
-            max-width: 380px;
+            width: 100%; max-width: 400px;
             aspect-ratio: 1/1;
             margin: 16px 0 32px 0;
             border-radius: 50%;
@@ -118,18 +135,14 @@
             background: var(--md-sys-color-surface-container-high);
         }
         #wheelCanvas {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transition: transform 5s cubic-bezier(0.2, 0.8, 0.1, 1);
+            width: 100%; height: 100%; border-radius: 50%;
+            /* Smooth decelerating spin ending */
+            transition: transform 7s cubic-bezier(0.1, 0.9, 0.2, 1); 
         }
         .wheel-pointer {
             position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 36px;
-            height: 48px;
+            top: -24px; left: 50%; transform: translateX(-50%);
+            width: 36px; height: 48px;
             background: var(--md-sys-color-error);
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
@@ -137,45 +150,33 @@
 
         /* --- REDESIGNED QUIZ UI --- */
         .quiz-header {
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            padding: 0 16px;
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; padding: 0 8px; gap: 8px;
         }
         .student-chip {
             background: var(--md-sys-color-secondary-container);
             color: var(--md-sys-color-on-secondary-container);
-            padding: 8px 16px;
-            border-radius: var(--md-sys-shape-corner-full);
-            font-weight: 700;
+            padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full); font-weight: 700;
         }
+        .forfeit-btn {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+            border: none; border-radius: var(--md-sys-shape-corner-full);
+            padding: 8px 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: transform 0.2s;
+        }
+        .forfeit-btn:active { transform: scale(0.92); }
         
         .question-card {
             background: var(--md-sys-color-primary-container);
             color: var(--md-sys-color-on-primary-container);
             border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 48px 32px;
-            width: 100%;
-            text-align: center;
-            margin-bottom: 32px;
-            box-shadow: 0 8px 24px rgba(103, 80, 164, 0.1);
+            padding: 48px 32px; width: 100%; text-align: center;
+            margin-bottom: 32px; box-shadow: 0 12px 32px rgba(103, 80, 164, 0.15);
         }
-        .question-card h3 {
-            font-size: clamp(1.5rem, 4vw, 2.25rem);
-            font-weight: 800;
-            line-height: 1.3;
-            margin: 0;
-        }
+        .question-card h3 { font-size: clamp(1.5rem, 4vw, 2.25rem); font-weight: 800; line-height: 1.3; }
 
         /* Desktop Grid / Mobile Stack for Options */
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            width: 100%;
-        }
+        .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; }
         
         @media (max-width: 650px) {
             .options-grid { grid-template-columns: 1fr; gap: 16px; }
@@ -186,103 +187,56 @@
             background: var(--md-sys-color-surface-container);
             color: var(--md-sys-color-on-surface);
             border-radius: var(--md-sys-shape-corner-large);
-            padding: 24px;
-            font-size: 1.125rem;
-            font-weight: 600;
-            border: 3px solid transparent;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s var(--md-sys-motion-easing-emphasized);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 80px;
+            padding: 24px; font-size: 1.125rem; font-weight: 600;
+            border: 3px solid transparent; text-align: center;
+            cursor: pointer; transition: all 0.2s var(--md-sys-motion-easing-emphasized);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; min-height: 80px;
         }
-        .option-btn:hover { 
-            background: var(--md-sys-color-surface-container-high); 
-            transform: translateY(-2px);
-        }
+        .option-btn:hover { background: rgba(255, 255, 255, 0.9); transform: translateY(-2px); }
         .option-btn:active { transform: scale(0.98); }
         
-        /* Answer States */
-        .option-btn.correct { 
-            background: var(--md-sys-color-success-container); 
-            color: var(--md-sys-color-success); 
-            border-color: var(--md-sys-color-success); 
-        }
-        .option-btn.wrong { 
-            background: var(--md-sys-color-error-container); 
-            color: var(--md-sys-color-on-error-container); 
-            border-color: var(--md-sys-color-error); 
-        }
+        .option-btn.correct { background: var(--md-sys-color-success-container); color: var(--md-sys-color-success); border-color: var(--md-sys-color-success); }
+        .option-btn.wrong { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); border-color: var(--md-sys-color-error); }
 
         /* Result Screen */
         .result-card {
             background: var(--md-sys-color-surface-container);
             border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 48px;
-            text-align: center;
-            width: 100%;
-            max-width: 500px;
-            margin-bottom: 32px;
+            padding: 48px; text-align: center; width: 100%; max-width: 500px;
+            margin-bottom: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.05);
         }
-        .score-display {
-            font-size: 4rem;
-            font-weight: 800;
-            color: var(--md-sys-color-primary);
-            margin: 16px 0;
-        }
+        .score-display { font-size: 4rem; font-weight: 800; color: var(--md-sys-color-primary); margin: 16px 0; }
 
         /* Bottom Sheet for Mobile (Mimics animateContentSize) */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 40; opacity: 0;
-            pointer-events: none; transition: opacity 0.3s;
+            background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         .scrim.open { opacity: 1; pointer-events: all; }
         
         .bottom-sheet {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            margin: 0 auto;
-            max-width: 600px;
+            position: fixed; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 600px;
             background: var(--md-sys-color-surface-container-high);
             border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
-            padding: 0;
-            z-index: 50;
-            max-height: 0;
-            transform: translateY(100%);
-            overflow: hidden;
-            /* Jetpack Compose animateContentSize equivalent */
-            transition: transform 0.4s var(--md-sys-motion-easing-emphasized), 
-                        max-height 0.4s var(--md-sys-motion-easing-emphasized),
-                        padding 0.4s var(--md-sys-motion-easing-emphasized);
+            padding: 0; z-index: 50; max-height: 0; transform: translateY(100%); overflow: hidden;
+            transition: transform 0.4s var(--md-sys-motion-easing-emphasized), max-height 0.4s var(--md-sys-motion-easing-emphasized), padding 0.4s var(--md-sys-motion-easing-emphasized);
             display: flex; flex-direction: column; align-items: center;
         }
-        .bottom-sheet.open {
-            transform: translateY(0);
-            max-height: 85vh;
-            padding: 32px 24px;
-        }
-        .bottom-sheet .drag-handle {
-            width: 48px; height: 6px; border-radius: 3px;
-            background: #CAC4D0; margin: -16px auto 24px auto;
-        }
+        .bottom-sheet.open { transform: translateY(0); max-height: 85vh; padding: 32px 24px; }
+        .bottom-sheet .drag-handle { width: 48px; height: 6px; border-radius: 3px; background: #CAC4D0; margin: -16px auto 24px auto; }
         .lost-list-container {
             width: 100%; overflow-y: auto; text-align: left;
-            background: var(--md-sys-color-surface);
-            border-radius: 16px;
-            padding: 8px;
+            background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px;
         }
-        .lost-item {
-            padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container);
-            font-weight: 600; font-size: 1.1rem;
-        }
+        .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
     </style>
 </head>
 <body>
+
+    <!-- IMMERSIVE BACKGROUND LAYERS -->
+    <div class="bg-layer"></div>
+    <div class="blur-layer"></div>
 
     <!-- WHEEL SCREEN -->
     <div id="wheelScreen" class="screen active">
@@ -305,6 +259,7 @@
         <div class="quiz-header">
             <div class="student-chip" id="studentTurnLabel">Student</div>
             <div style="font-weight: 700; opacity: 0.7;" id="questionProgress">1 / 10</div>
+            <button id="forfeitBtn" class="forfeit-btn">Forfeit</button>
         </div>
         
         <div class="question-card">
@@ -357,8 +312,7 @@
     let students = rawStudents.map(s => s.name);
     let lostList = [];
 
-    // --- MASSIVE UNIQUE QUESTION POOL (Format: "Question|Correct|Wrong1|Wrong2|Wrong3") ---
-    // Contains over 150 unique questions (Global + Malaysia) to guarantee 30 students get 10 entirely different questions.
+    // Master Question Pool (Guarantee unique queries)
     const compactQuestions = [
         "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
         "What is the 2nd largest ocean?|Atlantic|Pacific|Indian|Arctic",
@@ -488,22 +442,39 @@
         "What is the most spoken language in the world by total speakers?|English|Mandarin|Hindi|Spanish"
     ];
 
-    // Parse compact format into objects
     let masterQuestionPool = compactQuestions.map(line => {
         const parts = line.split('|');
-        return {
-            q: parts[0],
-            correct: parts[1],
-            wrongs: [parts[2], parts[3], parts[4]]
-        };
+        return { q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
     });
 
-    // --- STATE ---
+    // --- STATE & AUDIO ---
     let currentStudent = "";
     let currentQuestions = [];
     let currentQuestionIndex = 0;
     let score = 0;
     let wheelRotation = 0;
+    
+    // Audio Context for Ticking
+    let audioCtx;
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    function playTick() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+    }
 
     // --- ELEMENTS ---
     const wheelScreen = document.getElementById('wheelScreen');
@@ -513,6 +484,7 @@
     const wheelCanvas = document.getElementById('wheelCanvas');
     const ctx = wheelCanvas.getContext('2d');
     const spinBtn = document.getElementById('spinBtn');
+    const forfeitBtn = document.getElementById('forfeitBtn');
     
     const studentTurnLabel = document.getElementById('studentTurnLabel');
     const questionProgress = document.getElementById('questionProgress');
@@ -532,19 +504,13 @@
     const lostListContainer = document.getElementById('lostListContainer');
 
     // --- WHEEL LOGIC ---
-    const colors = [
-        "#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF",
-        "#E8DEF8", "#FFDBC2", "#C2F0E0"
-    ];
+    const colors = ["#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF", "#E8DEF8", "#FFDBC2", "#C2F0E0"];
 
     function drawWheel() {
         if(students.length === 0) {
             ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
-            ctx.fillStyle = "#E8DEF8";
-            ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#1D192B";
-            ctx.font = "bold 36px Inter";
-            ctx.textAlign = "center";
+            ctx.fillStyle = "#E8DEF8"; ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#1D192B"; ctx.font = "bold 36px Inter"; ctx.textAlign = "center";
             ctx.fillText("All Students Played!", 300, 310);
             spinBtn.disabled = true;
             return;
@@ -558,83 +524,98 @@
             ctx.beginPath();
             ctx.arc(300, 300, 300, angle, angle + arc, false);
             ctx.lineTo(300, 300);
-            ctx.fillStyle = colors[i % colors.length];
-            ctx.fill();
-            ctx.save();
+            ctx.fillStyle = colors[i % colors.length]; ctx.fill();
             
-            // Draw text
+            ctx.save();
             ctx.fillStyle = "#1D1B20";
             ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
             ctx.rotate(angle + arc / 2);
             ctx.textAlign = "right";
-            // Dynamically scale font size based on number of students
             ctx.font = students.length > 20 ? "bold 13px Inter" : "bold 18px Inter";
             ctx.fillText(students[i], 130, 5);
             ctx.restore();
         }
     }
 
+    let isSpinning = false;
+    let lastSlice = -1;
+
+    // Track frame rotations for accurate ticking
+    function trackSpin() {
+        if(!isSpinning) return;
+        const style = window.getComputedStyle(wheelCanvas);
+        const transform = style.transform;
+        let angle = 0;
+        
+        if (transform !== 'none') {
+            const values = transform.split('(')[1].split(')')[0].split(',');
+            const a = parseFloat(values[0]);
+            const b = parseFloat(values[1]);
+            angle = Math.atan2(b, a) * (180/Math.PI);
+        }
+        if(angle < 0) angle += 360;
+        
+        const degreesPerSlice = 360 / students.length;
+        
+        // Calculate relative angular offset from top pointer (270 degrees)
+        let relAngle = (270 - angle + 360) % 360;
+        let currentSlice = Math.floor(relAngle / degreesPerSlice);
+        
+        if(currentSlice !== lastSlice && lastSlice !== -1) {
+            playTick();
+        }
+        lastSlice = currentSlice;
+        requestAnimationFrame(trackSpin);
+    }
+
     function spinWheel() {
         if (students.length === 0) return;
+        initAudio();
         spinBtn.disabled = true;
         viewLostBtn.disabled = true;
 
-        const spins = 5; // Extra rotations
+        const spins = 5; // Rotation multipliers
         const degreesPerSlice = 360 / students.length;
         const randomSlice = Math.floor(Math.random() * students.length);
         
-        // Calculate target rotation to land exactly in the middle of the randomSlice
-        const targetDegrees = (spins * 360) + (360 - (randomSlice * degreesPerSlice)) - (degreesPerSlice / 2);
+        // Exact Math to center the wheel pointer (270deg) on randomSlice!
+        const sliceCenter = (randomSlice + 0.5) * degreesPerSlice;
+        const targetDegrees = (spins * 360) + 270 - sliceCenter;
         
         wheelRotation += targetDegrees;
         wheelCanvas.style.transform = `rotate(${wheelRotation}deg)`;
+        
+        isSpinning = true;
+        lastSlice = -1;
+        requestAnimationFrame(trackSpin);
 
-        // Wait for animation to finish
+        // Wait for 7s animation to finish
         setTimeout(() => {
+            isSpinning = false;
             currentStudent = students[randomSlice];
             startQuiz();
-        }, 5100);
+        }, 7100); 
     }
 
     // --- QUIZ LOGIC ---
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-
     function startQuiz() {
-        score = 0;
-        currentQuestionIndex = 0;
-        currentQuestions = [];
+        score = 0; currentQuestionIndex = 0; currentQuestions = [];
 
-        // Pick 10 UNIQUE questions for this student and REMOVE them from master pool
         for(let i=0; i<10; i++) {
             if (masterQuestionPool.length === 0) {
-                alert("Wow! We ran out of unique questions. Resetting the pool...");
-                // Reload page or re-parse the array (In real life, 150+ questions handles 15 students exactly without reset). 
-                // Since this might happen, let's just reshuffle original data.
+                // Failsafe reshuffle if pool goes fully empty
                 masterQuestionPool = compactQuestions.map(line => {
-                    const parts = line.split('|');
-                    return { q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
+                    const parts = line.split('|'); return { q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
                 });
             }
             const randIdx = Math.floor(Math.random() * masterQuestionPool.length);
-            // Splice permanently removes the item from the global pool!
             const selectedQ = masterQuestionPool.splice(randIdx, 1)[0]; 
             
-            // Format options for the UI
             let opts = [...selectedQ.wrongs];
             const correctIndex = Math.floor(Math.random() * 4);
             opts.splice(correctIndex, 0, selectedQ.correct);
             
-            currentQuestions.push({
-                q: selectedQ.q,
-                opts: opts,
-                ans: correctIndex
-            });
+            currentQuestions.push({ q: selectedQ.q, opts: opts, ans: correctIndex });
         }
         
         studentTurnLabel.innerText = currentStudent;
@@ -650,45 +631,40 @@
 
         q.opts.forEach((opt, idx) => {
             const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
+            btn.className = 'option-btn'; btn.innerText = opt;
             btn.onclick = () => handleAnswer(btn, idx === q.ans);
             optionsContainer.appendChild(btn);
         });
     }
 
     function handleAnswer(btn, isCorrect) {
-        // Disable all options
         const allBtns = optionsContainer.querySelectorAll('button');
         allBtns.forEach(b => b.disabled = true);
 
         if (isCorrect) {
-            btn.classList.add('correct');
-            score++;
+            btn.classList.add('correct'); score++;
         } else {
             btn.classList.add('wrong');
-            // Show correct answer
             allBtns[currentQuestions[currentQuestionIndex].ans].classList.add('correct');
         }
 
         setTimeout(() => {
             currentQuestionIndex++;
-            if (currentQuestionIndex < 10) {
-                renderQuestion();
-            } else {
-                finishQuiz();
-            }
+            if (currentQuestionIndex < 10) renderQuestion();
+            else finishQuiz();
         }, 1200);
     }
 
-    function finishQuiz() {
-        // Remove student from wheel permanently
+    function finishQuiz(isForfeit = false) {
         students = students.filter(s => s !== currentStudent);
-        
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = score;
-
-        if (score >= 6) {
+        
+        if (isForfeit) {
+            resultVerdict.innerText = "❌ FORFEITED! ❌";
+            resultVerdict.style.color = "var(--md-sys-color-error)";
+            lostList.push(`${currentStudent} - Forfeit`);
+        } else if (score >= 6) {
             resultVerdict.innerText = "🎉 YOU WIN! 🎉";
             resultVerdict.style.color = "var(--md-sys-color-success)";
         } else {
@@ -707,13 +683,12 @@
     }
 
     nextStudentBtn.addEventListener('click', () => {
-        // Reset canvas transition for instant visual reset of degrees, avoiding backward spin
         wheelCanvas.style.transition = 'none';
         wheelCanvas.style.transform = `rotate(0deg)`;
         wheelRotation = 0;
         
         setTimeout(() => {
-            wheelCanvas.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.1, 1)';
+            wheelCanvas.style.transition = 'transform 7s cubic-bezier(0.1, 0.9, 0.2, 1)';
             drawWheel();
             spinBtn.disabled = students.length === 0;
             viewLostBtn.disabled = false;
@@ -722,8 +697,12 @@
     });
 
     spinBtn.addEventListener('click', spinWheel);
+    forfeitBtn.addEventListener('click', () => {
+        score = 0;
+        finishQuiz(true);
+    });
 
-    // --- BOTTOM SHEET LOGIC (animateContentSize Mimic) ---
+    // --- BOTTOM SHEET LOGIC ---
     function updateLostListUI() {
         lostListContainer.innerHTML = '';
         if(lostList.length === 0) {
@@ -731,22 +710,17 @@
         } else {
             lostList.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'lost-item';
-                div.innerText = item;
+                div.className = 'lost-item'; div.innerText = item;
                 lostListContainer.appendChild(div);
             });
         }
     }
 
     function openBottomSheet() {
-        updateLostListUI();
-        scrim.classList.add('open');
-        bottomSheet.classList.add('open');
+        updateLostListUI(); scrim.classList.add('open'); bottomSheet.classList.add('open');
     }
-
     function closeBottomSheet() {
-        scrim.classList.remove('open');
-        bottomSheet.classList.remove('open');
+        scrim.classList.remove('open'); bottomSheet.classList.remove('open');
     }
 
     viewLostBtn.addEventListener('click', openBottomSheet);
@@ -755,7 +729,6 @@
 
     // Init App
     drawWheel();
-
 </script>
 </body>
 </html>
