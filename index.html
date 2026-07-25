@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MD3 Expressive Common Ball Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* MD3 Expressive Colors */
+            --md-sys-color-primary: #6750A4;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            --md-sys-color-error: #B3261E;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-surface: #FEF7FF;
+            --md-sys-color-on-surface: #1D1B20;
+            --md-sys-color-surface-container: #F3EDF7;
+            --md-sys-color-surface-container-high: #ECE6F0;
+            
+            --md-sys-shape-corner-extra-large: 32px;
+            --md-sys-shape-corner-large: 24px;
+            --md-sys-shape-corner-full: 9999px;
+            
+            /* Emphasized Easing (Mimicking Jetpack Compose) */
+            --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
+            --md-sys-motion-duration-long: 500ms;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 24px 16px;
+        }
+
+        /* Typography */
+        h1 { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px;}
+        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; }
+        h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 12px; }
+        p { font-size: 1rem; line-height: 1.5; margin-bottom: 16px; }
+
+        /* Screens */
+        .screen {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            animation: fadeIn 0.4s var(--md-sys-motion-easing-emphasized);
+            flex-direction: column;
+            align-items: center;
+        }
+        .screen.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons */
+        .btn {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            border-radius: var(--md-sys-shape-corner-full);
+            padding: 16px 32px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .btn:active { transform: scale(0.96); }
+        .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
+        .btn-tertiary { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Wheel Container */
+        .wheel-container {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 32px 0;
+            border-radius: 50%;
+            box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+            background: var(--md-sys-color-surface-container-high);
+        }
+        #wheelCanvas {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.1, 1);
+        }
+        .wheel-pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: var(--md-sys-color-error);
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 10;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 32px;
+            width: 100%;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        /* Options */
+        .option-btn {
+            background: var(--md-sys-color-surface-container-high);
+            color: var(--md-sys-color-on-surface);
+            border-radius: var(--md-sys-shape-corner-large);
+            padding: 20px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: 2px solid transparent;
+            text-align: left;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-btn:hover { background: var(--md-sys-color-secondary-container); }
+        .option-btn.correct { background: #4CAF50; color: white; border-color: #388E3C; }
+        .option-btn.wrong { background: var(--md-sys-color-error); color: white; border-color: #8C1D18; }
+
+        /* Bottom Sheet for Mobile (Mimics animateContentSize) */
+        .scrim {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 40; opacity: 0;
+            pointer-events: none; transition: opacity 0.3s;
+        }
+        .scrim.open { opacity: 1; pointer-events: all; }
+        
+        .bottom-sheet {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
+            padding: 0;
+            z-index: 50;
+            max-height: 0;
+            transform: translateY(100%);
+            overflow: hidden;
+            /* Jetpack Compose animateContentSize equivalent */
+            transition: transform 0.4s var(--md-sys-motion-easing-emphasized), 
+                        max-height 0.4s var(--md-sys-motion-easing-emphasized),
+                        padding 0.4s var(--md-sys-motion-easing-emphasized);
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .bottom-sheet.open {
+            transform: translateY(0);
+            max-height: 80vh;
+            padding: 32px 24px;
+        }
+        .bottom-sheet .drag-handle {
+            width: 40px; height: 4px; border-radius: 2px;
+            background: #CAC4D0; margin: -16px auto 24px auto;
+        }
+        .lost-list-container {
+            width: 100%; overflow-y: auto; text-align: left;
+        }
+        .lost-item {
+            padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container-high);
+            font-weight: 500;
+        }
+
+        /* Result Chip */
+        .score-chip {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            padding: 12px 24px; border-radius: var(--md-sys-shape-corner-full);
+            font-weight: 800; font-size: 1.5rem; display: inline-block; margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- WHEEL SCREEN -->
+    <div id="wheelScreen" class="screen active">
+        <h1>Common Ball Quiz</h1>
+        <p>Spin the wheel to select a student!</p>
+        
+        <div class="wheel-container">
+            <div class="wheel-pointer"></div>
+            <canvas id="wheelCanvas" width="600" height="600"></canvas>
+        </div>
+
+        <button id="spinBtn" class="btn">Spin the Wheel</button>
+        <button id="viewLostBtn" class="btn btn-secondary">View Lost List</button>
+    </div>
+
+    <!-- QUIZ SCREEN -->
+    <div id="quizScreen" class="screen">
+        <h2 id="studentTurnLabel">Student's Turn</h2>
+        <div class="card">
+            <h3 id="questionProgress">Question 1 of 10</h3>
+            <p id="questionText" style="font-size: 1.25rem; font-weight: 600;"></p>
+        </div>
+        <div id="optionsContainer" style="width: 100%;">
+            <!-- Options dynamically added here -->
+        </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="resultScreen" class="screen">
+        <h1 id="resultTitle">Result</h1>
+        <div class="card">
+            <p id="resultMsg" style="font-size: 1.125rem;"></p>
+            <div class="score-chip" id="resultScore">0 / 10</div>
+            <h3 id="resultVerdict"></h3>
+        </div>
+        <button id="nextStudentBtn" class="btn">Return to Wheel</button>
+    </div>
+
+    <!-- BOTTOM SHEET (Lost List) -->
+    <div class="scrim" id="scrim"></div>
+    <div class="bottom-sheet" id="bottomSheet">
+        <div class="drag-handle"></div>
+        <h2>Lost List (Score < 6)</h2>
+        <div class="lost-list-container" id="lostListContainer">
+            <!-- Lost items added here -->
+        </div>
+        <button id="closeSheetBtn" class="btn btn-tertiary" style="margin-top: 24px;">Close</button>
+    </div>
+
+<script>
+    // --- DATA ---
+    const rawStudents = [
+        {"name": "ALOYSIUS NG YU YI"}, {"name": "ALVIN TANG ZHENG HAO"}, {"name": "CLEMENT SEAH JI WEN"}, 
+        {"name": "ELVIS LOW YI HAO"}, {"name": "GAVIN CHUA WEN JIE"}, {"name": "GUI CEN EN"}, 
+        {"name": "JEREMY TAN WEI REN"}, {"name": "JONATHAN ONG KAH FATT"}, {"name": "JOSEPH LIM"}, 
+        {"name": "KINGSTON GOH QI HAO"}, {"name": "LAM YU YANG"}, {"name": "LEXUS KUEK CHEN XIAN"}, 
+        {"name": "LIM JIA QING"}, {"name": "LOO CHIN SIANG"}, {"name": "LOUIS NG WEI SOONG"}, 
+        {"name": "NG JING KAI"}, {"name": "NG YU JIN"}, {"name": "ONG ZHI XIAN"}, 
+        {"name": "RAYSON BANG WEI XIANG"}, {"name": "RYAN CHOK ZI INN"}, {"name": "SHADEESHAN A/L KATHIRAVAN"}, 
+        {"name": "TAN GUAN HAN"}, {"name": "TAN YONG XI"}, {"name": "TAN YU ZHONG"}, 
+        {"name": "TAY KIM YAW"}, {"name": "WEE KER SHENG"}, {"name": "WONG HUNG RUI"}, 
+        {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
+    ];
+
+    let students = rawStudents.map(s => s.name);
+    let lostList = [];
+
+    // Question Bank (Mix of World and Malaysia)
+    const questionBank = [
+        { q: "What is the most selling album ever?", opts: ["Thriller", "Back in Black", "Dark Side of the Moon", "The Bodyguard"], ans: 0 },
+        { q: "What is the 2nd largest ocean?", opts: ["Pacific", "Indian", "Atlantic", "Arctic"], ans: 2 },
+        { q: "What is the capital city of Malaysia?", opts: ["George Town", "Kuala Lumpur", "Johor Bahru", "Malacca"], ans: 1 },
+        { q: "What is the national flower of Malaysia?", opts: ["Orchid", "Rafflesia", "Hibiscus", "Lotus"], ans: 2 },
+        { q: "Which is the tallest building in Malaysia?", opts: ["Petronas Twin Towers", "KL Tower", "Exchange 106", "Merdeka 118"], ans: 3 },
+        { q: "In what year did Malaysia gain independence?", opts: ["1957", "1963", "1969", "1955"], ans: 0 },
+        { q: "What is the largest state in Malaysia?", opts: ["Pahang", "Sabah", "Sarawak", "Perak"], ans: 2 },
+        { q: "Which planet is closest to the Sun?", opts: ["Venus", "Earth", "Mars", "Mercury"], ans: 3 },
+        { q: "What is the longest river in the world?", opts: ["Amazon", "Nile", "Yangtze", "Mississippi"], ans: 1 },
+        { q: "Which element has the chemical symbol 'O'?", opts: ["Osmium", "Oxygen", "Gold", "Iron"], ans: 1 },
+        { q: "What is the national animal of Malaysia?", opts: ["Orangutan", "Hornbill", "Malayan Tiger", "Tapir"], ans: 2 },
+        { q: "Who was the first Prime Minister of Malaysia?", opts: ["Mahathir Mohamad", "Tunku Abdul Rahman", "Najib Razak", "Hussein Onn"], ans: 1 },
+        { q: "What is the currency of Malaysia?", opts: ["Dollar", "Rupiah", "Baht", "Ringgit"], ans: 3 },
+        { q: "Which continent is the Sahara Desert located in?", opts: ["Asia", "North America", "Africa", "Australia"], ans: 2 },
+        { q: "What is the hardest natural substance on Earth?", opts: ["Gold", "Iron", "Diamond", "Quartz"], ans: 2 },
+        { q: "How many states (and federal territories combined functionally as states) make up Malaysia?", opts: ["11", "13", "14", "15"], ans: 1 },
+        { q: "Which city is known as the historical city of Malaysia?", opts: ["Kuala Lumpur", "Ipoh", "Malacca", "Penang"], ans: 2 },
+        { q: "What is the largest planet in our solar system?", opts: ["Saturn", "Jupiter", "Uranus", "Neptune"], ans: 1 },
+        { q: "Who painted the Mona Lisa?", opts: ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"], ans: 2 },
+        { q: "Which ocean is off the California coast?", opts: ["Atlantic", "Pacific", "Indian", "Southern"], ans: 1 },
+        { q: "Which is the highest mountain in Malaysia?", opts: ["Mount Tahan", "Mount Kinabalu", "Mount Jerai", "Mount Santubong"], ans: 1 },
+        { q: "What is the coldest place on Earth?", opts: ["Greenland", "Siberia", "Antarctica", "Alaska"], ans: 2 },
+        { q: "Who wrote the Harry Potter series?", opts: ["J.R.R. Tolkien", "George R.R. Martin", "C.S. Lewis", "J.K. Rowling"], ans: 3 },
+        { q: "What is a popular Malaysian coconut milk rice dish?", opts: ["Nasi Goreng", "Nasi Lemak", "Nasi Kandar", "Nasi Dagang"], ans: 1 },
+        { q: "What is the capital of Japan?", opts: ["Kyoto", "Osaka", "Tokyo", "Hokkaido"], ans: 2 },
+        { q: "What is the most populated country in the world as of 2024?", opts: ["China", "India", "USA", "Indonesia"], ans: 1 },
+        { q: "Which animal is the tallest in the world?", opts: ["Elephant", "Giraffe", "Ostrich", "Kangaroo"], ans: 1 },
+        { q: "Which Malaysian island is known as the 'Pearl of the Orient'?", opts: ["Langkawi", "Tioman", "Redang", "Penang"], ans: 3 },
+        { q: "What gas do plants absorb from the atmosphere?", opts: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"], ans: 2 },
+        { q: "How many colors are in a rainbow?", opts: ["5", "6", "7", "8"], ans: 2 },
+        { q: "Which famous tech company's logo is an Apple with a bite taken out of it?", opts: ["Microsoft", "Google", "Apple", "IBM"], ans: 2 },
+        { q: "What is the main ingredient in guacamole?", opts: ["Tomato", "Avocado", "Onion", "Pepper"], ans: 1 },
+        { q: "Which Malaysian state is famous for its bridge, the longest in Southeast Asia upon its completion?", opts: ["Johor", "Penang", "Kedah", "Selangor"], ans: 1 },
+        { q: "What is the largest bone in the human body?", opts: ["Femur", "Tibia", "Fibula", "Humerus"], ans: 0 },
+        { q: "Which is the smallest country in the world?", opts: ["Monaco", "Nauru", "Vatican City", "Tuvalu"], ans: 2 },
+        { q: "What popular sport is played at Wimbledon?", opts: ["Cricket", "Football", "Tennis", "Rugby"], ans: 2 },
+        { q: "What do pandas primarily eat?", opts: ["Eucalyptus", "Bamboo", "Insects", "Fish"], ans: 1 },
+        { q: "What is the chemical formula for water?", opts: ["CO2", "H2O", "O2", "NaCl"], ans: 1 },
+        { q: "Which planet is known as the Red Planet?", opts: ["Mars", "Venus", "Jupiter", "Saturn"], ans: 0 },
+        { q: "What language has the most native speakers?", opts: ["English", "Spanish", "Hindi", "Mandarin"], ans: 3 }
+    ];
+
+    // --- STATE ---
+    let currentStudent = "";
+    let currentQuestions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let wheelRotation = 0;
+
+    // --- ELEMENTS ---
+    const wheelScreen = document.getElementById('wheelScreen');
+    const quizScreen = document.getElementById('quizScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const ctx = wheelCanvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    
+    const studentTurnLabel = document.getElementById('studentTurnLabel');
+    const questionProgress = document.getElementById('questionProgress');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+
+    const resultMsg = document.getElementById('resultMsg');
+    const resultScore = document.getElementById('resultScore');
+    const resultVerdict = document.getElementById('resultVerdict');
+    const nextStudentBtn = document.getElementById('nextStudentBtn');
+
+    // Bottom Sheet
+    const viewLostBtn = document.getElementById('viewLostBtn');
+    const bottomSheet = document.getElementById('bottomSheet');
+    const scrim = document.getElementById('scrim');
+    const closeSheetBtn = document.getElementById('closeSheetBtn');
+    const lostListContainer = document.getElementById('lostListContainer');
+
+    // --- WHEEL LOGIC ---
+    const colors = [
+        "#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF",
+        "#E8DEF8", "#FFDBC2", "#C2F0E0"
+    ];
+
+    function drawWheel() {
+        if(students.length === 0) {
+            ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+            ctx.fillStyle = "#E8DEF8";
+            ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#1D192B";
+            ctx.font = "bold 32px Inter";
+            ctx.textAlign = "center";
+            ctx.fillText("All Done!", 300, 310);
+            spinBtn.disabled = true;
+            return;
+        }
+
+        const arc = (Math.PI * 2) / students.length;
+        ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+        for (let i = 0; i < students.length; i++) {
+            const angle = i * arc;
+            ctx.beginPath();
+            ctx.arc(300, 300, 300, angle, angle + arc, false);
+            ctx.lineTo(300, 300);
+            ctx.fillStyle = colors[i % colors.length];
+            ctx.fill();
+            ctx.save();
+            
+            // Draw text
+            ctx.fillStyle = "#1D1B20";
+            ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
+            ctx.rotate(angle + arc / 2);
+            ctx.textAlign = "right";
+            ctx.font = students.length > 20 ? "bold 12px Inter" : "bold 16px Inter";
+            ctx.fillText(students[i], 130, 5);
+            ctx.restore();
+        }
+    }
+
+    function spinWheel() {
+        if (students.length === 0) return;
+        spinBtn.disabled = true;
+
+        const spins = 5; // Extra rotations
+        const degreesPerSlice = 360 / students.length;
+        const randomSlice = Math.floor(Math.random() * students.length);
+        
+        // Calculate target rotation to land on randomSlice
+        const targetDegrees = (spins * 360) + (360 - (randomSlice * degreesPerSlice)) - (degreesPerSlice / 2);
+        
+        wheelRotation += targetDegrees;
+        wheelCanvas.style.transform = `rotate(${wheelRotation}deg)`;
+
+        // Wait for animation to finish
+        setTimeout(() => {
+            currentStudent = students[randomSlice];
+            startQuiz();
+        }, 5100);
+    }
+
+    // --- QUIZ LOGIC ---
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        score = 0;
+        currentQuestionIndex = 0;
+        // Grab 10 random unique questions
+        const shuffledBank = shuffleArray([...questionBank]);
+        currentQuestions = shuffledBank.slice(0, 10);
+        
+        studentTurnLabel.innerText = `${currentStudent}'s Turn`;
+        showScreen(quizScreen);
+        renderQuestion();
+    }
+
+    function renderQuestion() {
+        const q = currentQuestions[currentQuestionIndex];
+        questionProgress.innerText = `Question ${currentQuestionIndex + 1} of 10`;
+        questionText.innerText = q.q;
+        optionsContainer.innerHTML = '';
+
+        q.opts.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => handleAnswer(btn, idx === q.ans);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function handleAnswer(btn, isCorrect) {
+        // Disable all options
+        const allBtns = optionsContainer.querySelectorAll('button');
+        allBtns.forEach(b => b.disabled = true);
+
+        if (isCorrect) {
+            btn.classList.add('correct');
+            score++;
+        } else {
+            btn.classList.add('wrong');
+            // Show correct answer
+            allBtns[currentQuestions[currentQuestionIndex].ans].classList.add('correct');
+        }
+
+        setTimeout(() => {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < 10) {
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }, 1200);
+    }
+
+    function finishQuiz() {
+        // Remove student from wheel
+        students = students.filter(s => s !== currentStudent);
+        
+        resultMsg.innerText = `Great effort, ${currentStudent}!`;
+        resultScore.innerText = `${score} / 10`;
+
+        if (score >= 6) {
+            resultVerdict.innerText = "🎉 YOU WIN! 🎉";
+            resultVerdict.style.color = "#388E3C";
+        } else {
+            resultVerdict.innerText = "❌ YOU LOSE! ❌";
+            resultVerdict.style.color = "var(--md-sys-color-error)";
+            lostList.push(`${currentStudent} (Score: ${score})`);
+            updateLostListUI();
+        }
+
+        showScreen(resultScreen);
+    }
+
+    // --- NAVIGATION & UI ---
+    function showScreen(screenEl) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        screenEl.classList.add('active');
+    }
+
+    nextStudentBtn.addEventListener('click', () => {
+        // Reset canvas transition for instant reset of visual degrees, or just draw
+        wheelCanvas.style.transition = 'none';
+        wheelCanvas.style.transform = `rotate(0deg)`;
+        wheelRotation = 0;
+        
+        // Slight delay to allow CSS reset to apply before re-enabling transition
+        setTimeout(() => {
+            wheelCanvas.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.1, 1)';
+            drawWheel();
+            spinBtn.disabled = students.length === 0;
+            showScreen(wheelScreen);
+        }, 50);
+    });
+
+    spinBtn.addEventListener('click', spinWheel);
+
+    // --- BOTTOM SHEET LOGIC (animateContentSize Mimic) ---
+    function updateLostListUI() {
+        lostListContainer.innerHTML = '';
+        if(lostList.length === 0) {
+            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666;">No one has lost yet!</div>';
+        } else {
+            lostList.forEach(name => {
+                const div = document.createElement('div');
+                div.className = 'lost-item';
+                div.innerText = name;
+                lostListContainer.appendChild(div);
+            });
+        }
+    }
+
+    function openBottomSheet() {
+        updateLostListUI();
+        scrim.classList.add('open');
+        bottomSheet.classList.add('open');
+    }
+
+    function closeBottomSheet() {
+        scrim.classList.remove('open');
+        bottomSheet.classList.remove('open');
+    }
+
+    viewLostBtn.addEventListener('click', openBottomSheet);
+    closeSheetBtn.addEventListener('click', closeBottomSheet);
+    scrim.addEventListener('click', closeBottomSheet);
+
+    // Init
+    drawWheel();
+
+</script>
+</body>
+</html>
