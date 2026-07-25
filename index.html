@@ -150,7 +150,7 @@
         .btn-danger { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
 
-        /* Wheel Container & Animated Flapper */
+        /* Wheel Container & Physical Flapper Pointer */
         .wheel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wheel-container {
             position: relative;
@@ -165,23 +165,19 @@
             width: 100%; height: 100%; border-radius: 50%;
             transition: transform 7s cubic-bezier(0.1, 0.9, 0.2, 1); 
         }
+
+        /* FLAPPER POINTER WITH PIVOT PIN AT TOP CENTER */
         .wheel-pointer {
             position: absolute;
             top: -24px; left: 50%;
-            transform-origin: 50% 0%;
+            transform-origin: 50% 0%; /* Pivot point at top pin */
             transform: translateX(-50%) rotate(0deg);
             width: 36px; height: 48px;
             background: var(--md-sys-color-error);
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
-        }
-        .wheel-pointer.flick {
-            animation: pointerFlick 0.08s ease-out;
-        }
-        @keyframes pointerFlick {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            40% { transform: translateX(-50%) rotate(-22deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
+            will-change: transform;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
         }
 
         /* --- QUIZ UI --- */
@@ -485,7 +481,6 @@
         {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
     ];
 
-    // Exclude LOO CHIN SIANG
     let students = rawStudents.map(s => s.name);
     let lostList = [];
 
@@ -640,10 +635,6 @@
     function playTick() {
         if (!audioCtx) return;
         try {
-            wheelPointer.classList.remove('flick');
-            void wheelPointer.offsetWidth; // Force CSS reflow
-            wheelPointer.classList.add('flick');
-
             const now = audioCtx.currentTime;
             const bufferSize = Math.floor(audioCtx.sampleRate * 0.012);
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -741,9 +732,19 @@
 
     let isSpinning = false;
     let lastSlice = -1;
+    let flapperAngle = 0;
 
+    // --- REAL-TIME PHYSICAL FLAPPER SIMULATION (60fps/120fps) ---
     function trackSpin() {
-        if(!isSpinning) return;
+        if (!isSpinning) {
+            // Decay flapper smoothly back to rest position (0deg) when wheel stops
+            flapperAngle *= -0.4;
+            if (Math.abs(flapperAngle) < 0.1) flapperAngle = 0;
+            wheelPointer.style.transform = `translateX(-50%) rotate(${flapperAngle}deg)`;
+            if (flapperAngle !== 0) requestAnimationFrame(trackSpin);
+            return;
+        }
+
         const style = window.getComputedStyle(wheelCanvas);
         const transform = style.transform;
         let angle = 0;
@@ -760,10 +761,25 @@
         let relAngle = (270 - angle + 360) % 360;
         let currentSlice = Math.floor(relAngle / degreesPerSlice);
         
+        // Trigger Audio Tick when passing boundary
         if(currentSlice !== lastSlice && lastSlice !== -1) {
             playTick();
         }
         lastSlice = currentSlice;
+
+        // PHYSICAL FLAPPER FLEX & SPRING SIMULATION
+        let offsetInSlice = relAngle % degreesPerSlice;
+        const pushZone = Math.min(6, degreesPerSlice * 0.4);
+
+        if (offsetInSlice < pushZone) {
+            // Peg is actively bending the flapper back
+            flapperAngle = (pushZone - offsetInSlice) * (26 / pushZone);
+        } else {
+            // Peg cleared the tip! Elastic spring rebound effect
+            flapperAngle *= -0.35;
+        }
+
+        wheelPointer.style.transform = `translateX(-50%) rotate(${flapperAngle}deg)`;
         requestAnimationFrame(trackSpin);
     }
 
