@@ -138,6 +138,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             margin-bottom: 16px;
             width: 100%;
             max-width: 350px;
@@ -150,7 +151,7 @@
         .btn-danger { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
 
-        /* Wheel Container & Animated Flapper */
+        /* Wheel Container & Physical Flapper Pointer */
         .wheel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wheel-container {
             position: relative;
@@ -165,6 +166,7 @@
             width: 100%; height: 100%; border-radius: 50%;
             transition: transform 7s cubic-bezier(0.1, 0.9, 0.2, 1); 
         }
+
         .wheel-pointer {
             position: absolute;
             top: -24px; left: 50%;
@@ -174,14 +176,8 @@
             background: var(--md-sys-color-error);
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
-        }
-        .wheel-pointer.flick {
-            animation: pointerFlick 0.08s ease-out;
-        }
-        @keyframes pointerFlick {
-            0% { transform: translateX(-50%) rotate(0deg); }
-            40% { transform: translateX(-50%) rotate(-22deg); }
-            100% { transform: translateX(-50%) rotate(0deg); }
+            will-change: transform;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
         }
 
         /* --- QUIZ UI --- */
@@ -194,11 +190,6 @@
             color: var(--md-sys-color-on-secondary-container);
             padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full); font-weight: 700;
             display: flex; align-items: center; gap: 6px;
-        }
-        .hard-badge {
-            background: var(--md-sys-color-error); color: white;
-            padding: 2px 8px; border-radius: 8px; font-size: 0.75rem; font-weight: 800;
-            display: none;
         }
         .forfeit-btn {
             background: var(--md-sys-color-error-container);
@@ -415,7 +406,6 @@
         <div class="quiz-header">
             <div class="student-chip">
                 <span id="studentTurnLabel">Student</span>
-                <span class="hard-badge" id="hardBadge">HARD</span>
             </div>
             <div style="font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 4px;" id="timerText">
                 <span class="material-symbols-outlined">timer</span> <span>20s</span>
@@ -430,6 +420,13 @@
         <div class="question-card animate-content-size" id="questionCard">
             <div style="font-size: 0.9rem; font-weight: 700; opacity: 0.6; margin-bottom: 8px;" id="questionProgress">Question 1 of 10</div>
             <h3 id="questionText">Question Text Goes Here</h3>
+        </div>
+
+        <!-- Audio Player Replay Button Container -->
+        <div id="audioPlayerContainer" style="display: none; margin-bottom: 16px; width: 100%; text-align: center;">
+            <button id="playAudioBtn" class="btn btn-secondary" style="margin: 0 auto; max-width: 280px;">
+                <span class="material-symbols-outlined">volume_up</span> Listen Again
+            </button>
         </div>
         
         <!-- Multiple Choice Options Container -->
@@ -485,7 +482,6 @@
         {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
     ];
 
-    // Exclude LOO CHIN SIANG
     let students = rawStudents.map(s => s.name);
     let lostList = [];
 
@@ -525,8 +521,19 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
+    // Format Key:
+    // "T|Question Text|Answer" -> Grammar Typing
+    // "A|Question Prompt|AcceptedVariants (separated by /)" -> Speech Listening Typing
+    // "Question Text|Correct|W1|W2|W3" -> MCQ
+    
     // --- NORMAL QUESTION POOL ---
     const normalCompactQuestions = [
+        "A|Listen to the audio and type what you hear:|colour/color",
+        "A|Listen to the audio and type what you hear:|favourite/favorite",
+        "A|Listen to the audio and type what you hear:|centre/center",
+        "A|Listen to the audio and type what you hear:|neighbour/neighbor",
+        "A|Listen to the audio and type what you hear:|theatre/theater",
+        "A|Listen to the audio and type what you hear:|good morning",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
         "T|Complete the sentence: He is interested _____ learning music.|in",
@@ -581,6 +588,12 @@
 
     // --- HARD QUESTION POOL ---
     const hardCompactQuestions = [
+        "A|Listen to the audio and type what you hear:|accommodation",
+        "A|Listen to the audio and type what you hear:|bureaucracy",
+        "A|Listen to the audio and type what you hear:|pronunciation",
+        "A|Listen to the audio and type what you hear:|mischievous",
+        "A|Listen to the audio and type what you hear:|traveled/travelled",
+        "A|Listen to the audio and type what you hear:|defence/defense",
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
         "T|Complete the grammar: Neither of the boys _____ (be) present.|was",
         "T|Type the past participle of 'shrink':|shrunken",
@@ -608,6 +621,8 @@
             const parts = line.split('|');
             if (parts[0] === 'T') {
                 return { type: 'typing', q: parts[1], ans: parts[2] };
+            } else if (parts[0] === 'A') {
+                return { type: 'audio', q: parts[1], ans: parts[2] };
             } else {
                 return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
             }
@@ -627,6 +642,18 @@
     let wheelRotation = 0;
     let timerInterval = null;
     let timeLeft = 20;
+
+    // Web Speech API Synthesis
+    function playQuestionSpeech(phrase) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Stop ongoing speech
+            const spokenText = phrase.split('/')[0]; // Pick primary spelling to speak
+            const utterance = new SpeechSynthesisUtterance(spokenText);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.85; // Natural clear pace
+            window.speechSynthesis.speak(utterance);
+        }
+    }
     
     // ORGANIC MECHANICAL TICK SYNTHESIZER
     let audioCtx;
@@ -640,10 +667,6 @@
     function playTick() {
         if (!audioCtx) return;
         try {
-            wheelPointer.classList.remove('flick');
-            void wheelPointer.offsetWidth; // Force CSS reflow
-            wheelPointer.classList.add('flick');
-
             const now = audioCtx.currentTime;
             const bufferSize = Math.floor(audioCtx.sampleRate * 0.012);
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -680,14 +703,17 @@
     const confirmBtn = document.getElementById('confirmBtn');
     
     const studentTurnLabel = document.getElementById('studentTurnLabel');
-    const hardBadge = document.getElementById('hardBadge');
     const questionProgress = document.getElementById('questionProgress');
     const questionText = document.getElementById('questionText');
+    
     const optionsContainer = document.getElementById('optionsContainer');
     const typingContainer = document.getElementById('typingContainer');
     const typingDisplay = document.getElementById('typingDisplay');
     const typedText = document.getElementById('typedText');
     const qwertyKeyboard = document.getElementById('qwertyKeyboard');
+
+    const audioPlayerContainer = document.getElementById('audioPlayerContainer');
+    const playAudioBtn = document.getElementById('playAudioBtn');
 
     const timerBarFill = document.getElementById('timerBarFill');
     const timerText = document.getElementById('timerText');
@@ -741,9 +767,18 @@
 
     let isSpinning = false;
     let lastSlice = -1;
+    let flapperAngle = 0;
 
+    // --- REAL-TIME PHYSICAL FLAPPER SIMULATION ---
     function trackSpin() {
-        if(!isSpinning) return;
+        if (!isSpinning) {
+            flapperAngle *= -0.4;
+            if (Math.abs(flapperAngle) < 0.1) flapperAngle = 0;
+            wheelPointer.style.transform = `translateX(-50%) rotate(${flapperAngle}deg)`;
+            if (flapperAngle !== 0) requestAnimationFrame(trackSpin);
+            return;
+        }
+
         const style = window.getComputedStyle(wheelCanvas);
         const transform = style.transform;
         let angle = 0;
@@ -764,6 +799,17 @@
             playTick();
         }
         lastSlice = currentSlice;
+
+        let offsetInSlice = relAngle % degreesPerSlice;
+        const pushZone = Math.min(6, degreesPerSlice * 0.4);
+
+        if (offsetInSlice < pushZone) {
+            flapperAngle = (pushZone - offsetInSlice) * (26 / pushZone);
+        } else {
+            flapperAngle *= -0.35;
+        }
+
+        wheelPointer.style.transform = `translateX(-50%) rotate(${flapperAngle}deg)`;
         requestAnimationFrame(trackSpin);
     }
 
@@ -832,7 +878,7 @@
     function handleKeyPress(char) {
         initAudio();
         const q = currentQuestions[currentQuestionIndex];
-        if (!q || q.type !== 'typing') return;
+        if (!q || (q.type !== 'typing' && q.type !== 'audio')) return;
 
         if (char === 'BACKSPACE') {
             currentTypedText = currentTypedText.slice(0, -1);
@@ -847,7 +893,7 @@
 
     window.addEventListener('keydown', (e) => {
         const q = currentQuestions[currentQuestionIndex];
-        if (!q || q.type !== 'typing' || quizScreen.classList.contains('active') === false) return;
+        if (!q || (q.type !== 'typing' && q.type !== 'audio') || quizScreen.classList.contains('active') === false) return;
 
         if (e.key === 'Backspace') {
             handleKeyPress('BACKSPACE');
@@ -865,7 +911,6 @@
         score = 0; currentQuestionIndex = 0; currentQuestions = [];
         const hardMode = isHardStudent(currentStudent);
 
-        hardBadge.style.display = hardMode ? 'inline-block' : 'none';
         let activePool = hardMode ? hardMasterPool : normalMasterPool;
 
         for(let i=0; i<10; i++) {
@@ -881,7 +926,7 @@
                 opts.splice(correctIndex, 0, selectedQ.correct);
                 currentQuestions.push({ type: 'mcq', q: selectedQ.q, opts: opts, ans: correctIndex });
             } else {
-                currentQuestions.push({ type: 'typing', q: selectedQ.q, ans: selectedQ.ans });
+                currentQuestions.push({ type: selectedQ.type, q: selectedQ.q, ans: selectedQ.ans });
             }
         }
         
@@ -932,6 +977,7 @@
         if (q.type === 'mcq') {
             optionsContainer.style.display = 'grid';
             typingContainer.style.display = 'none';
+            audioPlayerContainer.style.display = 'none';
             optionsContainer.innerHTML = '';
 
             q.opts.forEach((opt, idx) => {
@@ -942,9 +988,18 @@
                 btn.onclick = () => selectOption(idx);
                 optionsContainer.appendChild(btn);
             });
+        } else if (q.type === 'audio') {
+            optionsContainer.style.display = 'none';
+            typingContainer.style.display = 'flex';
+            audioPlayerContainer.style.display = 'block';
+
+            // Auto-play audio speech on load!
+            playQuestionSpeech(q.ans);
+            playAudioBtn.onclick = () => playQuestionSpeech(q.ans);
         } else {
             optionsContainer.style.display = 'none';
             typingContainer.style.display = 'flex';
+            audioPlayerContainer.style.display = 'none';
         }
 
         resetTimer();
@@ -959,6 +1014,13 @@
             if (idx === index) b.classList.add('selected');
             else b.classList.remove('selected');
         });
+    }
+
+    // Evaluate UK vs US spellings
+    function evaluateTextAnswer(typed, targetAnswers) {
+        const cleanTyped = typed.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+        const validVariants = targetAnswers.split('/').map(v => v.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""));
+        return validVariants.includes(cleanTyped);
     }
 
     function submitAnswer() {
@@ -988,13 +1050,15 @@
                 }
             }
         } else {
-            const isCorrect = currentTypedText.trim().toLowerCase() === q.ans.trim().toLowerCase();
+            // Typing / Audio Answer Check (Supports UK & US spellings)
+            const isCorrect = evaluateTextAnswer(currentTypedText, q.ans);
             if (isCorrect) {
                 typingDisplay.classList.add('correct');
                 score++;
             } else {
                 typingDisplay.classList.add('wrong');
-                typedText.innerText = `${currentTypedText || 'No Answer'} (Correct: ${q.ans})`;
+                const displayAnswer = q.ans.split('/')[0]; // Show primary spelling
+                typedText.innerText = `${currentTypedText || 'No Answer'} (Correct: ${displayAnswer})`;
             }
         }
 
@@ -1017,7 +1081,6 @@
 
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
-        // Remove student and save state!
         students = students.filter(s => s !== currentStudent);
         
         resultMsg.innerText = `${currentStudent}`;
@@ -1034,7 +1097,7 @@
             lostList.push(`${currentStudent} - ${score} Pts`);
         }
 
-        saveState(); // Save state to localStorage!
+        saveState();
         showScreen(resultScreen);
     }
 
@@ -1103,7 +1166,7 @@
     closeSheetBtn.addEventListener('click', closeBottomSheet);
     scrim.addEventListener('click', closeBottomSheet);
 
-    // Load saved state from localStorage on init!
+    // Init App
     loadState();
     drawWheel();
 </script>
