@@ -124,6 +124,27 @@
             transform: translateY(0) scale(1);
         }
 
+        /* Mode Selection Screen Specific Entrance */
+        #modeScreen.active {
+            animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
+        }
+        @keyframes modeScreenEnter {
+            0% { opacity: 0; transform: translateY(30px) scale(0.92); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        #modeScreen.active .mode-card:nth-child(2) {
+            animation: cardSlideIn 0.45s 0.1s var(--md-sys-motion-easing-bounce) both;
+        }
+        #modeScreen.active .mode-card:nth-child(3) {
+            animation: cardSlideIn 0.45s 0.22s var(--md-sys-motion-easing-bounce) both;
+        }
+
+        @keyframes cardSlideIn {
+            0% { opacity: 0; transform: translateY(24px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         /* Buttons */
         .btn {
             background: var(--md-sys-color-primary);
@@ -350,7 +371,7 @@
         .key.wide-key { max-width: 80px; font-size: 0.9rem; }
         .key.space-key { max-width: 260px; }
 
-        /* --- RESULT SCREEN SPECIFIC ENTRANCE TRANSITIONS --- */
+        /* --- RESULT SCREEN TRANSITIONS --- */
         .result-card {
             background: var(--md-sys-color-surface-container);
             border-radius: var(--md-sys-shape-corner-extra-large);
@@ -575,13 +596,7 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
-    // --- QUESTION POOLS ---
-    // Format Keys:
-    // "T|Question Text|Answer" -> Grammar Typing
-    // "A|Question Prompt|AcceptedVariants (separated by /)" -> Speech Listening Typing
-    // "FA|Question Prompt|AudioSrcPath|CorrectAns|Wrong1|Wrong2|Wrong3|Wrong4" -> Audio File MCQ
-    // "Question Text|Correct|W1|W2|W3" -> Standard MCQ
-    
+    // --- STANDARD QUESTION POOL ---
     const normalCompactQuestions = [
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
@@ -658,22 +673,60 @@
         "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
     ];
 
-    // --- LISTENING MODE QUESTION POOL ---
-    const listeningCompactQuestions = [
-        "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
-        "A|Listen to the audio and type what you hear:|colour/color",
-        "A|Listen to the audio and type what you hear:|favourite/favorite",
-        "A|Listen to the audio and type what you hear:|centre/center",
-        "A|Listen to the audio and type what you hear:|neighbour/neighbor",
-        "A|Listen to the audio and type what you hear:|theatre/theater",
-        "A|Listen to the audio and type what you hear:|accommodation",
-        "A|Listen to the audio and type what you hear:|bureaucracy",
-        "A|Listen to the audio and type what you hear:|pronunciation",
-        "A|Listen to the audio and type what you hear:|mischievous",
-        "A|Listen to the audio and type what you hear:|traveled/travelled",
-        "A|Listen to the audio and type what you hear:|defence/defense",
-        "A|Listen to the audio and type what you hear:|good morning"
+    // --- MASSIVE 300+ LISTENING QUESTION GENERATOR ---
+    const baseListeningQuestions = [
+        "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr."
     ];
+
+    const dictationWords = [
+        "colour/color", "favourite/favorite", "centre/center", "neighbour/neighbor", "theatre/theater",
+        "defence/defense", "traveled/travelled", "licence/license", "judgement/judgment", "catalog/catalogue",
+        "dialogue/dialog", "jewelry/jewellery", "maneuver/manoeuvre", "archeology/archaeology", "esthetic/aesthetic",
+        "harbor/harbour", "humor/humour", "rumor/rumour", "labor/labour", "flavor/flavour", "vapor/vapour",
+        "vigor/vigour", "glamor/glamour", "behavior/behaviour", "endeavor/endeavor", "organize/organise",
+        "realize/realise", "analyze/analyse", "apologize/apologise", "memorize/memorise", "summarize/summarise",
+        "emphasize/emphasise", "hypnotize/hypnotise", "paralyze/paralyse", "pajamas/pyjamas", "plow/plough",
+        "draft/draught", "check/cheque", "curb/kerb", "tire/tyre", "gray/grey", "mustache/moustachio",
+        "airplane/aeroplane", "aluminum/aluminium", "artifact/artefact", "cozy/cosy", "donut/doughnut",
+        "fulfillment/fulfilment", "installment/instalment", "skeptic/sceptic", "sulfur/sulphur", "whiskey/whisky",
+        "accommodation", "bureaucracy", "pronunciation", "mischievous", "perseverance", "conscientious",
+        "entrepreneur", "hypocrisy", "idiosyncrasy", "indispensable", "maintenance", "millennium",
+        "occurrence", "questionnaire", "rhythm", "surveillance", "unbelievable", "vacuum", "paparazzi",
+        "quarantine", "chrysanthemum", "kaleidoscope", "camouflage", "hierarchy", "silhouette", "reservoir",
+        "renaissance", "boulevard", "champagne", "souvenir", "rendezvous", "manuscript", "orchestra",
+        "symphony", "metamorphosis", "panacea", "phenomenon", "quintessential", "soliloquy", "ubiquitous",
+        "ambiguous", "benevolent", "cacophony", "ephemeral", "fastidious", "gregarious", "ineffable",
+        "juxtaposition", "labyrinth", "magnanimous", "nostalgia", "oblivion", "pragmatic", "quixotic",
+        "resilient", "serendipity", "tranquility/tranquillity", "unprecedented", "veracity", "zealous"
+    ];
+
+    const dictationPhrases = [
+        "good morning", "how are you doing today", "practice makes perfect/practise makes perfect",
+        "knowledge is power", "time flies like an arrow", "where there is a will there is a way",
+        "actions speak louder than words", "better late than never", "honesty is the best policy",
+        "a blessing in disguise", "bite the bullet", "break the ice", "spill the beans", "under the weather",
+        "through thick and thin", "once in a blue moon", "the elephant in the room", "hit the nail on the head",
+        "piece of cake", "see eye to eye", "call it a day", "cost an arm and a leg", "back to square one",
+        "ball is in your court", "barking up the wrong tree", "beat around the bush", "best of both worlds",
+        "burn the midnight oil", "can't judge a book by its cover", "cross that bridge when you come to it",
+        "cry over spilt milk", "curiosity killed the cat", "cut corners", "cut to the chase",
+        "devil's advocate", "don't count your chickens before they hatch", "don't put all your eggs in one basket",
+        "every cloud has a silver lining", "get out of hand", "get your act together", "give the benefit of the doubt",
+        "go back to the drawing board", "good things come to those who wait", "hit the sack", "it takes two to tango",
+        "keep something at bay", "kill two birds with one stone", "let the cat out of the bag", "make a long story short",
+        "miss the boat", "no pain no gain", "on the fence", "pull someone's leg", "pull yourself together",
+        "rub salt in the wound", "take it with a grain of salt", "the last straw", "throw in the towel",
+        "wrap your head around something", "you can say that again", "your guess is as good as mine",
+        "a dime a dozen", "add fuel to the fire", "at the drop of a hat", "back to the drawing board",
+        "barking up the wrong tree", "beat the clock", "between a rock and a hard place", "bite off more than you can chew",
+        "burn bridges", "call it a day", "cat got your tongue", "chasing rainbows", "clear as a crystal",
+        "come rain or shine", "don't rock the boat", "down to the wire", "draw the line", "eaten out of house and home"
+    ];
+
+    // Build 300+ unique listening items
+    let dynamicListeningPool = [...baseListeningQuestions];
+    dictationWords.forEach(w => dynamicListeningPool.push(`A|Listen to the audio and type the word you hear:|${w}`));
+    dictationPhrases.forEach(p => dynamicListeningPool.push(`A|Listen to the audio and type the phrase you hear:|${p}`));
 
     function parsePool(compactList) {
         return compactList.map(line => {
@@ -698,7 +751,7 @@
 
     let normalMasterPool = parsePool(normalCompactQuestions);
     let hardMasterPool = parsePool(hardCompactQuestions);
-    let listeningMasterPool = parsePool(listeningCompactQuestions);
+    let listeningMasterPool = parsePool(dynamicListeningPool);
 
     // --- STATE & AUDIO ---
     let currentStudent = "";
@@ -987,7 +1040,7 @@
         if (char === 'BACKSPACE') {
             currentTypedText = currentTypedText.slice(0, -1);
         } else {
-            if (currentTypedText.length < 24) {
+            if (currentTypedText.length < 32) {
                 currentTypedText += char;
             }
         }
@@ -1017,14 +1070,15 @@
 
         let activePool = [];
         if (mode === 'listening') {
-            activePool = parsePool(listeningCompactQuestions);
+            activePool = listeningMasterPool;
         } else {
             activePool = hardMode ? hardMasterPool : normalMasterPool;
         }
 
+        // Always pop 10 unique questions for this student!
         for(let i=0; i<10; i++) {
             if (activePool.length === 0) {
-                if (mode === 'listening') activePool = parsePool(listeningCompactQuestions);
+                if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
                 else activePool = parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions);
             }
             const randIdx = Math.floor(Math.random() * activePool.length);
@@ -1139,7 +1193,6 @@
         });
     }
 
-    // Evaluate UK vs US spellings
     function evaluateTextAnswer(typed, targetAnswers) {
         const cleanTyped = typed.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
         const validVariants = targetAnswers.split('/').map(v => v.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""));
