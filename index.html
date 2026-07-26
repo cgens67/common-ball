@@ -124,6 +124,53 @@
             transform: translateY(0) scale(1);
         }
 
+        /* RESULT SCREEN EXIT TRANSITION */
+        #resultScreen.exiting {
+            opacity: 0 !important;
+            transform: translateY(-30px) scale(0.9) !important;
+            transition: opacity 0.3s var(--md-sys-motion-easing-emphasized),
+                        transform 0.3s var(--md-sys-motion-easing-emphasized) !important;
+        }
+
+        /* WHEEL SCREEN STAGGERED ENTRANCE TRANSITION */
+        #wheelScreen.active {
+            animation: wheelScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
+        }
+
+        @keyframes wheelScreenEnter {
+            0% { opacity: 0; transform: translateY(30px) scale(0.92); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        #wheelScreen.active h1, 
+        #wheelScreen.active .subtitle {
+            animation: elementFadeDown 0.4s 0.1s var(--md-sys-motion-easing-emphasized) both;
+        }
+
+        #wheelScreen.active .wheel-container {
+            animation: wheelPopZoom 0.5s 0.15s var(--md-sys-motion-easing-bounce) both;
+        }
+
+        #wheelScreen.active .btn {
+            animation: elementPopUp 0.4s 0.25s var(--md-sys-motion-easing-bounce) both;
+        }
+
+        @keyframes elementFadeDown {
+            0% { opacity: 0; transform: translateY(-16px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes wheelPopZoom {
+            0% { opacity: 0; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes elementPopUp {
+            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Mode Selection Screen Entrance */
         #modeScreen.active {
             animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
         }
@@ -1028,7 +1075,6 @@
         });
     }
 
-    // NO LETTER COUNT LIMIT!
     function handleKeyPress(char) {
         initAudio();
         const q = currentQuestions[currentQuestionIndex];
@@ -1037,7 +1083,7 @@
         if (char === 'BACKSPACE') {
             currentTypedText = currentTypedText.slice(0, -1);
         } else {
-            currentTypedText += char; // Unrestricted length!
+            currentTypedText += char;
         }
         typedText.innerText = currentTypedText;
         confirmBtn.disabled = currentTypedText.trim().length === 0;
@@ -1189,7 +1235,6 @@
         });
     }
 
-    // Evaluate UK vs US spellings & Forgiving Apostrophes
     function evaluateTextAnswer(typed, targetAnswers) {
         const clean = (str) => str.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
         const stripApos = (str) => clean(str).replace(/'/g, "");
@@ -1261,7 +1306,6 @@
         submitAnswer();
     });
 
-    // FIXED: WINNERS ARE NO LONGER ADDED TO LOST LIST!
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
         stopAllAudio();
@@ -1285,24 +1329,28 @@
         showScreen(resultScreen);
     }
 
-    // --- NAVIGATION & UI ---
+    // --- NAVIGATION & UI WITH RESULT TO WHEEL TRANSITION ---
     function showScreen(screenEl) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         screenEl.classList.add('active');
     }
 
     nextStudentBtn.addEventListener('click', () => {
+        // Trigger smooth exit transition on Result Screen
+        resultScreen.classList.add('exiting');
+
         wheelCanvas.style.transition = 'none';
         wheelCanvas.style.transform = `rotate(0deg)`;
         wheelRotation = 0;
         
         setTimeout(() => {
+            resultScreen.classList.remove('exiting');
             wheelCanvas.style.transition = 'transform 7s cubic-bezier(0.1, 0.9, 0.2, 1)';
             drawWheel();
             spinBtn.disabled = students.length === 0;
             viewLostBtn.disabled = false;
             showScreen(wheelScreen);
-        }, 50);
+        }, 300); // Smooth 300ms exit transition
     });
 
     spinBtn.addEventListener('click', spinWheel);
