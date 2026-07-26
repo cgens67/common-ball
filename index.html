@@ -124,7 +124,6 @@
             transform: translateY(0) scale(1);
         }
 
-        /* Mode Selection Screen Specific Entrance */
         #modeScreen.active {
             animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
         }
@@ -343,6 +342,7 @@
             padding: 16px 24px; font-size: 1.4rem; font-weight: 700;
             text-align: center; min-height: 64px; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05); letter-spacing: 1px; transition: all 0.3s;
+            word-break: break-word;
         }
         .blinking-cursor { animation: blink 1s infinite; color: var(--md-sys-color-primary); font-weight: 300; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -596,7 +596,7 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
-    // --- STANDARD QUESTION POOL ---
+    // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
@@ -673,7 +673,7 @@
         "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
     ];
 
-    // --- MASSIVE 300+ LISTENING QUESTION GENERATOR ---
+    // --- MASSIVE 300+ LISTENING QUESTION POOL ---
     const baseListeningQuestions = [
         "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr."
     ];
@@ -683,7 +683,7 @@
         "defence/defense", "traveled/travelled", "licence/license", "judgement/judgment", "catalog/catalogue",
         "dialogue/dialog", "jewelry/jewellery", "maneuver/manoeuvre", "archeology/archaeology", "esthetic/aesthetic",
         "harbor/harbour", "humor/humour", "rumor/rumour", "labor/labour", "flavor/flavour", "vapor/vapour",
-        "vigor/vigour", "glamor/glamour", "behavior/behaviour", "endeavor/endeavor", "organize/organise",
+        "vigor/vigour", "glamor/glamour", "behavior/behaviour", "endeavor/endeavour", "organize/organise",
         "realize/realise", "analyze/analyse", "apologize/apologise", "memorize/memorise", "summarize/summarise",
         "emphasize/emphasise", "hypnotize/hypnotise", "paralyze/paralyse", "pajamas/pyjamas", "plow/plough",
         "draft/draught", "check/cheque", "curb/kerb", "tire/tyre", "gray/grey", "mustache/moustachio",
@@ -723,7 +723,6 @@
         "come rain or shine", "don't rock the boat", "down to the wire", "draw the line", "eaten out of house and home"
     ];
 
-    // Build 300+ unique listening items
     let dynamicListeningPool = [...baseListeningQuestions];
     dictationWords.forEach(w => dynamicListeningPool.push(`A|Listen to the audio and type the word you hear:|${w}`));
     dictationPhrases.forEach(p => dynamicListeningPool.push(`A|Listen to the audio and type the phrase you hear:|${p}`));
@@ -775,7 +774,6 @@
         }
     }
 
-    // Web Speech API Synthesis
     function playQuestionSpeech(phrase) {
         stopAllAudio();
         if ('speechSynthesis' in window) {
@@ -787,7 +785,6 @@
         }
     }
 
-    // Audio File Player
     function playAudioFile(src) {
         stopAllAudio();
         activeAudioObj = new Audio(src);
@@ -913,7 +910,6 @@
     let lastSlice = -1;
     let flapperAngle = 0;
 
-    // --- REAL-TIME PHYSICAL FLAPPER SIMULATION ---
     function trackSpin() {
         if (!isSpinning) {
             flapperAngle *= -0.4;
@@ -997,10 +993,10 @@
         startQuiz('listening');
     });
 
-    // --- IN-WEBSITE QWERTY KEYBOARD BUILDER ---
+    // --- IN-WEBSITE QWERTY KEYBOARD BUILDER WITH APOSTROPHE (') ---
     const keyboardLayout = [
         ['q','w','e','r','t','y','u','i','o','p'],
-        ['a','s','d','f','g','h','j','k','l'],
+        ['a','s','d','f','g','h','j','k','l', "'"],
         ['z','x','c','v','b','n','m','backspace'],
         ['space']
     ];
@@ -1023,7 +1019,7 @@
                     keyBtn.innerText = 'SPACE';
                     keyBtn.onclick = () => handleKeyPress(' ');
                 } else {
-                    keyBtn.innerText = keyChar.toUpperCase();
+                    keyBtn.innerText = keyChar === "'" ? "'" : keyChar.toUpperCase();
                     keyBtn.onclick = () => handleKeyPress(keyChar);
                 }
                 rowDiv.appendChild(keyBtn);
@@ -1032,6 +1028,7 @@
         });
     }
 
+    // NO LETTER COUNT LIMIT!
     function handleKeyPress(char) {
         initAudio();
         const q = currentQuestions[currentQuestionIndex];
@@ -1040,9 +1037,7 @@
         if (char === 'BACKSPACE') {
             currentTypedText = currentTypedText.slice(0, -1);
         } else {
-            if (currentTypedText.length < 32) {
-                currentTypedText += char;
-            }
+            currentTypedText += char; // Unrestricted length!
         }
         typedText.innerText = currentTypedText;
         confirmBtn.disabled = currentTypedText.trim().length === 0;
@@ -1058,6 +1053,8 @@
             if (!confirmBtn.disabled) confirmBtn.click();
         } else if (e.key === ' ') {
             handleKeyPress(' ');
+        } else if (e.key === "'") {
+            handleKeyPress("'");
         } else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
             handleKeyPress(e.key.toLowerCase());
         }
@@ -1075,7 +1072,6 @@
             activePool = hardMode ? hardMasterPool : normalMasterPool;
         }
 
-        // Always pop 10 unique questions for this student!
         for(let i=0; i<10; i++) {
             if (activePool.length === 0) {
                 if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
@@ -1193,10 +1189,20 @@
         });
     }
 
+    // Evaluate UK vs US spellings & Forgiving Apostrophes
     function evaluateTextAnswer(typed, targetAnswers) {
-        const cleanTyped = typed.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
-        const validVariants = targetAnswers.split('/').map(v => v.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""));
-        return validVariants.includes(cleanTyped);
+        const clean = (str) => str.trim().toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "");
+        const stripApos = (str) => clean(str).replace(/'/g, "");
+
+        const cleanTyped = clean(typed);
+        const noAposTyped = stripApos(typed);
+
+        const validVariants = targetAnswers.split('/');
+        return validVariants.some(v => {
+            const cleanV = clean(v);
+            const noAposV = stripApos(v);
+            return cleanTyped === cleanV || noAposTyped === noAposV;
+        });
     }
 
     function submitAnswer() {
@@ -1255,6 +1261,7 @@
         submitAnswer();
     });
 
+    // FIXED: WINNERS ARE NO LONGER ADDED TO LOST LIST!
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
         stopAllAudio();
@@ -1268,7 +1275,7 @@
             lostList.push(`${currentStudent} - Forfeit`);
         } else if (score >= 6) {
             resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">celebration</span> YOU WIN!`;
-            lostList.push(`${currentStudent} - ${score} Pts (WON)`);
+            // WINNERS DO NOT GO TO LOST LIST!
         } else {
             resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">cancel</span> YOU LOSE!`;
             lostList.push(`${currentStudent} - ${score} Pts`);
