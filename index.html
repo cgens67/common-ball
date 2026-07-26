@@ -180,6 +180,34 @@
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
         }
 
+        /* --- MODE SELECTION CARDS --- */
+        .mode-card {
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 24px 28px;
+            width: 100%; max-width: 500px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.25s var(--md-sys-motion-easing-bounce);
+            text-align: left;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .mode-card:hover {
+            border-color: var(--md-sys-color-primary);
+            transform: translateY(-3px) scale(1.01);
+            background: var(--md-sys-color-surface-container-high);
+        }
+        .mode-card:active { transform: scale(0.98); }
+        .mode-card h3 { font-size: 1.35rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
+        .warning-badge {
+            background: var(--md-sys-color-tertiary-container);
+            color: var(--md-sys-color-on-tertiary-container);
+            padding: 4px 12px; border-radius: var(--md-sys-shape-corner-full);
+            font-size: 0.8rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; width: fit-content;
+        }
+
         /* --- QUIZ UI --- */
         .quiz-header {
             width: 100%; display: flex; justify-content: space-between; align-items: center;
@@ -401,6 +429,32 @@
         </div>
     </div>
 
+    <!-- MODE SELECTION SCREEN -->
+    <div id="modeScreen" class="screen animate-content-size">
+        <h2 id="modeStudentTitle">Choose Question Mode</h2>
+        <p class="subtitle">Select the topic category for this turn:</p>
+
+        <div class="mode-card" id="selectStandardBtn">
+            <h3>
+                <span>Standard Questions</span>
+                <span class="material-symbols-outlined">quiz</span>
+            </h3>
+            <p style="font-size: 0.95rem; opacity: 0.85;">General Knowledge, Malaysian History, Geography, Science & Grammar.</p>
+        </div>
+
+        <div class="mode-card" id="selectListeningBtn">
+            <h3>
+                <span>Listening Questions</span>
+                <span class="material-symbols-outlined">headphones</span>
+            </h3>
+            <p style="font-size: 0.95rem; opacity: 0.85;">Music identification, speech dictation, and audio clips.</p>
+            <div class="warning-badge">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">warning</span>
+                May be out of topic.
+            </div>
+        </div>
+    </div>
+
     <!-- QUIZ SCREEN -->
     <div id="quizScreen" class="screen animate-content-size">
         <div class="quiz-header">
@@ -521,19 +575,14 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
-    // Format Key:
+    // --- QUESTION POOLS ---
+    // Format Keys:
     // "T|Question Text|Answer" -> Grammar Typing
     // "A|Question Prompt|AcceptedVariants (separated by /)" -> Speech Listening Typing
-    // "Question Text|Correct|W1|W2|W3" -> MCQ
+    // "FA|Question Prompt|AudioSrcPath|CorrectAns|Wrong1|Wrong2|Wrong3|Wrong4" -> Audio File MCQ
+    // "Question Text|Correct|W1|W2|W3" -> Standard MCQ
     
-    // --- NORMAL QUESTION POOL ---
     const normalCompactQuestions = [
-        "A|Listen to the audio and type what you hear:|colour/color",
-        "A|Listen to the audio and type what you hear:|favourite/favorite",
-        "A|Listen to the audio and type what you hear:|centre/center",
-        "A|Listen to the audio and type what you hear:|neighbour/neighbor",
-        "A|Listen to the audio and type what you hear:|theatre/theater",
-        "A|Listen to the audio and type what you hear:|good morning",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
         "T|Complete the sentence: He is interested _____ learning music.|in",
@@ -586,14 +635,7 @@
         "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain"
     ];
 
-    // --- HARD QUESTION POOL ---
     const hardCompactQuestions = [
-        "A|Listen to the audio and type what you hear:|accommodation",
-        "A|Listen to the audio and type what you hear:|bureaucracy",
-        "A|Listen to the audio and type what you hear:|pronunciation",
-        "A|Listen to the audio and type what you hear:|mischievous",
-        "A|Listen to the audio and type what you hear:|traveled/travelled",
-        "A|Listen to the audio and type what you hear:|defence/defense",
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
         "T|Complete the grammar: Neither of the boys _____ (be) present.|was",
         "T|Type the past participle of 'shrink':|shrunken",
@@ -616,6 +658,23 @@
         "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
     ];
 
+    // --- LISTENING MODE QUESTION POOL ---
+    const listeningCompactQuestions = [
+        "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
+        "A|Listen to the audio and type what you hear:|colour/color",
+        "A|Listen to the audio and type what you hear:|favourite/favorite",
+        "A|Listen to the audio and type what you hear:|centre/center",
+        "A|Listen to the audio and type what you hear:|neighbour/neighbor",
+        "A|Listen to the audio and type what you hear:|theatre/theater",
+        "A|Listen to the audio and type what you hear:|accommodation",
+        "A|Listen to the audio and type what you hear:|bureaucracy",
+        "A|Listen to the audio and type what you hear:|pronunciation",
+        "A|Listen to the audio and type what you hear:|mischievous",
+        "A|Listen to the audio and type what you hear:|traveled/travelled",
+        "A|Listen to the audio and type what you hear:|defence/defense",
+        "A|Listen to the audio and type what you hear:|good morning"
+    ];
+
     function parsePool(compactList) {
         return compactList.map(line => {
             const parts = line.split('|');
@@ -623,6 +682,14 @@
                 return { type: 'typing', q: parts[1], ans: parts[2] };
             } else if (parts[0] === 'A') {
                 return { type: 'audio', q: parts[1], ans: parts[2] };
+            } else if (parts[0] === 'FA') {
+                return {
+                    type: 'file_audio_mcq',
+                    q: parts[1],
+                    audioSrc: parts[2],
+                    correct: parts[3],
+                    wrongs: parts.slice(4)
+                };
             } else {
                 return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
             }
@@ -631,6 +698,7 @@
 
     let normalMasterPool = parsePool(normalCompactQuestions);
     let hardMasterPool = parsePool(hardCompactQuestions);
+    let listeningMasterPool = parsePool(listeningCompactQuestions);
 
     // --- STATE & AUDIO ---
     let currentStudent = "";
@@ -643,16 +711,34 @@
     let timerInterval = null;
     let timeLeft = 20;
 
+    let activeAudioObj = null;
+
+    function stopAllAudio() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        if (activeAudioObj) {
+            activeAudioObj.pause();
+            activeAudioObj.currentTime = 0;
+            activeAudioObj = null;
+        }
+    }
+
     // Web Speech API Synthesis
     function playQuestionSpeech(phrase) {
+        stopAllAudio();
         if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel(); // Stop ongoing speech
-            const spokenText = phrase.split('/')[0]; // Pick primary spelling to speak
+            const spokenText = phrase.split('/')[0];
             const utterance = new SpeechSynthesisUtterance(spokenText);
             utterance.lang = 'en-US';
-            utterance.rate = 0.85; // Natural clear pace
+            utterance.rate = 0.85;
             window.speechSynthesis.speak(utterance);
         }
+    }
+
+    // Audio File Player
+    function playAudioFile(src) {
+        stopAllAudio();
+        activeAudioObj = new Audio(src);
+        activeAudioObj.play().catch(e => console.log("Audio play error:", e));
     }
     
     // ORGANIC MECHANICAL TICK SYNTHESIZER
@@ -693,6 +779,7 @@
 
     // --- ELEMENTS ---
     const wheelScreen = document.getElementById('wheelScreen');
+    const modeScreen = document.getElementById('modeScreen');
     const quizScreen = document.getElementById('quizScreen');
     const resultScreen = document.getElementById('resultScreen');
     
@@ -701,6 +788,10 @@
     const spinBtn = document.getElementById('spinBtn');
     const forfeitBtn = document.getElementById('forfeitBtn');
     const confirmBtn = document.getElementById('confirmBtn');
+
+    const modeStudentTitle = document.getElementById('modeStudentTitle');
+    const selectStandardBtn = document.getElementById('selectStandardBtn');
+    const selectListeningBtn = document.getElementById('selectListeningBtn');
     
     const studentTurnLabel = document.getElementById('studentTurnLabel');
     const questionProgress = document.getElementById('questionProgress');
@@ -836,9 +927,22 @@
         setTimeout(() => {
             isSpinning = false;
             currentStudent = students[randomSlice];
-            startQuiz();
+            promptQuestionMode();
         }, 7100); 
     }
+
+    function promptQuestionMode() {
+        modeStudentTitle.innerText = `${currentStudent}'s Turn`;
+        showScreen(modeScreen);
+    }
+
+    selectStandardBtn.addEventListener('click', () => {
+        startQuiz('standard');
+    });
+
+    selectListeningBtn.addEventListener('click', () => {
+        startQuiz('listening');
+    });
 
     // --- IN-WEBSITE QWERTY KEYBOARD BUILDER ---
     const keyboardLayout = [
@@ -907,24 +1011,36 @@
     });
 
     // --- QUIZ LOGIC & TIMER ---
-    function startQuiz() {
+    function startQuiz(mode) {
         score = 0; currentQuestionIndex = 0; currentQuestions = [];
         const hardMode = isHardStudent(currentStudent);
 
-        let activePool = hardMode ? hardMasterPool : normalMasterPool;
+        let activePool = [];
+        if (mode === 'listening') {
+            activePool = parsePool(listeningCompactQuestions);
+        } else {
+            activePool = hardMode ? hardMasterPool : normalMasterPool;
+        }
 
         for(let i=0; i<10; i++) {
             if (activePool.length === 0) {
-                activePool = parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions);
+                if (mode === 'listening') activePool = parsePool(listeningCompactQuestions);
+                else activePool = parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions);
             }
             const randIdx = Math.floor(Math.random() * activePool.length);
             const selectedQ = activePool.splice(randIdx, 1)[0]; 
             
-            if (selectedQ.type === 'mcq') {
+            if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq') {
                 let opts = [...selectedQ.wrongs];
-                const correctIndex = Math.floor(Math.random() * 4);
+                const correctIndex = Math.floor(Math.random() * (opts.length + 1));
                 opts.splice(correctIndex, 0, selectedQ.correct);
-                currentQuestions.push({ type: 'mcq', q: selectedQ.q, opts: opts, ans: correctIndex });
+                currentQuestions.push({ 
+                    type: selectedQ.type, 
+                    q: selectedQ.q, 
+                    audioSrc: selectedQ.audioSrc,
+                    opts: opts, 
+                    ans: correctIndex 
+                });
             } else {
                 currentQuestions.push({ type: selectedQ.type, q: selectedQ.q, ans: selectedQ.ans });
             }
@@ -962,6 +1078,7 @@
     }
 
     function renderQuestion() {
+        stopAllAudio();
         selectedOptionIndex = null;
         currentTypedText = "";
         typedText.innerText = "";
@@ -974,10 +1091,9 @@
         questionProgress.innerText = `Question ${currentQuestionIndex + 1} of 10`;
         questionText.innerText = q.q;
 
-        if (q.type === 'mcq') {
+        if (q.type === 'mcq' || q.type === 'file_audio_mcq') {
             optionsContainer.style.display = 'grid';
             typingContainer.style.display = 'none';
-            audioPlayerContainer.style.display = 'none';
             optionsContainer.innerHTML = '';
 
             q.opts.forEach((opt, idx) => {
@@ -988,12 +1104,19 @@
                 btn.onclick = () => selectOption(idx);
                 optionsContainer.appendChild(btn);
             });
+
+            if (q.type === 'file_audio_mcq') {
+                audioPlayerContainer.style.display = 'block';
+                playAudioFile(q.audioSrc);
+                playAudioBtn.onclick = () => playAudioFile(q.audioSrc);
+            } else {
+                audioPlayerContainer.style.display = 'none';
+            }
         } else if (q.type === 'audio') {
             optionsContainer.style.display = 'none';
             typingContainer.style.display = 'flex';
             audioPlayerContainer.style.display = 'block';
 
-            // Auto-play audio speech on load!
             playQuestionSpeech(q.ans);
             playAudioBtn.onclick = () => playQuestionSpeech(q.ans);
         } else {
@@ -1025,11 +1148,12 @@
 
     function submitAnswer() {
         clearInterval(timerInterval);
+        stopAllAudio();
         confirmBtn.disabled = true;
         
         const q = currentQuestions[currentQuestionIndex];
 
-        if (q.type === 'mcq') {
+        if (q.type === 'mcq' || q.type === 'file_audio_mcq') {
             const allBtns = optionsContainer.querySelectorAll('.option-btn');
             allBtns.forEach(b => b.disabled = true);
 
@@ -1050,14 +1174,13 @@
                 }
             }
         } else {
-            // Typing / Audio Answer Check (Supports UK & US spellings)
             const isCorrect = evaluateTextAnswer(currentTypedText, q.ans);
             if (isCorrect) {
                 typingDisplay.classList.add('correct');
                 score++;
             } else {
                 typingDisplay.classList.add('wrong');
-                const displayAnswer = q.ans.split('/')[0]; // Show primary spelling
+                const displayAnswer = q.ans.split('/')[0];
                 typedText.innerText = `${currentTypedText || 'No Answer'} (Correct: ${displayAnswer})`;
             }
         }
@@ -1081,6 +1204,7 @@
 
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
+        stopAllAudio();
         students = students.filter(s => s !== currentStudent);
         
         resultMsg.innerText = `${currentStudent}`;
