@@ -124,7 +124,6 @@
             transform: translateY(0) scale(1);
         }
 
-        /* RESULT SCREEN EXIT TRANSITION */
         #resultScreen.exiting {
             opacity: 0 !important;
             transform: translateY(-30px) scale(0.9) !important;
@@ -132,7 +131,6 @@
                         transform 0.3s var(--md-sys-motion-easing-emphasized) !important;
         }
 
-        /* WHEEL SCREEN STAGGERED ENTRANCE TRANSITION */
         #wheelScreen.active {
             animation: wheelScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
         }
@@ -170,7 +168,6 @@
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Mode Selection Screen Entrance */
         #modeScreen.active {
             animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
         }
@@ -319,7 +316,7 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Options Grid */
+        /* Options Grid (Supports dynamic option counts) */
         .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; margin-bottom: 24px; }
         @media (max-width: 650px) {
             .options-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -507,7 +504,7 @@
                 <span>Standard Questions</span>
                 <span class="material-symbols-outlined">quiz</span>
             </h3>
-            <p style="font-size: 0.95rem; opacity: 0.85;">General Knowledge, Malaysian History, Geography, Science & Grammar.</p>
+            <p style="font-size: 0.95rem; opacity: 0.85;">General Knowledge, Geography, History, Science & Grammar.</p>
         </div>
 
         <div class="mode-card" id="selectListeningBtn">
@@ -645,6 +642,17 @@
 
     // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
+        "Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
+        "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
+        "Which country has the most natural lakes in the world?|Canada|Russia|USA|Brazil",
+        "Which African nation is completely landlocked within South Africa?|Lesotho|Eswatini|Botswana|Zimbabwe",
+        "What is the deepest lake in the world?|Lake Baikal|Lake Superior|Lake Tanganyika|Caspian Sea",
+        "Which country spans two continents and has its largest city in both?|Turkey|Egypt|Russia|Panama",
+        "Which desert is the driest non-polar desert on Earth?|Atacama Desert|Sahara Desert|Gobi Desert|Kalahari Desert",
+        "In which body of water is the island of Langkawi located?|Andaman Sea|South China Sea|Sulu Sea|Java Sea",
+        "Which country has the longest coastline in the world?|Canada|Indonesia|Russia|Australia",
+        "Which Malaysian state has the longest coastline?|Sabah|Sarawak|Pahang|Johor",
+        "Mount Everest lies on the border between which two countries?|Nepal and China|India and Nepal|China and Bhutan|India and China",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
         "T|Complete the sentence: He is interested _____ learning music.|in",
@@ -698,6 +706,9 @@
     ];
 
     const hardCompactQuestions = [
+        "Which European city is built across 118 small islands connected by over 400 bridges?|Venice|Amsterdam|Bruges|Copenhagen",
+        "Which is the only country in the world to border both the United Kingdom and no other nation?|Ireland|France|Iceland|Portugal",
+        "What is the smallest sovereign country in South America by land area?|Suriname|Uruguay|Guyana|Ecuador",
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
         "T|Complete the grammar: Neither of the boys _____ (be) present.|was",
         "T|Type the past participle of 'shrink':|shrunken",
@@ -774,6 +785,7 @@
     dictationWords.forEach(w => dynamicListeningPool.push(`A|Listen to the audio and type the word you hear:|${w}`));
     dictationPhrases.forEach(p => dynamicListeningPool.push(`A|Listen to the audio and type the phrase you hear:|${p}`));
 
+    // Universal Pool Parser supporting dynamic option counts via parts.slice(2)
     function parsePool(compactList) {
         return compactList.map(line => {
             const parts = line.split('|');
@@ -790,7 +802,7 @@
                     wrongs: parts.slice(4)
                 };
             } else {
-                return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: [parts[2], parts[3], parts[4]] };
+                return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: parts.slice(2) };
             }
         });
     }
@@ -1319,7 +1331,6 @@
             lostList.push(`${currentStudent} - Forfeit`);
         } else if (score >= 6) {
             resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">celebration</span> YOU WIN!`;
-            // WINNERS DO NOT GO TO LOST LIST!
         } else {
             resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">cancel</span> YOU LOSE!`;
             lostList.push(`${currentStudent} - ${score} Pts`);
@@ -1329,14 +1340,13 @@
         showScreen(resultScreen);
     }
 
-    // --- NAVIGATION & UI WITH RESULT TO WHEEL TRANSITION ---
+    // --- NAVIGATION & UI ---
     function showScreen(screenEl) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         screenEl.classList.add('active');
     }
 
     nextStudentBtn.addEventListener('click', () => {
-        // Trigger smooth exit transition on Result Screen
         resultScreen.classList.add('exiting');
 
         wheelCanvas.style.transition = 'none';
@@ -1350,7 +1360,7 @@
             spinBtn.disabled = students.length === 0;
             viewLostBtn.disabled = false;
             showScreen(wheelScreen);
-        }, 300); // Smooth 300ms exit transition
+        }, 300);
     });
 
     spinBtn.addEventListener('click', spinWheel);
