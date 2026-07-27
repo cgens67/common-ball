@@ -272,6 +272,48 @@
             font-size: 0.8rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; width: fit-content;
         }
 
+        /* --- INTERACTIVE AUDIO PLAYER CONTROL CARD --- */
+        .audio-control-card {
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 16px 24px;
+            width: 100%; max-width: 460px;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 16px;
+        }
+
+        .audio-btn-group {
+            display: flex; align-items: center; gap: 12px;
+        }
+
+        .icon-btn {
+            background: var(--md-sys-color-secondary-container);
+            color: var(--md-sys-color-on-secondary-container);
+            border: none; border-radius: 50%;
+            width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.15s, background 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .icon-btn:hover { background: var(--md-sys-color-primary-container); }
+        .icon-btn:active { transform: scale(0.9); }
+        .icon-btn.primary-icon-btn {
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            width: 56px; height: 56px;
+        }
+
+        .volume-container {
+            display: flex; align-items: center; gap: 8px;
+            background: var(--md-sys-color-surface-container-high);
+            padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full);
+        }
+        .volume-container input[type="range"] {
+            width: 80px; accent-color: var(--md-sys-color-primary); cursor: pointer;
+        }
+
         /* --- QUIZ UI --- */
         .quiz-header {
             width: 100%; display: flex; justify-content: space-between; align-items: center;
@@ -316,11 +358,12 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Options Grid (Supports dynamic option counts) */
+        /* Options Grid */
         .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; margin-bottom: 24px; }
         @media (max-width: 650px) {
             .options-grid { grid-template-columns: 1fr; gap: 12px; }
             .question-card { padding: 28px 20px; }
+            .audio-control-card { flex-direction: column; gap: 12px; }
         }
 
         .option-btn {
@@ -541,11 +584,20 @@
             <h3 id="questionText">Question Text Goes Here</h3>
         </div>
 
-        <!-- Audio Player Replay Button Container -->
-        <div id="audioPlayerContainer" style="display: none; margin-bottom: 16px; width: 100%; text-align: center;">
-            <button id="playAudioBtn" class="btn btn-secondary" style="margin: 0 auto; max-width: 280px;">
-                <span class="material-symbols-outlined">volume_up</span> Listen Again
-            </button>
+        <!-- INTERACTIVE AUDIO CONTROL CARD (Play/Pause, Rewind, Volume) -->
+        <div id="audioPlayerContainer" class="audio-control-card" style="display: none;">
+            <div class="audio-btn-group">
+                <button id="rewindAudioBtn" class="icon-btn" title="Rewind / Restart">
+                    <span class="material-symbols-outlined">restart_alt</span>
+                </button>
+                <button id="playPauseAudioBtn" class="icon-btn primary-icon-btn" title="Play / Pause">
+                    <span class="material-symbols-outlined" id="playPauseIcon">play_arrow</span>
+                </button>
+            </div>
+            <div class="volume-container">
+                <span class="material-symbols-outlined" id="volumeIcon">volume_up</span>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.05" value="1">
+            </div>
         </div>
         
         <!-- Multiple Choice Options Container -->
@@ -607,22 +659,28 @@
     // --- LOCAL STORAGE PERSISTENCE ---
     const STORAGE_KEY_STUDENTS = 'md3_quiz_students_2026';
     const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
+    const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026';
 
     function saveState() {
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
         localStorage.setItem(STORAGE_KEY_LOST, JSON.stringify(lostList));
+        localStorage.setItem(STORAGE_KEY_FEATURED, JSON.stringify(featuredListeningPool));
         updateStudentCountUI();
     }
 
     function loadState() {
         const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
         const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
+        const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
 
         if (savedStudents) {
             try { students = JSON.parse(savedStudents); } catch(e) {}
         }
         if (savedLost) {
             try { lostList = JSON.parse(savedLost); } catch(e) {}
+        }
+        if (savedFeatured) {
+            try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {}
         }
         updateStudentCountUI();
     }
@@ -731,61 +789,37 @@
         "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
     ];
 
-    // --- MASSIVE 300+ LISTENING QUESTION POOL ---
-    const baseListeningQuestions = [
-        "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr."
+    // --- FEATURED HIGH-PROBABILITY AUDIO QUESTIONS ---
+    // These appear FIRST in Listening Mode, then get permanently removed so they don't repeat for future students!
+    let featuredListeningQuestions = [
+        "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
+        "FA|Which electronic wind instrument can be heard in this audio clip?|audios/billiejeanlyricon.mp3|Computone Lyricon I|Akai EWI1000|Yamaha WX5|Casio DH-100"
     ];
 
-    const dictationWords = [
+    // --- FORM 2 APPROPRIATE LISTENING VOCABULARY & PHRASES ---
+    const form2DictationWords = [
         "colour/color", "favourite/favorite", "centre/center", "neighbour/neighbor", "theatre/theater",
-        "defence/defense", "traveled/travelled", "licence/license", "judgement/judgment", "catalog/catalogue",
-        "dialogue/dialog", "jewelry/jewellery", "maneuver/manoeuvre", "archeology/archaeology", "esthetic/aesthetic",
-        "harbor/harbour", "humor/humour", "rumor/rumour", "labor/labour", "flavor/flavour", "vapor/vapour",
-        "vigor/vigour", "glamor/glamour", "behavior/behaviour", "endeavor/endeavour", "organize/organise",
-        "realize/realise", "analyze/analyse", "apologize/apologise", "memorize/memorise", "summarize/summarise",
-        "emphasize/emphasise", "hypnotize/hypnotise", "paralyze/paralyse", "pajamas/pyjamas", "plow/plough",
-        "draft/draught", "check/cheque", "curb/kerb", "tire/tyre", "gray/grey", "mustache/moustachio",
-        "airplane/aeroplane", "aluminum/aluminium", "artifact/artefact", "cozy/cosy", "donut/doughnut",
-        "fulfillment/fulfilment", "installment/instalment", "skeptic/sceptic", "sulfur/sulphur", "whiskey/whisky",
-        "accommodation", "bureaucracy", "pronunciation", "mischievous", "perseverance", "conscientious",
-        "entrepreneur", "hypocrisy", "idiosyncrasy", "indispensable", "maintenance", "millennium",
-        "occurrence", "questionnaire", "rhythm", "surveillance", "unbelievable", "vacuum", "paparazzi",
-        "quarantine", "chrysanthemum", "kaleidoscope", "camouflage", "hierarchy", "silhouette", "reservoir",
-        "renaissance", "boulevard", "champagne", "souvenir", "rendezvous", "manuscript", "orchestra",
-        "symphony", "metamorphosis", "panacea", "phenomenon", "quintessential", "soliloquy", "ubiquitous",
-        "ambiguous", "benevolent", "cacophony", "ephemeral", "fastidious", "gregarious", "ineffable",
-        "juxtaposition", "labyrinth", "magnanimous", "nostalgia", "oblivion", "pragmatic", "quixotic",
-        "resilient", "serendipity", "tranquility/tranquillity", "unprecedented", "veracity", "zealous"
+        "travelling/traveling", "organise/organize", "realise/realize", "licence/license", "catalog/catalogue",
+        "environment", "government", "calendar", "dinosaur", "chocolate", "umbrella", "hospital", "beautiful",
+        "knowledge", "different", "important", "mystery", "adventure", "volcano", "championship", "education",
+        "library", "sandwich", "stadium", "restaurant", "technology", "musician", "tradition", "symphony",
+        "orchestra", "activity", "direction", "celebration", "community", "passenger", "dictionary", "vocabulary",
+        "competition", "championship", "experiment", "electricity", "photograph", "university", "refrigerator"
     ];
 
-    const dictationPhrases = [
-        "good morning", "how are you doing today", "practice makes perfect/practise makes perfect",
-        "knowledge is power", "time flies like an arrow", "where there is a will there is a way",
+    const form2DictationPhrases = [
+        "good morning", "how are you doing today", "thank you very much", "have a nice day",
+        "practice makes perfect/practise makes perfect", "knowledge is power", "time flies like an arrow",
         "actions speak louder than words", "better late than never", "honesty is the best policy",
-        "a blessing in disguise", "bite the bullet", "break the ice", "spill the beans", "under the weather",
-        "through thick and thin", "once in a blue moon", "the elephant in the room", "hit the nail on the head",
-        "piece of cake", "see eye to eye", "call it a day", "cost an arm and a leg", "back to square one",
-        "ball is in your court", "barking up the wrong tree", "beat around the bush", "best of both worlds",
-        "burn the midnight oil", "can't judge a book by its cover", "cross that bridge when you come to it",
-        "cry over spilt milk", "curiosity killed the cat", "cut corners", "cut to the chase",
-        "devil's advocate", "don't count your chickens before they hatch", "don't put all your eggs in one basket",
-        "every cloud has a silver lining", "get out of hand", "get your act together", "give the benefit of the doubt",
-        "go back to the drawing board", "good things come to those who wait", "hit the sack", "it takes two to tango",
-        "keep something at bay", "kill two birds with one stone", "let the cat out of the bag", "make a long story short",
-        "miss the boat", "no pain no gain", "on the fence", "pull someone's leg", "pull yourself together",
-        "rub salt in the wound", "take it with a grain of salt", "the last straw", "throw in the towel",
-        "wrap your head around something", "you can say that again", "your guess is as good as mine",
-        "a dime a dozen", "add fuel to the fire", "at the drop of a hat", "back to the drawing board",
-        "barking up the wrong tree", "beat the clock", "between a rock and a hard place", "bite off more than you can chew",
-        "burn bridges", "call it a day", "cat got your tongue", "chasing rainbows", "clear as a crystal",
-        "come rain or shine", "don't rock the boat", "down to the wire", "draw the line", "eaten out of house and home"
+        "a blessing in disguise", "piece of cake", "break a leg", "under the weather",
+        "once in a blue moon", "call it a day", "cost an arm and a leg", "see eye to eye",
+        "hit the nail on the head", "don't count your chickens", "every cloud has a silver lining"
     ];
 
-    let dynamicListeningPool = [...baseListeningQuestions];
-    dictationWords.forEach(w => dynamicListeningPool.push(`A|Listen to the audio and type the word you hear:|${w}`));
-    dictationPhrases.forEach(p => dynamicListeningPool.push(`A|Listen to the audio and type the phrase you hear:|${p}`));
+    let dynamicListeningPool = [];
+    form2DictationWords.forEach(w => dynamicListeningPool.push(`A|Listen to the audio and type the word you hear:|${w}`));
+    form2DictationPhrases.forEach(p => dynamicListeningPool.push(`A|Listen to the audio and type the phrase you hear:|${p}`));
 
-    // Universal Pool Parser supporting dynamic option counts via parts.slice(2)
     function parsePool(compactList) {
         return compactList.map(line => {
             const parts = line.split('|');
@@ -810,8 +844,9 @@
     let normalMasterPool = parsePool(normalCompactQuestions);
     let hardMasterPool = parsePool(hardCompactQuestions);
     let listeningMasterPool = parsePool(dynamicListeningPool);
+    let featuredListeningPool = parsePool(featuredListeningQuestions);
 
-    // --- STATE & AUDIO ---
+    // --- STATE & AUDIO CONTROLLER ---
     let currentStudent = "";
     let currentQuestions = [];
     let currentQuestionIndex = 0;
@@ -823,6 +858,8 @@
     let timeLeft = 20;
 
     let activeAudioObj = null;
+    let isAudioPlaying = false;
+    let currentVolume = 1.0;
 
     function stopAllAudio() {
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -831,25 +868,74 @@
             activeAudioObj.currentTime = 0;
             activeAudioObj = null;
         }
+        isAudioPlaying = false;
+        updatePlayPauseIcon();
     }
 
-    function playQuestionSpeech(phrase) {
-        stopAllAudio();
-        if ('speechSynthesis' in window) {
-            const spokenText = phrase.split('/')[0];
-            const utterance = new SpeechSynthesisUtterance(spokenText);
-            utterance.lang = 'en-US';
-            utterance.rate = 0.85;
-            window.speechSynthesis.speak(utterance);
+    function toggleAudioPlayback() {
+        const q = currentQuestions[currentQuestionIndex];
+        if (!q) return;
+
+        if (q.type === 'file_audio_mcq') {
+            if (!activeAudioObj) {
+                activeAudioObj = new Audio(q.audioSrc);
+                activeAudioObj.volume = currentVolume;
+                activeAudioObj.onended = () => {
+                    isAudioPlaying = false;
+                    updatePlayPauseIcon();
+                };
+            }
+            if (isAudioPlaying) {
+                activeAudioObj.pause();
+                isAudioPlaying = false;
+            } else {
+                activeAudioObj.play().then(() => {
+                    isAudioPlaying = true;
+                    updatePlayPauseIcon();
+                }).catch(e => console.log("Audio play error:", e));
+            }
+            updatePlayPauseIcon();
+        } else if (q.type === 'audio') {
+            if ('speechSynthesis' in window) {
+                if (window.speechSynthesis.speaking && isAudioPlaying) {
+                    window.speechSynthesis.pause();
+                    isAudioPlaying = false;
+                } else if (window.speechSynthesis.paused) {
+                    window.speechSynthesis.resume();
+                    isAudioPlaying = true;
+                } else {
+                    stopAllAudio();
+                    const spokenText = q.ans.split('/')[0];
+                    const utterance = new SpeechSynthesisUtterance(spokenText);
+                    utterance.lang = 'en-US';
+                    utterance.rate = 0.85;
+                    utterance.volume = currentVolume;
+                    utterance.onend = () => {
+                        isAudioPlaying = false;
+                        updatePlayPauseIcon();
+                    };
+                    window.speechSynthesis.speak(utterance);
+                    isAudioPlaying = true;
+                }
+                updatePlayPauseIcon();
+            }
         }
     }
 
-    function playAudioFile(src) {
+    function rewindAudio() {
+        const q = currentQuestions[currentQuestionIndex];
+        if (!q) return;
         stopAllAudio();
-        activeAudioObj = new Audio(src);
-        activeAudioObj.play().catch(e => console.log("Audio play error:", e));
+        toggleAudioPlayback();
     }
-    
+
+    function updatePlayPauseIcon() {
+        const icon = document.getElementById('playPauseIcon');
+        if (icon) {
+            icon.innerText = isAudioPlaying ? 'pause' : 'play_arrow';
+        }
+    }
+
     // ORGANIC MECHANICAL TICK SYNTHESIZER
     let audioCtx;
     function initAudio() {
@@ -913,7 +999,10 @@
     const qwertyKeyboard = document.getElementById('qwertyKeyboard');
 
     const audioPlayerContainer = document.getElementById('audioPlayerContainer');
-    const playAudioBtn = document.getElementById('playAudioBtn');
+    const playPauseAudioBtn = document.getElementById('playPauseAudioBtn');
+    const rewindAudioBtn = document.getElementById('rewindAudioBtn');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeIcon = document.getElementById('volumeIcon');
 
     const timerBarFill = document.getElementById('timerBarFill');
     const timerText = document.getElementById('timerText');
@@ -1126,11 +1215,27 @@
         let activePool = [];
         if (mode === 'listening') {
             activePool = listeningMasterPool;
+            
+            // PRIORITIZE FEATURED QUESTIONS (Thriller & Lyricon)
+            while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
+                const featQ = featuredListeningPool.shift(); // Remove from featured pool permanently!
+                let opts = [...featQ.wrongs];
+                const correctIndex = Math.floor(Math.random() * (opts.length + 1));
+                opts.splice(correctIndex, 0, featQ.correct);
+                currentQuestions.push({
+                    type: featQ.type,
+                    q: featQ.q,
+                    audioSrc: featQ.audioSrc,
+                    opts: opts,
+                    ans: correctIndex
+                });
+            }
         } else {
             activePool = hardMode ? hardMasterPool : normalMasterPool;
         }
 
-        for(let i=0; i<10; i++) {
+        // Fill remaining slots up to 10
+        while (currentQuestions.length < 10) {
             if (activePool.length === 0) {
                 if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
                 else activePool = parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions);
@@ -1153,7 +1258,13 @@
                 currentQuestions.push({ type: selectedQ.type, q: selectedQ.q, ans: selectedQ.ans });
             }
         }
-        
+
+        // Shuffle current 10 questions so featured ones aren't always Q1/Q2
+        for (let i = currentQuestions.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
+        }
+
         studentTurnLabel.innerText = currentStudent;
         buildQwertyKeyboard();
         showScreen(quizScreen);
@@ -1214,19 +1325,17 @@
             });
 
             if (q.type === 'file_audio_mcq') {
-                audioPlayerContainer.style.display = 'block';
-                playAudioFile(q.audioSrc);
-                playAudioBtn.onclick = () => playAudioFile(q.audioSrc);
+                audioPlayerContainer.style.display = 'flex';
+                playAudioPlayback();
             } else {
                 audioPlayerContainer.style.display = 'none';
             }
         } else if (q.type === 'audio') {
             optionsContainer.style.display = 'none';
             typingContainer.style.display = 'flex';
-            audioPlayerContainer.style.display = 'block';
+            audioPlayerContainer.style.display = 'flex';
 
-            playQuestionSpeech(q.ans);
-            playAudioBtn.onclick = () => playQuestionSpeech(q.ans);
+            playAudioPlayback();
         } else {
             optionsContainer.style.display = 'none';
             typingContainer.style.display = 'flex';
@@ -1235,6 +1344,22 @@
 
         resetTimer();
     }
+
+    function playAudioPlayback() {
+        stopAllAudio();
+        toggleAudioPlayback();
+    }
+
+    playPauseAudioBtn.addEventListener('click', toggleAudioPlayback);
+    rewindAudioBtn.addEventListener('click', rewindAudio);
+    
+    volumeSlider.addEventListener('input', (e) => {
+        currentVolume = parseFloat(e.target.value);
+        if (activeAudioObj) activeAudioObj.volume = currentVolume;
+        if (currentVolume === 0) volumeIcon.innerText = 'volume_off';
+        else if (currentVolume < 0.5) volumeIcon.innerText = 'volume_down';
+        else volumeIcon.innerText = 'volume_up';
+    });
 
     function selectOption(index) {
         selectedOptionIndex = index;
@@ -1373,8 +1498,10 @@
         if (confirm("Reset wheel progress and restore all students?")) {
             localStorage.removeItem(STORAGE_KEY_STUDENTS);
             localStorage.removeItem(STORAGE_KEY_LOST);
+            localStorage.removeItem(STORAGE_KEY_FEATURED);
             students = rawStudents.map(s => s.name);
             lostList = [];
+            featuredListeningPool = parsePool(featuredListeningQuestions);
             saveState();
             drawWheel();
             spinBtn.disabled = false;
