@@ -137,13 +137,55 @@
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
         p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 16px; }
 
-        /* --- SEGMENTED BUTTON (Group vs Student Mode) --- */
+        /* --- COLLAPSIBLE MODE TOGGLE & BAR --- */
+        .mode-toggle-chip {
+            background: var(--md-sys-color-surface-container);
+            color: var(--md-sys-color-on-surface);
+            border: none;
+            border-radius: var(--md-sys-shape-corner-full);
+            padding: 8px 18px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s var(--md-sys-motion-easing-bounce), background 0.2s;
+        }
+        .mode-toggle-chip:hover {
+            background: var(--md-sys-color-surface-container-high);
+        }
+        .mode-toggle-chip:active {
+            transform: scale(0.95);
+        }
+
+        .mode-bar-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.35s var(--md-sys-motion-easing-emphasized),
+                        opacity 0.3s var(--md-sys-motion-easing-emphasized),
+                        margin-bottom 0.3s var(--md-sys-motion-easing-emphasized);
+            margin-bottom: 0;
+        }
+
+        .mode-bar-wrapper.expanded {
+            max-height: 80px;
+            opacity: 1;
+            margin-bottom: 16px;
+        }
+
         .segmented-container {
             display: flex;
             background: var(--md-sys-color-surface-container);
             border-radius: var(--md-sys-shape-corner-full);
             padding: 4px;
-            margin-bottom: 16px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             gap: 4px;
         }
@@ -568,7 +610,6 @@
             display: flex; flex-direction: column; align-items: center;
         }
         
-        /* FIXED: Top clearance guarantee ensures top title never gets cut off by browser top bar! */
         .bottom-sheet.open {
             transform: translateY(0);
             max-height: min(72vh, calc(100vh - 120px));
@@ -583,8 +624,7 @@
             width: 100%; overflow-y: auto; text-align: left;
             background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; margin-bottom: 16px;
             display: flex; flex-direction: column; gap: 8px;
-            max-height: 38vh; /* Compact internal scroll area */
-            flex-shrink: 1;
+            max-height: 38vh; flex-shrink: 1;
         }
         .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
@@ -669,14 +709,23 @@
         <div class="wheel-wrapper">
             <h1>Common Ball Quiz</h1>
             
-            <!-- MODE SWITCHER (Student Mode vs Group Mode) -->
-            <div class="segmented-container">
-                <button id="modeStudentTab" class="segmented-btn active">
-                    <span class="material-symbols-outlined">person</span> Students
-                </button>
-                <button id="modeGroupTab" class="segmented-btn">
-                    <span class="material-symbols-outlined">groups</span> Groups (7)
-                </button>
+            <!-- EXPANDABLE MODE TOGGLE CHIP (Hidden Bar by default) -->
+            <button id="toggleModeBtn" class="mode-toggle-chip animate-content-size">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">tune</span>
+                <span id="currentModeLabel">Mode: Students</span>
+                <span class="material-symbols-outlined" id="toggleModeArrow" style="font-size: 1.2rem;">expand_more</span>
+            </button>
+
+            <!-- HIDDEN EXPANDABLE MODE SWITCHER CONTAINER -->
+            <div class="mode-bar-wrapper animate-content-size" id="modeBarWrapper">
+                <div class="segmented-container">
+                    <button id="modeStudentTab" class="segmented-btn active">
+                        <span class="material-symbols-outlined">person</span> Students
+                    </button>
+                    <button id="modeGroupTab" class="segmented-btn">
+                        <span class="material-symbols-outlined">groups</span> Groups (7)
+                    </button>
+                </div>
             </div>
 
             <p class="subtitle" id="studentCountSubtitle">Spin the wheel to select a participant!</p>
@@ -1189,6 +1238,11 @@
     const quizScreen = document.getElementById('quizScreen');
     const resultScreen = document.getElementById('resultScreen');
 
+    const toggleModeBtn = document.getElementById('toggleModeBtn');
+    const currentModeLabel = document.getElementById('currentModeLabel');
+    const toggleModeArrow = document.getElementById('toggleModeArrow');
+    const modeBarWrapper = document.getElementById('modeBarWrapper');
+
     const modeStudentTab = document.getElementById('modeStudentTab');
     const modeGroupTab = document.getElementById('modeGroupTab');
     
@@ -1266,14 +1320,21 @@
         closeConfirmDialog();
     });
 
-    // --- SEGMENTED TABS (Student vs Group Mode) ---
+    // --- EXPANDABLE COLLAPSIBLE MODE BAR LOGIC ---
+    toggleModeBtn.addEventListener('click', () => {
+        const isExpanded = modeBarWrapper.classList.toggle('expanded');
+        toggleModeArrow.innerText = isExpanded ? 'expand_less' : 'expand_more';
+    });
+
     function updateSegmentedTabsUI() {
         if (activeWheelMode === 'groups') {
             modeGroupTab.classList.add('active');
             modeStudentTab.classList.remove('active');
+            currentModeLabel.innerText = "Mode: Groups (7)";
         } else {
             modeStudentTab.classList.add('active');
             modeGroupTab.classList.remove('active');
+            currentModeLabel.innerText = "Mode: Students";
         }
     }
 
