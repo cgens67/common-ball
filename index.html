@@ -87,6 +87,38 @@
             padding: 24px 16px;
         }
 
+        /* --- TOP RIGHT MENU BUTTON --- */
+        .top-menu-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 30;
+            background: var(--md-sys-color-surface-container);
+            color: var(--md-sys-color-on-surface);
+            border: 2px solid rgba(0, 0, 0, 0.05);
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transition: transform 0.2s var(--md-sys-motion-easing-bounce), background 0.2s, opacity 0.2s;
+        }
+        .top-menu-btn:hover:not(:disabled) {
+            background: var(--md-sys-color-surface-container-high);
+            transform: scale(1.08);
+        }
+        .top-menu-btn:active:not(:disabled) {
+            transform: scale(0.92);
+        }
+        .top-menu-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
         /* --- JETPACK COMPOSE animateContentSize EFFECT --- */
         .animate-content-size {
             transition: max-height 0.4s var(--md-sys-motion-easing-emphasized),
@@ -491,7 +523,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* Bottom Sheet for Mobile */
+        /* --- BOTTOM SHEETS & SCRIM --- */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -507,12 +539,29 @@
         }
         .bottom-sheet.open { transform: translateY(0); max-height: 85vh; padding: 32px 24px; }
         .bottom-sheet .drag-handle { width: 48px; height: 6px; border-radius: 3px; background: #CAC4D0; margin: -16px auto 24px auto; }
-        .lost-list-container {
+        
+        .lost-list-container, .student-manage-list {
             width: 100%; overflow-y: auto; text-align: left;
             background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; margin-bottom: 16px;
+            display: flex; flex-direction: column; gap: 8px; max-height: 50vh;
         }
         .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
+
+        .student-manage-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-large); font-weight: 700; font-size: 1rem;
+        }
+        .delete-student-btn {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+            border: none; border-radius: 50%;
+            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.15s, filter 0.2s;
+        }
+        .delete-student-btn:hover { filter: brightness(1.1); }
+        .delete-student-btn:active { transform: scale(0.88); }
     </style>
 </head>
 <body>
@@ -520,6 +569,11 @@
     <!-- IMMERSIVE BACKGROUND LAYERS -->
     <div class="bg-layer"></div>
     <div class="blur-layer"></div>
+
+    <!-- TOP-RIGHT THREE DOTS MENU BUTTON -->
+    <button id="topMenuBtn" class="top-menu-btn" title="Manage Wheel Students">
+        <span class="material-symbols-outlined">more_vert</span>
+    </button>
 
     <!-- WHEEL SCREEN -->
     <div id="wheelScreen" class="screen animate-content-size active">
@@ -584,7 +638,7 @@
             <h3 id="questionText">Question Text Goes Here</h3>
         </div>
 
-        <!-- INTERACTIVE AUDIO CONTROL CARD (Play/Pause, Rewind, Volume) -->
+        <!-- INTERACTIVE AUDIO PLAYER CONTROL CARD (Play/Pause, Rewind, Volume) -->
         <div id="audioPlayerContainer" class="audio-control-card" style="display: none;">
             <div class="audio-btn-group">
                 <button id="rewindAudioBtn" class="icon-btn" title="Rewind / Restart">
@@ -636,6 +690,18 @@
         </div>
         <button id="resetWheelBtn" class="btn btn-danger" style="margin-bottom: 8px;">Reset Wheel Progress</button>
         <button id="closeSheetBtn" class="btn btn-secondary">Close List</button>
+    </div>
+
+    <!-- BOTTOM SHEET (Manage Students) -->
+    <div class="scrim" id="manageScrim"></div>
+    <div class="bottom-sheet animate-content-size" id="manageBottomSheet">
+        <div class="drag-handle"></div>
+        <h2>Manage Wheel Students</h2>
+        <p style="font-size:0.9rem; opacity:0.8; margin-bottom:12px; text-align:center;">Tap the delete icon to remove a student from the wheel.</p>
+        <div class="student-manage-list" id="studentManageList">
+            <!-- Dynamic student list with remove buttons -->
+        </div>
+        <button id="closeManageBtn" class="btn btn-secondary">Close</button>
     </div>
 
 <script>
@@ -790,7 +856,6 @@
     ];
 
     // --- FEATURED HIGH-PROBABILITY AUDIO QUESTIONS ---
-    // These appear FIRST in Listening Mode, then get permanently removed so they don't repeat for future students!
     let featuredListeningQuestions = [
         "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
         "FA|Which electronic wind instrument can be heard in this audio clip?|audios/billiejeanlyricon.mp3|Computone Lyricon I|Akai EWI1000|Yamaha WX5|Casio DH-100"
@@ -973,6 +1038,7 @@
     }
 
     // --- ELEMENTS ---
+    const topMenuBtn = document.getElementById('topMenuBtn');
     const wheelScreen = document.getElementById('wheelScreen');
     const modeScreen = document.getElementById('modeScreen');
     const quizScreen = document.getElementById('quizScreen');
@@ -1012,13 +1078,18 @@
     const resultVerdict = document.getElementById('resultVerdict');
     const nextStudentBtn = document.getElementById('nextStudentBtn');
 
-    // Bottom Sheet
+    // Bottom Sheets
     const viewLostBtn = document.getElementById('viewLostBtn');
     const bottomSheet = document.getElementById('bottomSheet');
     const scrim = document.getElementById('scrim');
     const closeSheetBtn = document.getElementById('closeSheetBtn');
     const resetWheelBtn = document.getElementById('resetWheelBtn');
     const lostListContainer = document.getElementById('lostListContainer');
+
+    const manageBottomSheet = document.getElementById('manageBottomSheet');
+    const manageScrim = document.getElementById('manageScrim');
+    const closeManageBtn = document.getElementById('closeManageBtn');
+    const studentManageList = document.getElementById('studentManageList');
 
     // --- WHEEL DRAWING ---
     const colors = ["#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF", "#E8DEF8", "#FFDBC2", "#C2F0E0"];
@@ -1106,6 +1177,7 @@
         initAudio();
         spinBtn.disabled = true;
         viewLostBtn.disabled = true;
+        topMenuBtn.disabled = true;
 
         const spins = 5;
         const degreesPerSlice = 360 / students.length;
@@ -1123,6 +1195,7 @@
 
         setTimeout(() => {
             isSpinning = false;
+            topMenuBtn.disabled = false;
             currentStudent = students[randomSlice];
             promptQuestionMode();
         }, 7100); 
@@ -1218,7 +1291,7 @@
             
             // PRIORITIZE FEATURED QUESTIONS (Thriller & Lyricon)
             while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
-                const featQ = featuredListeningPool.shift(); // Remove from featured pool permanently!
+                const featQ = featuredListeningPool.shift();
                 let opts = [...featQ.wrongs];
                 const correctIndex = Math.floor(Math.random() * (opts.length + 1));
                 opts.splice(correctIndex, 0, featQ.correct);
@@ -1230,11 +1303,11 @@
                     ans: correctIndex
                 });
             }
+            saveState(); // Persist that featured questions were used!
         } else {
             activePool = hardMode ? hardMasterPool : normalMasterPool;
         }
 
-        // Fill remaining slots up to 10
         while (currentQuestions.length < 10) {
             if (activePool.length === 0) {
                 if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
@@ -1259,7 +1332,7 @@
             }
         }
 
-        // Shuffle current 10 questions so featured ones aren't always Q1/Q2
+        // Shuffle questions so featured ones aren't always Q1/Q2
         for (let i = currentQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
@@ -1510,7 +1583,58 @@
         }
     });
 
-    // --- BOTTOM SHEET LOGIC ---
+    // --- MANAGE STUDENTS MODAL SHEET LOGIC ---
+    function updateStudentManageUI() {
+        studentManageList.innerHTML = '';
+        if (students.length === 0) {
+            studentManageList.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No students left on the wheel!</div>';
+        } else {
+            students.forEach((name, index) => {
+                const item = document.createElement('div');
+                item.className = 'student-manage-item';
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.innerText = name;
+                
+                const delBtn = document.createElement('button');
+                delBtn.className = 'delete-student-btn';
+                delBtn.title = `Remove ${name} from wheel`;
+                delBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>`;
+                delBtn.onclick = () => removeStudentFromWheel(index);
+                
+                item.appendChild(nameSpan);
+                item.appendChild(delBtn);
+                studentManageList.appendChild(item);
+            });
+        }
+    }
+
+    function removeStudentFromWheel(index) {
+        if (index >= 0 && index < students.length) {
+            students.splice(index, 1);
+            saveState();
+            drawWheel();
+            updateStudentManageUI();
+            spinBtn.disabled = students.length === 0;
+        }
+    }
+
+    function openManageSheet() {
+        updateStudentManageUI();
+        manageScrim.classList.add('open');
+        manageBottomSheet.classList.add('open');
+    }
+
+    function closeManageSheet() {
+        manageScrim.classList.remove('open');
+        manageBottomSheet.classList.remove('open');
+    }
+
+    topMenuBtn.addEventListener('click', openManageSheet);
+    closeManageBtn.addEventListener('click', closeManageSheet);
+    manageScrim.addEventListener('click', closeManageSheet);
+
+    // --- BOTTOM SHEET LOGIC (Lost List) ---
     function updateLostListUI() {
         lostListContainer.innerHTML = '';
         if(lostList.length === 0) {
