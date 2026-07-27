@@ -567,18 +567,24 @@
             padding: 0; z-index: 50; max-height: 0; transform: translateY(100%); overflow: hidden;
             display: flex; flex-direction: column; align-items: center;
         }
+        
+        /* FIXED: Top clearance guarantee ensures top title never gets cut off by browser top bar! */
         .bottom-sheet.open {
             transform: translateY(0);
-            max-height: 85vh;
-            padding: 32px 24px;
+            max-height: min(72vh, calc(100vh - 120px));
+            padding: 20px 20px 24px 20px;
         }
-        .bottom-sheet .drag-handle { width: 48px; height: 6px; border-radius: 3px; background: #CAC4D0; margin: -16px auto 24px auto; }
+        .bottom-sheet .drag-handle {
+            width: 48px; height: 5px; border-radius: 3px;
+            background: #CAC4D0; margin: -4px auto 16px auto; flex-shrink: 0;
+        }
         
-        /* Smooth collapsing bounds for item deletion */
         .lost-list-container, .student-manage-list {
             width: 100%; overflow-y: auto; text-align: left;
             background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; margin-bottom: 16px;
-            display: flex; flex-direction: column; gap: 8px; max-height: 50vh;
+            display: flex; flex-direction: column; gap: 8px;
+            max-height: 38vh; /* Compact internal scroll area */
+            flex-shrink: 1;
         }
         .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
@@ -837,7 +843,6 @@
     let groups = [...defaultGroups];
     let lostList = [];
 
-    // Return the active array based on chosen mode
     function getActiveParticipants() {
         return activeWheelMode === 'groups' ? groups : students;
     }
@@ -1722,7 +1727,6 @@
         clearInterval(timerInterval);
         stopAllAudio();
         
-        // Remove from active participant array
         const participants = getActiveParticipants();
         setActiveParticipants(participants.filter(s => s !== currentStudent));
         
@@ -1837,11 +1841,10 @@
         }
     }
 
-    // Smooth animateContentSize collapse on removal
     function removeParticipantFromWheel(index) {
         const itemEl = document.getElementById(`manage-item-${index}`);
         if (itemEl) {
-            itemEl.classList.add('removing'); // Triggers smooth height collapse animation!
+            itemEl.classList.add('removing');
             setTimeout(() => {
                 const participants = getActiveParticipants();
                 if (index >= 0 && index < participants.length) {
