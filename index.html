@@ -129,13 +129,43 @@
                         margin 0.4s var(--md-sys-motion-easing-emphasized),
                         transform 0.4s var(--md-sys-motion-easing-emphasized),
                         opacity 0.4s var(--md-sys-motion-easing-emphasized);
-            will-change: transform, opacity, height;
+            will-change: transform, opacity, height, max-height;
         }
 
         /* Typography */
         h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px;}
         h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
-        p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 24px; }
+        p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 16px; }
+
+        /* --- SEGMENTED BUTTON (Group vs Student Mode) --- */
+        .segmented-container {
+            display: flex;
+            background: var(--md-sys-color-surface-container);
+            border-radius: var(--md-sys-shape-corner-full);
+            padding: 4px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            gap: 4px;
+        }
+        .segmented-btn {
+            border: none;
+            background: transparent;
+            color: var(--md-sys-color-on-surface);
+            padding: 10px 20px;
+            border-radius: var(--md-sys-shape-corner-full);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.25s var(--md-sys-motion-easing-bounce);
+        }
+        .segmented-btn.active {
+            background: var(--md-sys-color-primary-container);
+            color: var(--md-sys-color-on-primary-container);
+            box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
+        }
 
         /* --- SCREEN TRANSITIONS --- */
         .screen {
@@ -523,7 +553,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- BOTTOM SHEETS & SCRIM --- */
+        /* --- BOTTOM SHEETS & SCRIM WITH animateContentSize --- */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -537,9 +567,14 @@
             padding: 0; z-index: 50; max-height: 0; transform: translateY(100%); overflow: hidden;
             display: flex; flex-direction: column; align-items: center;
         }
-        .bottom-sheet.open { transform: translateY(0); max-height: 85vh; padding: 32px 24px; }
+        .bottom-sheet.open {
+            transform: translateY(0);
+            max-height: 85vh;
+            padding: 32px 24px;
+        }
         .bottom-sheet .drag-handle { width: 48px; height: 6px; border-radius: 3px; background: #CAC4D0; margin: -16px auto 24px auto; }
         
+        /* Smooth collapsing bounds for item deletion */
         .lost-list-container, .student-manage-list {
             width: 100%; overflow-y: auto; text-align: left;
             background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; margin-bottom: 16px;
@@ -552,7 +587,19 @@
             display: flex; align-items: center; justify-content: space-between;
             padding: 12px 16px; background: var(--md-sys-color-surface-container);
             border-radius: var(--md-sys-shape-corner-large); font-weight: 700; font-size: 1rem;
+            transition: all 0.3s var(--md-sys-motion-easing-emphasized);
+            max-height: 80px; opacity: 1;
         }
+        .student-manage-item.removing {
+            max-height: 0 !important;
+            opacity: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            margin: 0 !important;
+            transform: scale(0.9);
+            overflow: hidden;
+        }
+
         .delete-student-btn {
             background: var(--md-sys-color-error-container);
             color: var(--md-sys-color-on-error-container);
@@ -562,6 +609,42 @@
         }
         .delete-student-btn:hover { filter: brightness(1.1); }
         .delete-student-btn:active { transform: scale(0.88); }
+
+        /* --- IN-UI CONFIRM DIALOG OVERLAY --- */
+        .confirm-dialog-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px);
+            z-index: 60; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s var(--md-sys-motion-easing-emphasized);
+            padding: 16px;
+        }
+        .confirm-dialog-overlay.open {
+            opacity: 1; pointer-events: all;
+        }
+        .confirm-dialog-card {
+            background: var(--md-sys-color-surface-container-high);
+            border-radius: var(--md-sys-shape-corner-extra-large);
+            padding: 32px 28px; width: 100%; max-width: 420px;
+            text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+            transform: scale(0.85) translateY(20px);
+            transition: transform 0.35s var(--md-sys-motion-easing-bounce);
+        }
+        .confirm-dialog-overlay.open .confirm-dialog-card {
+            transform: scale(1) translateY(0);
+        }
+        .confirm-dialog-icon {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px auto;
+        }
+        .confirm-dialog-actions {
+            display: flex; gap: 12px; margin-top: 24px; width: 100%;
+        }
+        .confirm-dialog-actions .btn {
+            margin-bottom: 0; flex: 1; padding: 12px 16px; font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -571,7 +654,7 @@
     <div class="blur-layer"></div>
 
     <!-- TOP-RIGHT THREE DOTS MENU BUTTON -->
-    <button id="topMenuBtn" class="top-menu-btn" title="Manage Wheel Students">
+    <button id="topMenuBtn" class="top-menu-btn" title="Manage Wheel Participants">
         <span class="material-symbols-outlined">more_vert</span>
     </button>
 
@@ -579,7 +662,18 @@
     <div id="wheelScreen" class="screen animate-content-size active">
         <div class="wheel-wrapper">
             <h1>Common Ball Quiz</h1>
-            <p class="subtitle" id="studentCountSubtitle">Spin the wheel to select a student!</p>
+            
+            <!-- MODE SWITCHER (Student Mode vs Group Mode) -->
+            <div class="segmented-container">
+                <button id="modeStudentTab" class="segmented-btn active">
+                    <span class="material-symbols-outlined">person</span> Students
+                </button>
+                <button id="modeGroupTab" class="segmented-btn">
+                    <span class="material-symbols-outlined">groups</span> Groups (7)
+                </button>
+            </div>
+
+            <p class="subtitle" id="studentCountSubtitle">Spin the wheel to select a participant!</p>
             
             <div class="wheel-container">
                 <div class="wheel-pointer" id="wheelPointer"></div>
@@ -621,7 +715,7 @@
     <div id="quizScreen" class="screen animate-content-size">
         <div class="quiz-header">
             <div class="student-chip">
-                <span id="studentTurnLabel">Student</span>
+                <span id="studentTurnLabel">Participant</span>
             </div>
             <div style="font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 4px;" id="timerText">
                 <span class="material-symbols-outlined">timer</span> <span>20s</span>
@@ -638,7 +732,7 @@
             <h3 id="questionText">Question Text Goes Here</h3>
         </div>
 
-        <!-- INTERACTIVE AUDIO PLAYER CONTROL CARD (Play/Pause, Rewind, Volume) -->
+        <!-- INTERACTIVE AUDIO PLAYER CONTROL CARD -->
         <div id="audioPlayerContainer" class="audio-control-card" style="display: none;">
             <div class="audio-btn-group">
                 <button id="rewindAudioBtn" class="icon-btn" title="Rewind / Restart">
@@ -692,16 +786,31 @@
         <button id="closeSheetBtn" class="btn btn-secondary">Close List</button>
     </div>
 
-    <!-- BOTTOM SHEET (Manage Students) -->
+    <!-- BOTTOM SHEET WITH animateContentSize (Manage Wheel Participants) -->
     <div class="scrim" id="manageScrim"></div>
     <div class="bottom-sheet animate-content-size" id="manageBottomSheet">
         <div class="drag-handle"></div>
-        <h2>Manage Wheel Students</h2>
-        <p style="font-size:0.9rem; opacity:0.8; margin-bottom:12px; text-align:center;">Tap the delete icon to remove a student from the wheel.</p>
-        <div class="student-manage-list" id="studentManageList">
-            <!-- Dynamic student list with remove buttons -->
+        <h2 id="manageSheetTitle">Manage Wheel Participants</h2>
+        <p style="font-size:0.9rem; opacity:0.8; margin-bottom:12px; text-align:center;">Tap the delete icon to remove a participant from the wheel.</p>
+        <div class="student-manage-list animate-content-size" id="studentManageList">
+            <!-- Dynamic participant list -->
         </div>
         <button id="closeManageBtn" class="btn btn-secondary">Close</button>
+    </div>
+
+    <!-- IN-UI CONFIRM DIALOG OVERLAY -->
+    <div class="confirm-dialog-overlay" id="confirmDialogOverlay">
+        <div class="confirm-dialog-card animate-content-size">
+            <div class="confirm-dialog-icon">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">warning</span>
+            </div>
+            <h3 id="confirmDialogTitle">Confirm Removal</h3>
+            <p id="confirmDialogMsg" style="margin-top: 8px; font-size: 0.95rem; opacity: 0.85;">Are you sure you want to remove this item?</p>
+            <div class="confirm-dialog-actions">
+                <button id="confirmCancelBtn" class="btn btn-secondary">Cancel</button>
+                <button id="confirmActionBtn" class="btn btn-danger">Remove</button>
+            </div>
+        </div>
     </div>
 
 <script>
@@ -719,16 +828,36 @@
         {"name": "XANXUS TAI WEI XUAN"}, {"name": "YEOW JIA WEI"}, {"name": "PANG MIN ZE"}
     ];
 
+    const defaultGroups = [
+        "Group 1", "Group 2", "Group 3", "Group 4", "Group 5", "Group 6", "Group 7"
+    ];
+
+    let activeWheelMode = 'students'; // 'students' or 'groups'
     let students = rawStudents.map(s => s.name);
+    let groups = [...defaultGroups];
     let lostList = [];
+
+    // Return the active array based on chosen mode
+    function getActiveParticipants() {
+        return activeWheelMode === 'groups' ? groups : students;
+    }
+
+    function setActiveParticipants(newArr) {
+        if (activeWheelMode === 'groups') groups = newArr;
+        else students = newArr;
+    }
 
     // --- LOCAL STORAGE PERSISTENCE ---
     const STORAGE_KEY_STUDENTS = 'md3_quiz_students_2026';
+    const STORAGE_KEY_GROUPS = 'md3_quiz_groups_2026';
+    const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
     const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
     const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026';
 
     function saveState() {
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        localStorage.setItem(STORAGE_KEY_GROUPS, JSON.stringify(groups));
+        localStorage.setItem(STORAGE_KEY_MODE, activeWheelMode);
         localStorage.setItem(STORAGE_KEY_LOST, JSON.stringify(lostList));
         localStorage.setItem(STORAGE_KEY_FEATURED, JSON.stringify(featuredListeningPool));
         updateStudentCountUI();
@@ -736,11 +865,19 @@
 
     function loadState() {
         const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+        const savedGroups = localStorage.getItem(STORAGE_KEY_GROUPS);
+        const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
         const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
         const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
 
         if (savedStudents) {
             try { students = JSON.parse(savedStudents); } catch(e) {}
+        }
+        if (savedGroups) {
+            try { groups = JSON.parse(savedGroups); } catch(e) {}
+        }
+        if (savedMode) {
+            activeWheelMode = savedMode;
         }
         if (savedLost) {
             try { lostList = JSON.parse(savedLost); } catch(e) {}
@@ -748,13 +885,16 @@
         if (savedFeatured) {
             try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {}
         }
+        updateSegmentedTabsUI();
         updateStudentCountUI();
     }
 
     function updateStudentCountUI() {
         const subtitle = document.getElementById('studentCountSubtitle');
+        const count = getActiveParticipants().length;
+        const label = activeWheelMode === 'groups' ? 'groups' : 'students';
         if (subtitle) {
-            subtitle.innerText = `Spin the wheel! (${students.length} students remaining)`;
+            subtitle.innerText = `Spin the wheel! (${count} ${label} remaining)`;
         }
     }
 
@@ -1043,6 +1183,9 @@
     const modeScreen = document.getElementById('modeScreen');
     const quizScreen = document.getElementById('quizScreen');
     const resultScreen = document.getElementById('resultScreen');
+
+    const modeStudentTab = document.getElementById('modeStudentTab');
+    const modeGroupTab = document.getElementById('modeGroupTab');
     
     const wheelCanvas = document.getElementById('wheelCanvas');
     const ctx = wheelCanvas.getContext('2d');
@@ -1090,24 +1233,81 @@
     const manageScrim = document.getElementById('manageScrim');
     const closeManageBtn = document.getElementById('closeManageBtn');
     const studentManageList = document.getElementById('studentManageList');
+    const manageSheetTitle = document.getElementById('manageSheetTitle');
+
+    // Confirm Dialog
+    const confirmDialogOverlay = document.getElementById('confirmDialogOverlay');
+    const confirmDialogTitle = document.getElementById('confirmDialogTitle');
+    const confirmDialogMsg = document.getElementById('confirmDialogMsg');
+    const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+    const confirmActionBtn = document.getElementById('confirmActionBtn');
+    let pendingConfirmCallback = null;
+
+    function showConfirmDialog(title, msg, onConfirm) {
+        confirmDialogTitle.innerText = title;
+        confirmDialogMsg.innerText = msg;
+        pendingConfirmCallback = onConfirm;
+        confirmDialogOverlay.classList.add('open');
+    }
+
+    function closeConfirmDialog() {
+        confirmDialogOverlay.classList.remove('open');
+        pendingConfirmCallback = null;
+    }
+
+    confirmCancelBtn.addEventListener('click', closeConfirmDialog);
+    confirmActionBtn.addEventListener('click', () => {
+        if (pendingConfirmCallback) pendingConfirmCallback();
+        closeConfirmDialog();
+    });
+
+    // --- SEGMENTED TABS (Student vs Group Mode) ---
+    function updateSegmentedTabsUI() {
+        if (activeWheelMode === 'groups') {
+            modeGroupTab.classList.add('active');
+            modeStudentTab.classList.remove('active');
+        } else {
+            modeStudentTab.classList.add('active');
+            modeGroupTab.classList.remove('active');
+        }
+    }
+
+    modeStudentTab.addEventListener('click', () => {
+        if (activeWheelMode !== 'students') {
+            activeWheelMode = 'students';
+            updateSegmentedTabsUI();
+            saveState();
+            drawWheel();
+        }
+    });
+
+    modeGroupTab.addEventListener('click', () => {
+        if (activeWheelMode !== 'groups') {
+            activeWheelMode = 'groups';
+            updateSegmentedTabsUI();
+            saveState();
+            drawWheel();
+        }
+    });
 
     // --- WHEEL DRAWING ---
     const colors = ["#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF", "#E8DEF8", "#FFDBC2", "#C2F0E0"];
 
     function drawWheel() {
-        if(students.length === 0) {
+        const participants = getActiveParticipants();
+        if(participants.length === 0) {
             ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
             ctx.fillStyle = "#E8DEF8"; ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = "#1D192B"; ctx.font = "bold 36px Inter"; ctx.textAlign = "center";
-            ctx.fillText("All Students Played!", 300, 310);
+            ctx.fillText("All Played!", 300, 310);
             spinBtn.disabled = true;
             return;
         }
 
-        const arc = (Math.PI * 2) / students.length;
+        const arc = (Math.PI * 2) / participants.length;
         ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
 
-        for (let i = 0; i < students.length; i++) {
+        for (let i = 0; i < participants.length; i++) {
             const angle = i * arc;
             ctx.beginPath();
             ctx.arc(300, 300, 300, angle, angle + arc, false);
@@ -1119,10 +1319,11 @@
             ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
             ctx.rotate(angle + arc / 2);
             ctx.textAlign = "right";
-            ctx.font = students.length > 20 ? "bold 13px Inter" : "bold 18px Inter";
-            ctx.fillText(students[i], 130, 5);
+            ctx.font = participants.length > 20 ? "bold 13px Inter" : "bold 18px Inter";
+            ctx.fillText(participants[i], 130, 5);
             ctx.restore();
         }
+        spinBtn.disabled = false;
     }
 
     let isSpinning = false;
@@ -1150,7 +1351,8 @@
         }
         if(angle < 0) angle += 360;
         
-        const degreesPerSlice = 360 / students.length;
+        const participants = getActiveParticipants();
+        const degreesPerSlice = 360 / participants.length;
         let relAngle = (270 - angle + 360) % 360;
         let currentSlice = Math.floor(relAngle / degreesPerSlice);
         
@@ -1173,15 +1375,16 @@
     }
 
     function spinWheel() {
-        if (students.length === 0) return;
+        const participants = getActiveParticipants();
+        if (participants.length === 0) return;
         initAudio();
         spinBtn.disabled = true;
         viewLostBtn.disabled = true;
         topMenuBtn.disabled = true;
 
         const spins = 5;
-        const degreesPerSlice = 360 / students.length;
-        const randomSlice = Math.floor(Math.random() * students.length);
+        const degreesPerSlice = 360 / participants.length;
+        const randomSlice = Math.floor(Math.random() * participants.length);
         
         const sliceCenter = (randomSlice + 0.5) * degreesPerSlice;
         const targetDegrees = (spins * 360) + 270 - sliceCenter;
@@ -1196,7 +1399,7 @@
         setTimeout(() => {
             isSpinning = false;
             topMenuBtn.disabled = false;
-            currentStudent = students[randomSlice];
+            currentStudent = participants[randomSlice];
             promptQuestionMode();
         }, 7100); 
     }
@@ -1303,7 +1506,7 @@
                     ans: correctIndex
                 });
             }
-            saveState(); // Persist that featured questions were used!
+            saveState();
         } else {
             activePool = hardMode ? hardMasterPool : normalMasterPool;
         }
@@ -1332,7 +1535,6 @@
             }
         }
 
-        // Shuffle questions so featured ones aren't always Q1/Q2
         for (let i = currentQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
@@ -1519,7 +1721,10 @@
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
         stopAllAudio();
-        students = students.filter(s => s !== currentStudent);
+        
+        // Remove from active participant array
+        const participants = getActiveParticipants();
+        setActiveParticipants(participants.filter(s => s !== currentStudent));
         
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = score;
@@ -1555,7 +1760,7 @@
             resultScreen.classList.remove('exiting');
             wheelCanvas.style.transition = 'transform 7s cubic-bezier(0.1, 0.9, 0.2, 1)';
             drawWheel();
-            spinBtn.disabled = students.length === 0;
+            spinBtn.disabled = getActiveParticipants().length === 0;
             viewLostBtn.disabled = false;
             showScreen(wheelScreen);
         }, 300);
@@ -1563,35 +1768,51 @@
 
     spinBtn.addEventListener('click', spinWheel);
     forfeitBtn.addEventListener('click', () => {
-        score = 0;
-        finishQuiz(true);
+        showConfirmDialog(
+            "Forfeit Turn?", 
+            `Are you sure ${currentStudent} wants to forfeit? They will automatically lose and be added to the Lost List.`,
+            () => {
+                score = 0;
+                finishQuiz(true);
+            }
+        );
     });
 
     resetWheelBtn.addEventListener('click', () => {
-        if (confirm("Reset wheel progress and restore all students?")) {
-            localStorage.removeItem(STORAGE_KEY_STUDENTS);
-            localStorage.removeItem(STORAGE_KEY_LOST);
-            localStorage.removeItem(STORAGE_KEY_FEATURED);
-            students = rawStudents.map(s => s.name);
-            lostList = [];
-            featuredListeningPool = parsePool(featuredListeningQuestions);
-            saveState();
-            drawWheel();
-            spinBtn.disabled = false;
-            updateLostListUI();
-            closeBottomSheet();
-        }
+        showConfirmDialog(
+            "Reset Wheel Progress?",
+            "Are you sure you want to restore all participants and reset the lost list?",
+            () => {
+                localStorage.removeItem(STORAGE_KEY_STUDENTS);
+                localStorage.removeItem(STORAGE_KEY_GROUPS);
+                localStorage.removeItem(STORAGE_KEY_LOST);
+                localStorage.removeItem(STORAGE_KEY_FEATURED);
+                students = rawStudents.map(s => s.name);
+                groups = [...defaultGroups];
+                lostList = [];
+                featuredListeningPool = parsePool(featuredListeningQuestions);
+                saveState();
+                drawWheel();
+                spinBtn.disabled = false;
+                updateLostListUI();
+                closeBottomSheet();
+            }
+        );
     });
 
-    // --- MANAGE STUDENTS MODAL SHEET LOGIC ---
+    // --- MANAGE PARTICIPANTS SHEET WITH animateContentSize & IN-UI CONFIRM ---
     function updateStudentManageUI() {
         studentManageList.innerHTML = '';
-        if (students.length === 0) {
-            studentManageList.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No students left on the wheel!</div>';
+        const participants = getActiveParticipants();
+        manageSheetTitle.innerText = activeWheelMode === 'groups' ? "Manage Wheel Groups" : "Manage Wheel Students";
+
+        if (participants.length === 0) {
+            studentManageList.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No participants left on the wheel!</div>';
         } else {
-            students.forEach((name, index) => {
+            participants.forEach((name, index) => {
                 const item = document.createElement('div');
                 item.className = 'student-manage-item';
+                item.id = `manage-item-${index}`;
                 
                 const nameSpan = document.createElement('span');
                 nameSpan.innerText = name;
@@ -1600,7 +1821,14 @@
                 delBtn.className = 'delete-student-btn';
                 delBtn.title = `Remove ${name} from wheel`;
                 delBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>`;
-                delBtn.onclick = () => removeStudentFromWheel(index);
+                
+                delBtn.onclick = () => {
+                    showConfirmDialog(
+                        `Remove ${name}?`,
+                        `Are you sure you want to remove ${name} from the wheel?`,
+                        () => removeParticipantFromWheel(index)
+                    );
+                };
                 
                 item.appendChild(nameSpan);
                 item.appendChild(delBtn);
@@ -1609,13 +1837,22 @@
         }
     }
 
-    function removeStudentFromWheel(index) {
-        if (index >= 0 && index < students.length) {
-            students.splice(index, 1);
-            saveState();
-            drawWheel();
-            updateStudentManageUI();
-            spinBtn.disabled = students.length === 0;
+    // Smooth animateContentSize collapse on removal
+    function removeParticipantFromWheel(index) {
+        const itemEl = document.getElementById(`manage-item-${index}`);
+        if (itemEl) {
+            itemEl.classList.add('removing'); // Triggers smooth height collapse animation!
+            setTimeout(() => {
+                const participants = getActiveParticipants();
+                if (index >= 0 && index < participants.length) {
+                    participants.splice(index, 1);
+                    setActiveParticipants(participants);
+                    saveState();
+                    drawWheel();
+                    updateStudentManageUI();
+                    spinBtn.disabled = participants.length === 0;
+                }
+            }, 300);
         }
     }
 
