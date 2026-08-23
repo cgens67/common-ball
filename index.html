@@ -42,7 +42,7 @@
             --md-sys-color-on-primary: #FFFFFF;
             --md-sys-color-primary-container: transparent;
             --md-sys-color-on-primary-container: #111111;
-            --md-sys-color-secondary-container: #E5E5EA;
+            --md-sys-color-secondary-container: #E5E5EA; /* iOS Light Gray */
             --md-sys-color-on-secondary-container: #111111;
             --md-sys-color-tertiary: #7D5260;
             --md-sys-color-tertiary-container: #F2F2F7;
@@ -85,15 +85,15 @@
             top: 0; left: 0; 
             width: 100vw; height: 100vh;
             z-index: -2;
-            background-color: #f2f2f7; 
+            background-color: #F2F2F7;
         }
         .blur-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Reduced opacity and blur so background shapes are clearly visible */
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            /* Thick blur to create an ambient colored frosted glass look */
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
             z-index: -1;
         }
 
@@ -220,44 +220,11 @@
             transition: opacity 0.3s var(--md-sys-motion-easing-emphasized), transform 0.3s var(--md-sys-motion-easing-emphasized) !important;
         }
 
-        #wheelScreen.active { animation: wheelScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards; }
-        @keyframes wheelScreenEnter {
+        #wheelScreen.active, #pickerScreen.active, #modeScreen.active { 
+            animation: screenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards; 
+        }
+        @keyframes screenEnter {
             0% { opacity: 0; transform: translateY(30px) scale(0.92); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        #wheelScreen.active h1, #wheelScreen.active .subtitle {
-            animation: elementFadeDown 0.4s 0.1s var(--md-sys-motion-easing-emphasized) both;
-        }
-        #wheelScreen.active .wheel-container {
-            animation: wheelPopZoom 0.5s 0.15s var(--md-sys-motion-easing-bounce) both;
-        }
-        #wheelScreen.active .btn {
-            animation: elementPopUp 0.4s 0.25s var(--md-sys-motion-easing-bounce) both;
-        }
-
-        @keyframes elementFadeDown {
-            0% { opacity: 0; transform: translateY(-16px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes wheelPopZoom {
-            0% { opacity: 0; transform: scale(0.85); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes elementPopUp {
-            0% { opacity: 0; transform: translateY(20px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        #modeScreen.active { animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards; }
-        @keyframes modeScreenEnter {
-            0% { opacity: 0; transform: translateY(30px) scale(0.92); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        #modeScreen.active .mode-card:nth-child(2) { animation: cardSlideIn 0.45s 0.1s var(--md-sys-motion-easing-bounce) both; }
-        #modeScreen.active .mode-card:nth-child(3) { animation: cardSlideIn 0.45s 0.22s var(--md-sys-motion-easing-bounce) both; }
-        @keyframes cardSlideIn {
-            0% { opacity: 0; transform: translateY(24px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
@@ -312,6 +279,58 @@
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
             will-change: transform;
+        }
+
+        /* --- SLOT MACHINE PICKER UI --- */
+        .picker-wrapper {
+            margin-top: 40px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .picker-window {
+            width: 100%;
+            max-width: 600px;
+            height: 70px;
+            background: #F2F2F7;
+            border-radius: 35px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+        .picker-highlight {
+            position: absolute;
+            width: 240px;
+            height: 100%;
+            background: #E5E5EA; /* Darker pill */
+            border-radius: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1;
+        }
+        .picker-track {
+            display: flex;
+            position: absolute;
+            left: 50%;
+            z-index: 2;
+            /* Animation handled via JS for perfect alignment */
+        }
+        .picker-item {
+            width: 240px;
+            text-align: center;
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #999;
+            transition: color 0.3s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            padding: 0 16px;
+            line-height: 70px; /* Vertically center text perfectly */
+        }
+        .picker-item.active {
+            color: #111; /* Highlight text */
         }
 
         /* --- MODE SELECTION CARDS --- */
@@ -463,11 +482,12 @@
 
         .qwerty-keyboard { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 650px; user-select: none; }
         .kb-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
+        /* LAG FIX: Removed backdrop-filter to guarantee 60fps on mobile */
         .key {
-            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            background: #FFFFFF;
             color: #111; border: none; border-radius: 8px; padding: 14px 0;
             flex: 1; max-width: 48px; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: transform 0.1s, background 0.15s;
             display: flex; align-items: center; justify-content: center;
         }
@@ -577,7 +597,7 @@
 </head>
 <body>
 
-    <!-- IMMERSIVE BACKGROUND LAYERS -->
+    <!-- IMMERSIVE SOLID-COLOR PHYSICS BACKGROUND LAYERS -->
     <canvas id="bgCanvas"></canvas>
     <div class="blur-layer"></div>
 
@@ -589,11 +609,9 @@
     <!-- WHEEL SCREEN (Redesigned Main Screen Layout) -->
     <div id="wheelScreen" class="screen animate-content-size active">
         <div class="wheel-wrapper">
-            <!-- Exact text matched to screenshot -->
             <h1>common ball :)</h1>
             <p class="subtitle" id="studentCountSubtitle">(as known as common knowledge, if you don't know ball)</p>
             
-            <!-- Redesigned pill buttons stacked visually -->
             <button id="spinBtn" class="btn">start</button>
             <button id="toggleModeBtn" class="btn">
                 settings
@@ -607,7 +625,7 @@
                     <button id="modeStudentTab" class="segmented-btn">
                         <span class="material-symbols-outlined">person</span> Students
                     </button>
-                    <!-- Make Groups Active Default -->
+                    <!-- Groups is active default -->
                     <button id="modeGroupTab" class="segmented-btn active">
                         <span class="material-symbols-outlined">groups</span> Groups (7)
                     </button>
@@ -615,10 +633,22 @@
                 <button id="viewLostBtn" class="btn btn-secondary" style="margin-top: 12px; width:auto; font-size: 0.9rem;">view lost list</button>
             </div>
 
-            <!-- Wheel is kept for functionality and its animations, but styled cleanly -->
             <div class="wheel-container">
                 <div class="wheel-pointer" id="wheelPointer"></div>
                 <canvas id="wheelCanvas" width="600" height="600"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLOT MACHINE GROUP PICKER SCREEN -->
+    <div id="pickerScreen" class="screen animate-content-size">
+        <h1 id="pickerGroupTitle" style="font-size: 2.8rem; margin-bottom: 40px; color:#444;">For group 1:</h1>
+        <div class="picker-wrapper">
+            <div class="picker-window">
+                <div class="picker-highlight"></div>
+                <div class="picker-track" id="pickerTrack">
+                    <!-- Dynamic items appended via JS -->
+                </div>
             </div>
         </div>
     </div>
@@ -752,119 +782,86 @@
     </div>
 
 <script>
-    // --- HIGH-PERFORMANCE BACKGROUND SPACE PHYSICS ENGINE --- //
+    // --- HIGH-PERFORMANCE BACKGROUND SOLID-COLOR PHYSICS ENGINE --- //
     const bgCanvas = document.getElementById('bgCanvas');
-    const bgCtx = bgCanvas.getContext('2d', { alpha: false }); // Optimize for no transparency buffer
+    const bgCtx = bgCanvas.getContext('2d', { alpha: false });
     let bgWidth, bgHeight;
     let physicsShapes = [];
     
-    // High quality aesthetic Unsplash image sources to cache offscreen
-    const bgImages = [
-        'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&q=80',
-        'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=500&q=80',
-        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=500&q=80',
-        'https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=500&q=80',
-        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80',
-        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=500&q=80'
-    ];
-    
-    // Pre-cache clipped shapes onto offscreen canvases for blazing fast zero-lag GPU rendering
+    // Classic Apple-style vivid system colors
+    const shapeColors = ['#FF3B30', '#FF9500', '#FFCC00', '#4CD964', '#5AC8FA', '#007AFF', '#5856D6'];
     const cachedPreRenders = [];
-    const shapeRadius = Math.min(window.innerWidth, window.innerHeight) * 0.15; // Dynamic sizing
+    const shapeRadius = Math.min(window.innerWidth, window.innerHeight) * 0.15; 
     
-    bgImages.forEach(src => {
-        const img = new Image();
-        img.crossOrigin = "Anonymous";
-        img.src = src;
-        img.onload = () => {
-            const osc = document.createElement('canvas');
-            const diam = shapeRadius * 2;
-            osc.width = diam; osc.height = diam * 1.35; // slightly taller for photo look
-            const octx = osc.getContext('2d');
-            octx.beginPath();
-            octx.roundRect(0, 0, osc.width, osc.height, 35);
-            octx.clip();
-            octx.drawImage(img, 0, 0, osc.width, osc.height);
-            cachedPreRenders.push({ img: osc, w: osc.width, h: osc.height, r: shapeRadius });
-        };
+    // Pre-cache simple solid rounded squares to eliminate ALL lag
+    shapeColors.forEach(color => {
+        const osc = document.createElement('canvas');
+        const diam = shapeRadius * 2;
+        osc.width = diam; osc.height = diam;
+        const octx = osc.getContext('2d');
+        octx.beginPath();
+        octx.roundRect(0, 0, osc.width, osc.height, 40);
+        octx.fillStyle = color;
+        octx.fill();
+        cachedPreRenders.push({ img: osc, w: osc.width, h: osc.height, r: shapeRadius });
     });
 
     function initPhysicsEngine() {
         bgWidth = bgCanvas.width = window.innerWidth;
         bgHeight = bgCanvas.height = window.innerHeight;
         physicsShapes = [];
-        for(let i=0; i < 7; i++) {
+        for(let i = 0; i < shapeColors.length; i++) {
             physicsShapes.push({
                 x: Math.random() * (bgWidth - shapeRadius*2) + shapeRadius,
                 y: Math.random() * (bgHeight - shapeRadius*2) + shapeRadius,
-                vx: (Math.random() - 0.5) * 3, // Initial velocity
+                vx: (Math.random() - 0.5) * 3,
                 vy: (Math.random() - 0.5) * 3,
-                mass: 1,
-                imgIndex: i % bgImages.length
+                imgIndex: i
             });
         }
     }
 
     function runPhysicsLoop() {
-        bgCtx.fillStyle = '#f2f2f7'; // clear background
+        bgCtx.fillStyle = '#F2F2F7';
         bgCtx.fillRect(0, 0, bgWidth, bgHeight);
 
-        // Update positions & Edge collision
         for(let s of physicsShapes) {
-            s.x += s.vx;
-            s.y += s.vy;
-            const r = shapeRadius; // simplified hit box
-            
+            s.x += s.vx; s.y += s.vy;
+            const r = shapeRadius;
             if (s.x - r < 0) { s.x = r; s.vx *= -1; }
             if (s.x + r > bgWidth) { s.x = bgWidth - r; s.vx *= -1; }
             if (s.y - r < 0) { s.y = r; s.vy *= -1; }
             if (s.y + r > bgHeight) { s.y = bgHeight - r; s.vy *= -1; }
         }
 
-        // Extremely fast circle-collision (Elastic)
+        // Fast circle-collision (Elastic Bounce)
         for (let i = 0; i < physicsShapes.length; i++) {
             for (let j = i + 1; j < physicsShapes.length; j++) {
-                let s1 = physicsShapes[i];
-                let s2 = physicsShapes[j];
-                let dx = s2.x - s1.x;
-                let dy = s2.y - s1.y;
+                let s1 = physicsShapes[i]; let s2 = physicsShapes[j];
+                let dx = s2.x - s1.x; let dy = s2.y - s1.y;
                 let dist = Math.sqrt(dx*dx + dy*dy);
-                let minDist = shapeRadius * 2; // Treat as circles for perfect lag-free physics
+                let minDist = shapeRadius * 2.2; 
 
                 if (dist < minDist && dist !== 0) {
                     let overlap = minDist - dist;
-                    let nx = dx / dist;
-                    let ny = dy / dist;
+                    let nx = dx / dist; let ny = dy / dist;
+                    s1.x -= nx * (overlap / 2); s1.y -= ny * (overlap / 2);
+                    s2.x += nx * (overlap / 2); s2.y += ny * (overlap / 2);
 
-                    // Separate shapes to avoid sticking
-                    s1.x -= nx * (overlap / 2);
-                    s1.y -= ny * (overlap / 2);
-                    s2.x += nx * (overlap / 2);
-                    s2.y += ny * (overlap / 2);
-
-                    // Elastic Bounce Response
-                    let rvx = s2.vx - s1.vx;
-                    let rvy = s2.vy - s1.vy;
+                    let rvx = s2.vx - s1.vx; let rvy = s2.vy - s1.vy;
                     let velAlongNormal = rvx * nx + rvy * ny;
-                    
-                    if (velAlongNormal > 0) continue; // Moving apart already
+                    if (velAlongNormal > 0) continue;
                     
                     let bounce = -(1.0) * velAlongNormal;
                     let impulse = bounce / 2;
-                    s1.vx -= impulse * nx;
-                    s1.vy -= impulse * ny;
-                    s2.vx += impulse * nx;
-                    s2.vy += impulse * ny;
+                    s1.vx -= impulse * nx; s1.vy -= impulse * ny;
+                    s2.vx += impulse * nx; s2.vy += impulse * ny;
                 }
             }
         }
-
-        // Draw Pre-Renders
         for(let s of physicsShapes) {
-            if (cachedPreRenders.length > s.imgIndex) {
-                const asset = cachedPreRenders[s.imgIndex];
-                bgCtx.drawImage(asset.img, s.x - asset.r, s.y - asset.r);
-            }
+            const asset = cachedPreRenders[s.imgIndex];
+            bgCtx.drawImage(asset.img, s.x - asset.r, s.y - asset.r);
         }
         requestAnimationFrame(runPhysicsLoop);
     }
@@ -892,11 +889,25 @@
         "Group 1", "Group 2", "Group 3", "Group 4", "Group 5", "Group 6", "Group 7"
     ];
 
-    // UPDATED: 'groups' is now the active default mode
     let activeWheelMode = 'groups'; 
     let students = rawStudents.map(s => s.name);
     let groups = [...defaultGroups];
+    let groupsMap = {};
     let lostList = [];
+
+    // Helper: Chunk array perfectly into 7 groups (4 members each, last gets 5)
+    function initGroupsMap() {
+        let sList = rawStudents.map(s => s.name);
+        groupsMap = {
+            "Group 1": sList.slice(0, 4),
+            "Group 2": sList.slice(4, 8),
+            "Group 3": sList.slice(8, 12),
+            "Group 4": sList.slice(12, 16),
+            "Group 5": sList.slice(16, 20),
+            "Group 6": sList.slice(20, 24),
+            "Group 7": sList.slice(24, 29)
+        };
+    }
 
     function getActiveParticipants() {
         return activeWheelMode === 'groups' ? groups : students;
@@ -913,6 +924,7 @@
     const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
     const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
     const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026';
+    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026';
 
     function saveState() {
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
@@ -920,6 +932,7 @@
         localStorage.setItem(STORAGE_KEY_MODE, activeWheelMode);
         localStorage.setItem(STORAGE_KEY_LOST, JSON.stringify(lostList));
         localStorage.setItem(STORAGE_KEY_FEATURED, JSON.stringify(featuredListeningPool));
+        localStorage.setItem(STORAGE_KEY_GROUPS_MAP, JSON.stringify(groupsMap));
         updateStudentCountUI();
     }
 
@@ -929,22 +942,20 @@
         const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
         const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
         const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
+        const savedGroupsMap = localStorage.getItem(STORAGE_KEY_GROUPS_MAP);
 
-        if (savedStudents) {
-            try { students = JSON.parse(savedStudents); } catch(e) {}
+        if (savedStudents) { try { students = JSON.parse(savedStudents); } catch(e) {} }
+        if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
+        if (savedMode) { activeWheelMode = savedMode; }
+        if (savedLost) { try { lostList = JSON.parse(savedLost); } catch(e) {} }
+        if (savedFeatured) { try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {} }
+        
+        if (savedGroupsMap) { 
+            try { groupsMap = JSON.parse(savedGroupsMap); } catch(e) { initGroupsMap(); }
+        } else {
+            initGroupsMap();
         }
-        if (savedGroups) {
-            try { groups = JSON.parse(savedGroups); } catch(e) {}
-        }
-        if (savedMode) {
-            activeWheelMode = savedMode;
-        }
-        if (savedLost) {
-            try { lostList = JSON.parse(savedLost); } catch(e) {}
-        }
-        if (savedFeatured) {
-            try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {}
-        }
+
         updateSegmentedTabsUI();
         updateStudentCountUI();
     }
@@ -964,69 +975,41 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
-    // --- STANDARD QUESTION POOLS ---
+    // --- STANDARD QUESTION POOLS (Added Fill in the Blank requested questions) ---
     const normalCompactQuestions = [
         "Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
         "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
         "Which country has the most natural lakes in the world?|Canada|Russia|USA|Brazil",
-        "Which African nation is completely landlocked within South Africa?|Lesotho|Eswatini|Botswana|Zimbabwe",
         "What is the deepest lake in the world?|Lake Baikal|Lake Superior|Lake Tanganyika|Caspian Sea",
-        "Which country spans two continents and has its largest city in both?|Turkey|Egypt|Russia|Panama",
         "Which desert is the driest non-polar desert on Earth?|Atacama Desert|Sahara Desert|Gobi Desert|Kalahari Desert",
-        "In which body of water is the island of Langkawi located?|Andaman Sea|South China Sea|Sulu Sea|Java Sea",
-        "Which country has the longest coastline in the world?|Canada|Indonesia|Russia|Australia",
-        "Which Malaysian state has the longest coastline?|Sabah|Sarawak|Pahang|Johor",
         "Mount Everest lies on the border between which two countries?|Nepal and China|India and Nepal|China and Bhutan|India and China",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
         "T|Complete the sentence: He is interested _____ learning music.|in",
         "T|Type the correct spelling for: Neccessary|necessary",
-        "T|Complete the grammar: I look forward to _____ (see) you.|seeing",
         "T|Type the correct past tense of 'teach':|taught",
-        "T|A quiet _____ broke out in the back of the classroom.|giggle/chuckle/whisper",
-        "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty",
+        "T|A quiet _____ broke out in the back of the classroom.|giggle/chuckle/whisper/snicker",
+        "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty/modest",
+        "T|Please _____ your seatbelt during the flight.|fasten/secure",
         "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
-        "What is the 2nd largest ocean?|Atlantic|Pacific|Indian|Arctic",
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
         "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
         "Which is the tallest building in Malaysia (as of 2024)?|Merdeka 118|Petronas Twin Towers|Exchange 106|KL Tower",
         "In what year did Malaysia gain independence?|1957|1963|1969|1955",
-        "What is the largest state in Malaysia?|Sarawak|Pahang|Sabah|Perak",
-        "Which planet is closest to the Sun?|Mercury|Venus|Earth|Mars",
         "What is the longest river in the world?|Nile|Amazon|Yangtze|Mississippi",
         "Which element has the chemical symbol 'O'?|Oxygen|Osmium|Gold|Iron",
-        "What is the national animal of Malaysia?|Malayan Tiger|Orangutan|Hornbill|Tapir",
         "Who was the first Prime Minister of Malaysia?|Tunku Abdul Rahman|Mahathir Mohamad|Najib Razak|Hussein Onn",
-        "What is the currency of Malaysia?|Ringgit|Dollar|Rupiah|Baht",
-        "Which continent is the Sahara Desert located in?|Africa|Asia|North America|Australia",
         "What is the hardest natural substance on Earth?|Diamond|Gold|Iron|Quartz",
-        "Which city is known as the historical city of Malaysia?|Malacca|Kuala Lumpur|Ipoh|Penang",
         "What is the largest planet in our solar system?|Jupiter|Saturn|Uranus|Neptune",
         "Who painted the Mona Lisa?|Leonardo da Vinci|Vincent van Gogh|Pablo Picasso|Claude Monet",
-        "Which is the highest mountain in Malaysia?|Mount Kinabalu|Mount Tahan|Mount Jerai|Mount Santubong",
-        "Who wrote the Harry Potter series?|J.K. Rowling|J.R.R. Tolkien|George R.R. Martin|C.S. Lewis",
-        "What is a popular Malaysian coconut milk rice dish?|Nasi Lemak|Nasi Goreng|Nasi Kandar|Nasi Dagang",
-        "What is the capital of Japan?|Tokyo|Kyoto|Osaka|Hokkaido",
         "Which animal is the tallest in the world?|Giraffe|Elephant|Ostrich|Kangaroo",
         "Which Malaysian island is known as the 'Pearl of the Orient'?|Penang|Langkawi|Tioman|Redang",
-        "What gas do plants absorb from the atmosphere?|Carbon Dioxide|Oxygen|Nitrogen|Hydrogen",
         "How many colors are in a rainbow?|7|5|6|8",
-        "What is the main ingredient in guacamole?|Avocado|Tomato|Onion|Pepper",
-        "What is the largest bone in the human body?|Femur|Tibia|Fibula|Humerus",
         "Which is the smallest country in the world?|Vatican City|Monaco|Nauru|Tuvalu",
-        "What popular sport is played at Wimbledon?|Tennis|Cricket|Football|Rugby",
-        "What do pandas primarily eat?|Bamboo|Eucalyptus|Insects|Fish",
-        "What is the chemical formula for water?|H2O|CO2|O2|NaCl",
         "Which planet is known as the Red Planet?|Mars|Venus|Jupiter|Saturn",
-        "Which state is known as the 'Land Below the Wind'?|Sabah|Sarawak|Kelantan|Terengganu",
         "How many legs does a spider have?|8|6|10|12",
         "What is the square root of 64?|8|6|7|9",
-        "What is the freezing point of water in Celsius?|0|32|100|-1",
         "What is the largest mammal in the world?|Blue Whale|Elephant|Giraffe|Shark",
-        "What is the capital of Australia?|Canberra|Sydney|Melbourne|Perth",
-        "Which is the fastest land animal?|Cheetah|Lion|Horse|Leopard",
-        "How many continents are there?|7|5|6|8",
-        "What is the chemical symbol for Gold?|Au|Ag|Gd|Go",
         "Which fruit is known as the 'King of Fruits' in Malaysia?|Durian|Mangosteen|Rambutan|Papaya",
         "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain"
     ];
@@ -1034,25 +1017,22 @@
     const hardCompactQuestions = [
         "Which European city is built across 118 small islands connected by over 400 bridges?|Venice|Amsterdam|Bruges|Copenhagen",
         "Which is the only country in the world to border both the United Kingdom and no other nation?|Ireland|France|Iceland|Portugal",
-        "What is the smallest sovereign country in South America by land area?|Suriname|Uruguay|Guyana|Ecuador",
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
         "T|Complete the grammar: Neither of the boys _____ (be) present.|was",
         "T|Type the past participle of 'shrink':|shrunken",
         "T|Type the correct spelling for: Bureaucracy|bureaucracy",
         "T|Complete: By next year, she _____ (finish) her degree.|will have finished",
+        "T|His _____ behavior towards his friends made him very unpopular.|arrogant/rude/selfish",
         "In what year was the Federation of Malaya Agreement signed forming the Federation?|1948|1957|1963|1946",
         "What is the speed of light in a vacuum approximately?|299,792 km/s|150,000 km/s|3,000,000 km/s|1,080,000 km/s",
-        "Which treaty officially ceded Singapore, Malacca, and Penang to the British Crown in 1824?|Anglo-Dutch Treaty|Treaty of Pangkor|Treaty of Bangkok|Burney Treaty",
         "What is the half-life of Carbon-14 used in radiocarbon dating?|5,730 years|1,000 years|12,300 years|50,000 years",
         "Who was the architect who designed the Petronas Twin Towers?|César Pelli|Norman Foster|Zaha Hadid|I. M. Pei",
         "Which element has the highest melting point of all metals?|Tungsten|Titanium|Platinum|Osmium",
         "What is the deepest known point in Earth's oceans?|Challenger Deep|Java Trench|Puerto Rico Trench|Sunda Trench",
         "Who formulated the general theory of relativity?|Albert Einstein|Isaac Newton|Niels Bohr|Max Planck",
-        "What is the capital city of Kazakhstan (renamed back in 2022)?|Astana|Almaty|Nur-Sultan|Tashkent",
         "Which organic compound gives durian its distinct pungent aroma?|Ethanethiol / Organosulfur|Citric Acid|Methanoic Acid|Sodium Glutamate",
         "In quantum mechanics, what principle states you cannot simultaneously know position and momentum precisely?|Heisenberg Uncertainty Principle|Pauli Exclusion Principle|Schrödinger Wave Principle|Planck Postulate",
         "What is the highest mountain peak in South America?|Aconcagua|Ojos del Salado|Huascarán|Chimborazo",
-        "Which Malaysian Prime Minister launched the 'Look East Policy' in 1982?|Tun Dr. Mahathir Mohamad|Tun Abdul Razak|Tun Hussein Onn|Tunku Abdul Rahman",
         "What is the chemical symbol for the element Tungsten?|W|Tu|Tn|Tg",
         "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
     ];
@@ -1202,8 +1182,7 @@
         }
     }
 
-    // --- ZERO-LAG AUDIO TICK SYNTHESIZER --- //
-    // Fixed the extreme lag during typing/wheel spinning using lightweight hardware oscillators!
+    // --- ZERO-LAG AUDIO TICK SYNTHESIZER (Fixed Keyboard Lag) --- //
     let audioCtx = null;
     function initAudio() {
         if (!audioCtx) {
@@ -1218,12 +1197,11 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             
-            // Ultra-fast math-based sound (0 lag)
             osc.type = 'sine';
             osc.frequency.setValueAtTime(800, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
             
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // Low volume pop
+            gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
             
             osc.connect(gain);
@@ -1233,13 +1211,13 @@
             osc.stop(audioCtx.currentTime + 0.05);
         } catch (e) {}
     }
-    // --- END AUDIO TICK LOGIC --- //
 
     const wheelPointer = document.getElementById('wheelPointer');
 
     // --- ELEMENTS ---
     const topMenuBtn = document.getElementById('topMenuBtn');
     const wheelScreen = document.getElementById('wheelScreen');
+    const pickerScreen = document.getElementById('pickerScreen');
     const modeScreen = document.getElementById('modeScreen');
     const quizScreen = document.getElementById('quizScreen');
     const resultScreen = document.getElementById('resultScreen');
@@ -1256,7 +1234,10 @@
     const forfeitBtn = document.getElementById('forfeitBtn');
     const confirmBtn = document.getElementById('confirmBtn');
 
+    const pickerGroupTitle = document.getElementById('pickerGroupTitle');
+    const pickerTrack = document.getElementById('pickerTrack');
     const modeStudentTitle = document.getElementById('modeStudentTitle');
+    
     const selectStandardBtn = document.getElementById('selectStandardBtn');
     const selectListeningBtn = document.getElementById('selectListeningBtn');
     
@@ -1358,7 +1339,7 @@
     });
 
     // --- WHEEL DRAWING ---
-    const colors = ["#F2F2F7", "#E5E5EA", "#D1D1D6", "#C7C7CC"]; // Sleek iOS greys for the wheel slices
+    const wheelColors = ["#F2F2F7", "#E5E5EA", "#D1D1D6", "#C7C7CC"]; // Sleek iOS greys for the wheel slices
 
     function drawWheel() {
         const participants = getActiveParticipants();
@@ -1379,10 +1360,10 @@
             ctx.beginPath();
             ctx.arc(300, 300, 300, angle, angle + arc, false);
             ctx.lineTo(300, 300);
-            ctx.fillStyle = colors[i % colors.length]; ctx.fill();
+            ctx.fillStyle = wheelColors[i % wheelColors.length]; ctx.fill();
             
             ctx.save();
-            ctx.fillStyle = "#111111"; /* Black text for high contrast */
+            ctx.fillStyle = "#111111"; 
             ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
             ctx.rotate(angle + arc / 2);
             ctx.textAlign = "right";
@@ -1424,7 +1405,7 @@
         let currentSlice = Math.floor(relAngle / degreesPerSlice);
         
         if(currentSlice !== lastSlice && lastSlice !== -1) {
-            playTick(); // Utilizing the zero-lag ticking method
+            playTick(); 
         }
         lastSlice = currentSlice;
 
@@ -1444,7 +1425,7 @@
     function spinWheel() {
         const participants = getActiveParticipants();
         if (participants.length === 0) return;
-        initAudio(); // Audio Context is safely initialized ONLY when the user clicks 'Start'
+        initAudio(); // Audio Context initialized safely on interaction
         spinBtn.disabled = true;
         viewLostBtn.disabled = true;
         topMenuBtn.disabled = true;
@@ -1466,9 +1447,94 @@
         setTimeout(() => {
             isSpinning = false;
             topMenuBtn.disabled = false;
-            currentStudent = participants[randomSlice];
-            promptQuestionMode();
+            let landedEntity = participants[randomSlice];
+            
+            if (activeWheelMode === 'groups') {
+                startGroupPicker(landedEntity);
+            } else {
+                currentStudent = landedEntity;
+                promptQuestionMode();
+            }
         }, 7100); 
+    }
+
+    // --- SLOT MACHINE LOGIC FOR GROUPS ---
+    function startGroupPicker(groupName) {
+        showScreen(pickerScreen);
+        pickerGroupTitle.innerText = `For ${groupName.toLowerCase()}:`;
+        
+        const members = groupsMap[groupName] || [];
+        if(members.length === 0) {
+             currentStudent = "Nobody";
+             promptQuestionMode();
+             return;
+        }
+
+        pickerTrack.innerHTML = '';
+        pickerTrack.style.transition = 'none';
+        
+        const totalItems = 25; // How many names to scroll through
+        const winnerIdx = 20; // 21st item is the chosen one
+        const itemWidth = 240; // match CSS exactly
+        
+        const trackItems = [];
+        let lastMember = "";
+        for (let i = 0; i < totalItems; i++) {
+            let randomMember = members[Math.floor(Math.random() * members.length)];
+            // prevent consecutive dupes visually
+            while(randomMember === lastMember && members.length > 1) {
+                randomMember = members[Math.floor(Math.random() * members.length)];
+            }
+            lastMember = randomMember;
+            trackItems.push(randomMember);
+            
+            const div = document.createElement('div');
+            div.className = 'picker-item';
+            div.innerText = randomMember;
+            pickerTrack.appendChild(div);
+        }
+        
+        currentStudent = trackItems[winnerIdx];
+
+        // initialX aligns the first item exactly centered in the window
+        const initialX = - (itemWidth / 2); 
+        pickerTrack.style.transform = `translateX(${initialX}px)`;
+        
+        // Force Reflow
+        void pickerTrack.offsetWidth; 
+        
+        const finalX = - (winnerIdx * itemWidth + itemWidth / 2);
+        const spinDuration = 3500;
+        
+        pickerTrack.style.transition = `transform ${spinDuration}ms cubic-bezier(0.1, 0.9, 0.2, 1)`;
+        pickerTrack.style.transform = `translateX(${finalX}px)`;
+        
+        let startTime = performance.now();
+        let currentItem = 0;
+        
+        function checkTick(time) {
+            let elapsed = time - startTime;
+            let progress = Math.min(elapsed / spinDuration, 1);
+            let eased = 1 - Math.pow(1 - progress, 3); // match cubic-bezier roughly
+            let currentPosX = initialX + (finalX - initialX) * eased;
+            
+            // Trigger tick if we pass a new item boundary
+            let activeIndex = Math.floor(Math.abs(currentPosX) / itemWidth);
+            if (activeIndex !== currentItem) {
+                playTick();
+                currentItem = activeIndex;
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(checkTick);
+            } else {
+                pickerTrack.children[winnerIdx].classList.add('active');
+                setTimeout(() => {
+                    promptQuestionMode();
+                }, 1200);
+            }
+        }
+        requestAnimationFrame(checkTick);
     }
 
     function promptQuestionMode() {
@@ -1481,7 +1547,7 @@
     });
 
     selectListeningBtn.addEventListener('click', () => {
-        initAudio(); // Also init on selecting mode just in case
+        initAudio();
         startQuiz('listening');
     });
 
@@ -1521,7 +1587,8 @@
     }
 
     function handleKeyPress(char) {
-        playTick(); // Fast zero-lag tick playing
+        initAudio();
+        playTick(); 
         
         const q = currentQuestions[currentQuestionIndex];
         if (!q || (q.type !== 'typing' && q.type !== 'audio')) return;
@@ -1560,8 +1627,6 @@
         let activePool = [];
         if (mode === 'listening') {
             activePool = listeningMasterPool;
-            
-            // PRIORITIZE FEATURED QUESTIONS
             while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
                 const featQ = featuredListeningPool.shift();
                 let opts = [...featQ.wrongs];
@@ -1731,6 +1796,23 @@
         });
     }
 
+    // Function to handle the removal of a student systematically
+    function removeStudentSystematically(studentName) {
+        if (activeWheelMode === 'groups') {
+            // Remove student from their group in groupsMap
+            for (let g in groupsMap) {
+                groupsMap[g] = groupsMap[g].filter(s => s !== studentName);
+                // If group is empty, remove it from the active participants list entirely
+                if (groupsMap[g].length === 0) {
+                    groups = groups.filter(group => group !== g);
+                }
+            }
+        } else {
+            // Remove student directly
+            students = students.filter(s => s !== studentName);
+        }
+    }
+
     function submitAnswer() {
         clearInterval(timerInterval);
         stopAllAudio();
@@ -1791,8 +1873,7 @@
         clearInterval(timerInterval);
         stopAllAudio();
         
-        const participants = getActiveParticipants();
-        setActiveParticipants(participants.filter(s => s !== currentStudent));
+        removeStudentSystematically(currentStudent);
         
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = score;
@@ -1855,10 +1936,12 @@
                 localStorage.removeItem(STORAGE_KEY_GROUPS);
                 localStorage.removeItem(STORAGE_KEY_LOST);
                 localStorage.removeItem(STORAGE_KEY_FEATURED);
+                localStorage.removeItem(STORAGE_KEY_GROUPS_MAP);
                 students = rawStudents.map(s => s.name);
                 groups = [...defaultGroups];
                 lostList = [];
                 featuredListeningPool = parsePool(featuredListeningQuestions);
+                initGroupsMap();
                 saveState();
                 drawWheel();
                 spinBtn.disabled = false;
