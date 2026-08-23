@@ -4,37 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MD3 Expressive Common Ball Quiz</title>
-    <!-- Google Fonts & Material Symbols -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Material Symbols -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     
     <style>
+        /* --- CUSTOM SF PRO FONTS FROM REPOSITORY --- */
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Regular.otf') format('opentype');
+            font-weight: 400;
+        }
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Medium.otf') format('opentype');
+            font-weight: 500;
+        }
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Bold.otf') format('opentype');
+            font-weight: 700;
+        }
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Heavy.otf') format('opentype');
+            font-weight: 800;
+        }
+        @font-face {
+            font-family: 'SF Pro Display';
+            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Black.otf') format('opentype');
+            font-weight: 900;
+        }
+
         :root {
-            /* MD3 Expressive Colors */
-            --md-sys-color-primary: #6750A4;
+            /* Minimalist / iOS Inspired Colors mapped to existing variables */
+            --md-sys-color-primary: #111111;
             --md-sys-color-on-primary: #FFFFFF;
-            --md-sys-color-primary-container: #EADDFF;
-            --md-sys-color-on-primary-container: #21005D;
-            --md-sys-color-secondary-container: #E8DEF8;
-            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-primary-container: transparent;
+            --md-sys-color-on-primary-container: #111111;
+            --md-sys-color-secondary-container: #E5E5EA; /* iOS Light Gray */
+            --md-sys-color-on-secondary-container: #111111;
             --md-sys-color-tertiary: #7D5260;
-            --md-sys-color-tertiary-container: #FFD8E4;
-            --md-sys-color-on-tertiary-container: #31111D;
-            --md-sys-color-error: #BA1A1A;
+            --md-sys-color-tertiary-container: #F2F2F7;
+            --md-sys-color-on-tertiary-container: #111111;
+            --md-sys-color-error: #FF3B30;
             --md-sys-color-on-error: #FFFFFF;
-            --md-sys-color-error-container: #FFDAD6;
-            --md-sys-color-on-error-container: #410002;
-            --md-sys-color-success: #146C2E;
-            --md-sys-color-success-container: #A0F0AB;
-            --md-sys-color-surface: #FEF7FF;
-            --md-sys-color-on-surface: #1D1B20;
-            --md-sys-color-surface-container: rgba(243, 237, 247, 0.88);
-            --md-sys-color-surface-container-high: #ECE6F0;
+            --md-sys-color-error-container: #FFE5E5;
+            --md-sys-color-on-error-container: #FF3B30;
+            --md-sys-color-success: #34C759;
+            --md-sys-color-success-container: #E5F9E7;
+            --md-sys-color-surface: transparent;
+            --md-sys-color-on-surface: #111111;
+            --md-sys-color-surface-container: #E5E5EA;
+            --md-sys-color-surface-container-high: #D1D1D6;
             
             --md-sys-shape-corner-extra-large: 32px;
             --md-sys-shape-corner-large: 24px;
             --md-sys-shape-corner-full: 9999px;
             
+            /* Preserved Easing for existing animations */
             --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
             --md-sys-motion-easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -43,7 +71,7 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+            font-family: 'SF Pro Display', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -65,9 +93,10 @@
         .blur-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            /* Adjusted to match the highly washed out, frosted glass look */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
             z-index: -1;
         }
 
@@ -93,9 +122,10 @@
             top: 20px;
             right: 20px;
             z-index: 30;
-            background: var(--md-sys-color-surface-container);
+            background: rgba(229, 229, 234, 0.8);
+            backdrop-filter: blur(10px);
             color: var(--md-sys-color-on-surface);
-            border: 2px solid rgba(0, 0, 0, 0.05);
+            border: none;
             border-radius: 50%;
             width: 48px;
             height: 48px;
@@ -103,23 +133,15 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
             transition: transform 0.2s var(--md-sys-motion-easing-bounce), background 0.2s, opacity 0.2s;
         }
         .top-menu-btn:hover:not(:disabled) {
             background: var(--md-sys-color-surface-container-high);
             transform: scale(1.08);
         }
-        .top-menu-btn:active:not(:disabled) {
-            transform: scale(0.92);
-        }
-        .top-menu-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            transform: none !important;
-        }
+        .top-menu-btn:active:not(:disabled) { transform: scale(0.92); }
 
-        /* --- JETPACK COMPOSE animateContentSize EFFECT --- */
+        /* --- ANIMATION CLASSES PRESERVED --- */
         .animate-content-size {
             transition: max-height 0.4s var(--md-sys-motion-easing-emphasized),
                         max-width 0.4s var(--md-sys-motion-easing-emphasized),
@@ -132,35 +154,26 @@
             will-change: transform, opacity, height, max-height;
         }
 
-        /* Typography */
-        h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 800; letter-spacing: -1px; text-align: center; margin-bottom: 8px;}
-        h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 16px; text-align: center; }
-        p.subtitle { font-size: 1.125rem; font-weight: 600; opacity: 0.8; text-align: center; margin-bottom: 16px; }
-
-        /* --- COLLAPSIBLE MODE TOGGLE & BAR --- */
-        .mode-toggle-chip {
-            background: var(--md-sys-color-surface-container);
-            color: var(--md-sys-color-on-surface);
-            border: none;
-            border-radius: var(--md-sys-shape-corner-full);
-            padding: 8px 18px;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: transform 0.2s var(--md-sys-motion-easing-bounce), background 0.2s;
+        /* Typography Matching Design */
+        h1 { 
+            font-size: clamp(2.5rem, 7vw, 4rem); 
+            font-weight: 900; 
+            letter-spacing: -1.5px; 
+            text-align: center; 
+            margin-bottom: 4px;
+            color: #111;
         }
-        .mode-toggle-chip:hover {
-            background: var(--md-sys-color-surface-container-high);
-        }
-        .mode-toggle-chip:active {
-            transform: scale(0.95);
+        h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: 16px; text-align: center; }
+        p.subtitle { 
+            font-size: 1rem; 
+            font-weight: 500; 
+            opacity: 0.9; 
+            text-align: center; 
+            margin-bottom: 24px; 
+            color: #333;
         }
 
+        /* --- COLLAPSIBLE MODE BAR --- */
         .mode-bar-wrapper {
             display: flex;
             flex-direction: column;
@@ -174,19 +187,13 @@
                         margin-bottom 0.3s var(--md-sys-motion-easing-emphasized);
             margin-bottom: 0;
         }
-
-        .mode-bar-wrapper.expanded {
-            max-height: 80px;
-            opacity: 1;
-            margin-bottom: 16px;
-        }
+        .mode-bar-wrapper.expanded { max-height: 80px; opacity: 1; margin-bottom: 16px; }
 
         .segmented-container {
             display: flex;
             background: var(--md-sys-color-surface-container);
             border-radius: var(--md-sys-shape-corner-full);
             padding: 4px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             gap: 4px;
         }
         .segmented-btn {
@@ -204,55 +211,37 @@
             transition: all 0.25s var(--md-sys-motion-easing-bounce);
         }
         .segmented-btn.active {
-            background: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
-            box-shadow: 0 2px 8px rgba(103, 80, 164, 0.2);
+            background: #FFFFFF;
+            color: #111;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        /* --- SCREEN TRANSITIONS --- */
+        /* --- SCREEN TRANSITIONS PRESERVED --- */
         .screen {
-            display: none;
-            width: 100%;
-            max-width: 900px;
-            opacity: 0;
+            display: none; width: 100%; max-width: 900px; opacity: 0;
             transform: translateY(24px) scale(0.96);
-            transition: opacity 0.4s var(--md-sys-motion-easing-emphasized),
-                        transform 0.4s var(--md-sys-motion-easing-emphasized);
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            transition: opacity 0.4s var(--md-sys-motion-easing-emphasized), transform 0.4s var(--md-sys-motion-easing-emphasized);
+            flex-direction: column; align-items: center; justify-content: center;
         }
-        .screen.active {
-            display: flex;
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+        .screen.active { display: flex; opacity: 1; transform: translateY(0) scale(1); }
 
         #resultScreen.exiting {
-            opacity: 0 !important;
-            transform: translateY(-30px) scale(0.9) !important;
-            transition: opacity 0.3s var(--md-sys-motion-easing-emphasized),
-                        transform 0.3s var(--md-sys-motion-easing-emphasized) !important;
+            opacity: 0 !important; transform: translateY(-30px) scale(0.9) !important;
+            transition: opacity 0.3s var(--md-sys-motion-easing-emphasized), transform 0.3s var(--md-sys-motion-easing-emphasized) !important;
         }
 
-        #wheelScreen.active {
-            animation: wheelScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
-        }
-
+        #wheelScreen.active { animation: wheelScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards; }
         @keyframes wheelScreenEnter {
             0% { opacity: 0; transform: translateY(30px) scale(0.92); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        #wheelScreen.active h1, 
-        #wheelScreen.active .subtitle {
+        #wheelScreen.active h1, #wheelScreen.active .subtitle {
             animation: elementFadeDown 0.4s 0.1s var(--md-sys-motion-easing-emphasized) both;
         }
-
         #wheelScreen.active .wheel-container {
             animation: wheelPopZoom 0.5s 0.15s var(--md-sys-motion-easing-bounce) both;
         }
-
         #wheelScreen.active .btn {
             animation: elementPopUp 0.4s 0.25s var(--md-sys-motion-easing-bounce) both;
         }
@@ -261,73 +250,64 @@
             0% { opacity: 0; transform: translateY(-16px); }
             100% { opacity: 1; transform: translateY(0); }
         }
-
         @keyframes wheelPopZoom {
             0% { opacity: 0; transform: scale(0.85); }
             100% { opacity: 1; transform: scale(1); }
         }
-
         @keyframes elementPopUp {
             0% { opacity: 0; transform: translateY(20px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        #modeScreen.active {
-            animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards;
-        }
+        #modeScreen.active { animation: modeScreenEnter 0.5s var(--md-sys-motion-easing-emphasized) forwards; }
         @keyframes modeScreenEnter {
             0% { opacity: 0; transform: translateY(30px) scale(0.92); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-
-        #modeScreen.active .mode-card:nth-child(2) {
-            animation: cardSlideIn 0.45s 0.1s var(--md-sys-motion-easing-bounce) both;
-        }
-        #modeScreen.active .mode-card:nth-child(3) {
-            animation: cardSlideIn 0.45s 0.22s var(--md-sys-motion-easing-bounce) both;
-        }
-
+        #modeScreen.active .mode-card:nth-child(2) { animation: cardSlideIn 0.45s 0.1s var(--md-sys-motion-easing-bounce) both; }
+        #modeScreen.active .mode-card:nth-child(3) { animation: cardSlideIn 0.45s 0.22s var(--md-sys-motion-easing-bounce) both; }
         @keyframes cardSlideIn {
             0% { opacity: 0; transform: translateY(24px) scale(0.95); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Buttons */
+        /* Buttons Redesigned to match the pill shapes exactly */
         .btn {
-            background: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
+            background: var(--md-sys-color-surface-container);
+            color: var(--md-sys-color-on-surface);
             border: none;
             border-radius: var(--md-sys-shape-corner-full);
-            padding: 16px 40px;
-            font-size: 1.125rem;
-            font-weight: 700;
+            padding: 18px 40px;
+            font-size: 1.5rem;
+            font-weight: 800;
             cursor: pointer;
-            transition: transform 0.2s var(--md-sys-motion-easing-bounce), filter 0.2s, background 0.2s, opacity 0.2s;
+            transition: transform 0.2s var(--md-sys-motion-easing-bounce), background 0.2s, opacity 0.2s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             width: 100%;
-            max-width: 350px;
-            box-shadow: 0 8px 16px rgba(103, 80, 164, 0.2);
+            max-width: 380px;
+            box-shadow: none;
         }
-        .btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
+        .btn:hover:not(:disabled) { background: var(--md-sys-color-surface-container-high); transform: translateY(-2px); }
         .btn:active:not(:disabled) { transform: scale(0.96); }
-        .btn-secondary { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .btn-tertiary { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
-        .btn-danger { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+        
+        /* Modifying utility button classes to fit minimalist theme */
+        .btn-secondary { font-size: 1.1rem; padding: 14px 30px; font-weight: 700; background: rgba(229, 229, 234, 0.7); }
+        .btn-tertiary { background: #111; color: #fff; font-size: 1.1rem; }
+        .btn-danger { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); font-size: 1.1rem; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
 
-        /* Wheel Container & Physical Flapper Pointer */
+        /* Wheel Container - Subdued */
         .wheel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wheel-container {
             position: relative;
-            width: 100%; max-width: 400px;
+            width: 100%; max-width: 320px; /* Made slightly smaller for visual balance */
             aspect-ratio: 1/1;
-            margin: 16px 0 32px 0;
+            margin: 24px 0 32px 0;
             border-radius: 50%;
-            box-shadow: 0 16px 48px rgba(0,0,0,0.12);
             background: var(--md-sys-color-surface-container-high);
         }
         #wheelCanvas {
@@ -337,86 +317,69 @@
 
         .wheel-pointer {
             position: absolute;
-            top: -24px; left: 50%;
+            top: -16px; left: 50%;
             transform-origin: 50% 0%;
             transform: translateX(-50%) rotate(0deg);
-            width: 36px; height: 48px;
-            background: var(--md-sys-color-error);
+            width: 28px; height: 38px;
+            background: #111;
             clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
             will-change: transform;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
         }
 
         /* --- MODE SELECTION CARDS --- */
         .mode-card {
-            background: var(--md-sys-color-surface-container);
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
             border-radius: var(--md-sys-shape-corner-extra-large);
             padding: 24px 28px;
             width: 100%; max-width: 500px;
             cursor: pointer;
-            border: 3px solid transparent;
+            border: none;
             transition: all 0.25s var(--md-sys-motion-easing-bounce);
             text-align: left;
             margin-bottom: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
             display: flex; flex-direction: column; gap: 8px;
         }
         .mode-card:hover {
-            border-color: var(--md-sys-color-primary);
             transform: translateY(-3px) scale(1.01);
-            background: var(--md-sys-color-surface-container-high);
+            background: rgba(255, 255, 255, 0.9);
         }
         .mode-card:active { transform: scale(0.98); }
         .mode-card h3 { font-size: 1.35rem; font-weight: 800; display: flex; align-items: center; justify-content: space-between; }
         .warning-badge {
-            background: var(--md-sys-color-tertiary-container);
-            color: var(--md-sys-color-on-tertiary-container);
+            background: #FFD6D6; color: #FF3B30;
             padding: 4px 12px; border-radius: var(--md-sys-shape-corner-full);
             font-size: 0.8rem; font-weight: 800; display: inline-flex; align-items: center; gap: 4px; width: fit-content;
         }
 
         /* --- INTERACTIVE AUDIO PLAYER CONTROL CARD --- */
         .audio-control-card {
-            background: var(--md-sys-color-surface-container);
-            border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 16px 24px;
+            background: rgba(255,255,255,0.7);
+            border-radius: var(--md-sys-shape-corner-full);
+            padding: 12px 24px;
             width: 100%; max-width: 460px;
             margin: 0 auto 20px auto;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
             display: flex; align-items: center; justify-content: space-between;
             gap: 16px;
         }
-
-        .audio-btn-group {
-            display: flex; align-items: center; gap: 12px;
-        }
-
+        .audio-btn-group { display: flex; align-items: center; gap: 12px; }
         .icon-btn {
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-            border: none; border-radius: 50%;
-            width: 48px; height: 48px;
+            background: #E5E5EA; color: #111;
+            border: none; border-radius: 50%; width: 48px; height: 48px;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: transform 0.15s, background 0.2s;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-        .icon-btn:hover { background: var(--md-sys-color-primary-container); }
+        .icon-btn:hover { background: #D1D1D6; }
         .icon-btn:active { transform: scale(0.9); }
-        .icon-btn.primary-icon-btn {
-            background: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            width: 56px; height: 56px;
-        }
+        .icon-btn.primary-icon-btn { background: #111; color: #fff; width: 56px; height: 56px; }
 
         .volume-container {
             display: flex; align-items: center; gap: 8px;
-            background: var(--md-sys-color-surface-container-high);
-            padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full);
+            background: #E5E5EA; padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full);
         }
-        .volume-container input[type="range"] {
-            width: 80px; accent-color: var(--md-sys-color-primary); cursor: pointer;
-        }
+        .volume-container input[type="range"] { width: 80px; accent-color: #111; cursor: pointer; }
 
         /* --- QUIZ UI --- */
         .quiz-header {
@@ -424,97 +387,72 @@
             margin-bottom: 16px; padding: 0 8px; gap: 8px;
         }
         .student-chip {
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
+            background: #E5E5EA; color: #111;
             padding: 8px 16px; border-radius: var(--md-sys-shape-corner-full); font-weight: 700;
-            display: flex; align-items: center; gap: 6px;
         }
         .forfeit-btn {
-            background: var(--md-sys-color-error-container);
-            color: var(--md-sys-color-on-error-container);
+            background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);
             border: none; border-radius: var(--md-sys-shape-corner-full);
             padding: 8px 16px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: transform 0.2s;
         }
         .forfeit-btn:active { transform: scale(0.92); }
         
-        /* TIMER BAR */
         .timer-bar-container {
-            width: 100%; height: 10px; background: var(--md-sys-color-surface-container-high);
-            border-radius: 5px; overflow: hidden; margin-bottom: 24px; position: relative;
+            width: 100%; height: 6px; background: #E5E5EA;
+            border-radius: 3px; overflow: hidden; margin-bottom: 12px; position: relative;
         }
         .timer-bar-fill {
-            height: 100%; width: 100%; background: var(--md-sys-color-primary);
+            height: 100%; width: 100%; background: #111;
             transition: width 1s linear, background-color 0.3s;
         }
 
         .question-card {
-            background: var(--md-sys-color-primary-container);
-            color: var(--md-sys-color-on-primary-container);
+            background: transparent;
+            color: #111;
             border-radius: var(--md-sys-shape-corner-extra-large);
-            padding: 40px 32px; width: 100%; text-align: center;
-            margin-bottom: 24px; box-shadow: 0 12px 32px rgba(103, 80, 164, 0.15);
+            padding: 24px 16px; width: 100%; text-align: center;
+            margin-bottom: 24px;
             animation: popIn 0.5s var(--md-sys-motion-easing-bounce);
         }
-        .question-card h3 { font-size: clamp(1.35rem, 3.5vw, 2rem); font-weight: 800; line-height: 1.35; }
+        .question-card h3 { font-size: clamp(2rem, 5.5vw, 2.5rem); font-weight: 800; line-height: 1.25; }
 
         @keyframes popIn {
             0% { transform: scale(0.88); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Options Grid */
+        /* Options Grid matched perfectly to the screenshot */
         .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; margin-bottom: 24px; }
         @media (max-width: 650px) {
             .options-grid { grid-template-columns: 1fr; gap: 12px; }
-            .question-card { padding: 28px 20px; }
             .audio-control-card { flex-direction: column; gap: 12px; }
         }
 
         .option-btn {
-            background: var(--md-sys-color-surface-container);
-            color: var(--md-sys-color-on-surface);
-            border-radius: var(--md-sys-shape-corner-large);
-            padding: 20px; font-size: 1.1rem; font-weight: 600;
-            border: 3px solid transparent; text-align: center;
+            background: #E5E5EA; /* iOS Gray Pill */
+            color: #111;
+            border-radius: var(--md-sys-shape-corner-full); /* Exact Pill Shape */
+            padding: 16px 20px; font-size: 1.25rem; font-weight: 700;
+            border: none; text-align: center;
             cursor: pointer; transition: all 0.25s var(--md-sys-motion-easing-bounce);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04); display: flex; align-items: center; justify-content: center; min-height: 76px;
+            display: flex; align-items: center; justify-content: center; min-height: 76px;
             opacity: 1; transform: translateY(0);
         }
+        .option-btn.animate-in { animation: slideUp 0.4s var(--md-sys-motion-easing-emphasized) both; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .option-btn.animate-in {
-            animation: slideUp 0.4s var(--md-sys-motion-easing-emphasized) both;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .option-btn:hover:not(:disabled) { background: rgba(255, 255, 255, 0.95); transform: translateY(-3px) scale(1.01); }
+        .option-btn:hover:not(:disabled) { background: #D1D1D6; transform: translateY(-3px) scale(1.01); }
         .option-btn:active:not(:disabled) { transform: scale(0.97); }
-
-        .option-btn.selected {
-            border-color: var(--md-sys-color-primary);
-            background: var(--md-sys-color-secondary-container);
-            color: var(--md-sys-color-on-secondary-container);
-            transform: scale(1.02);
-            box-shadow: 0 6px 16px rgba(103, 80, 164, 0.2);
-        }
+        .option-btn.selected { background: #C7C7CC; color: #000; transform: scale(1.02); }
 
         .option-btn.correct {
-            background: var(--md-sys-color-success-container) !important;
-            color: var(--md-sys-color-success) !important;
-            border-color: var(--md-sys-color-success) !important;
+            background: var(--md-sys-color-success) !important; color: #fff !important;
             animation: correctPulse 0.6s var(--md-sys-motion-easing-bounce) !important;
         }
-        
         .option-btn.wrong {
-            background: var(--md-sys-color-error-container) !important;
-            color: var(--md-sys-color-on-error-container) !important;
-            border-color: var(--md-sys-color-error) !important;
-            transition: background-color 0.3s, border-color 0.3s;
+            background: var(--md-sys-color-error) !important; color: #fff !important;
+            transition: background-color 0.3s;
         }
-
         @keyframes correctPulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.08); }
@@ -522,135 +460,103 @@
         }
 
         /* --- TYPING QUESTION & QWERTY KEYBOARD UI --- */
-        .typing-container {
-            width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px;
-        }
+        .typing-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px; }
         .typing-display {
             width: 100%; max-width: 500px;
-            background: var(--md-sys-color-surface-container);
-            border: 3px solid var(--md-sys-color-primary);
-            border-radius: var(--md-sys-shape-corner-large);
+            background: #E5E5EA;
+            border-radius: var(--md-sys-shape-corner-full);
             padding: 16px 24px; font-size: 1.4rem; font-weight: 700;
             text-align: center; min-height: 64px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); letter-spacing: 1px; transition: all 0.3s;
-            word-break: break-word;
+            transition: all 0.3s; word-break: break-word; color: #111;
         }
-        .blinking-cursor { animation: blink 1s infinite; color: var(--md-sys-color-primary); font-weight: 300; }
+        .blinking-cursor { animation: blink 1s infinite; color: #111; font-weight: 300; }
         @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 
-        .typing-display.correct {
-            background: var(--md-sys-color-success-container); border-color: var(--md-sys-color-success); color: var(--md-sys-color-success);
-        }
-        .typing-display.wrong {
-            background: var(--md-sys-color-error-container); border-color: var(--md-sys-color-error); color: var(--md-sys-color-on-error-container);
-        }
+        .typing-display.correct { background: var(--md-sys-color-success); color: #fff; }
+        .typing-display.wrong { background: var(--md-sys-color-error); color: #fff; }
 
-        .qwerty-keyboard {
-            display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 650px; user-select: none;
-        }
+        .qwerty-keyboard { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 650px; user-select: none; }
         .kb-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
         .key {
-            background: var(--md-sys-color-surface-container-high);
-            color: var(--md-sys-color-on-surface);
-            border: none; border-radius: 8px; padding: 14px 0;
+            background: rgba(255,255,255,0.8); backdrop-filter: blur(10px);
+            color: #111; border: none; border-radius: 8px; padding: 14px 0;
             flex: 1; max-width: 48px; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.1);
             transition: transform 0.1s, background 0.15s;
             display: flex; align-items: center; justify-content: center;
         }
-        .key:active { transform: scale(0.9); background: var(--md-sys-color-primary-container); }
+        .key:active { transform: scale(0.9); background: #E5E5EA; }
         .key.wide-key { max-width: 80px; font-size: 0.9rem; }
         .key.space-key { max-width: 260px; }
 
         /* --- RESULT SCREEN TRANSITIONS --- */
         .result-card {
-            background: var(--md-sys-color-surface-container);
+            background: rgba(255,255,255,0.6); backdrop-filter: blur(20px);
             border-radius: var(--md-sys-shape-corner-extra-large);
             padding: 48px; text-align: center; width: 100%; max-width: 500px;
-            margin-bottom: 32px; box-shadow: 0 12px 32px rgba(0,0,0,0.05);
+            margin-bottom: 32px; 
         }
-
-        #resultScreen.active .result-card {
-            animation: resultCardPop 0.6s var(--md-sys-motion-easing-bounce) forwards;
-        }
+        #resultScreen.active .result-card { animation: resultCardPop 0.6s var(--md-sys-motion-easing-bounce) forwards; }
         @keyframes resultCardPop {
             0% { opacity: 0; transform: scale(0.75) translateY(30px); }
             100% { opacity: 1; transform: scale(1) translateY(0); }
         }
-
-        .score-display { font-size: 4rem; font-weight: 800; color: var(--md-sys-color-primary); margin: 16px 0; }
-        #resultScreen.active .score-display {
-            animation: scoreScale 0.5s 0.2s var(--md-sys-motion-easing-bounce) both;
-        }
+        .score-display { font-size: 4rem; font-weight: 900; color: #111; margin: 16px 0; }
+        #resultScreen.active .score-display { animation: scoreScale 0.5s 0.2s var(--md-sys-motion-easing-bounce) both; }
         @keyframes scoreScale {
             0% { opacity: 0; transform: scale(0.4); }
             100% { opacity: 1; transform: scale(1); }
         }
-
-        #resultScreen.active #resultVerdict {
-            animation: verdictSlide 0.5s 0.35s var(--md-sys-motion-easing-emphasized) both;
-        }
+        #resultScreen.active #resultVerdict { animation: verdictSlide 0.5s 0.35s var(--md-sys-motion-easing-emphasized) both; }
         @keyframes verdictSlide {
             0% { opacity: 0; transform: translateY(20px); }
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- BOTTOM SHEETS & SCRIM WITH animateContentSize --- */
+        /* --- BOTTOM SHEETS & SCRIM --- */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            background: rgba(0,0,0,0.3); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
         }
         .scrim.open { opacity: 1; pointer-events: all; }
         
         .bottom-sheet {
             position: fixed; bottom: 0; left: 0; right: 0; margin: 0 auto; max-width: 600px;
-            background: var(--md-sys-color-surface-container-high);
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(30px);
             border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;
             padding: 0; z-index: 50; max-height: 0; transform: translateY(100%); overflow: hidden;
             display: flex; flex-direction: column; align-items: center;
         }
-        
         .bottom-sheet.open {
             transform: translateY(0);
             max-height: min(72vh, calc(100vh - 120px));
             padding: 20px 20px 24px 20px;
         }
-        .bottom-sheet .drag-handle {
-            width: 48px; height: 5px; border-radius: 3px;
-            background: #CAC4D0; margin: -4px auto 16px auto; flex-shrink: 0;
-        }
+        .bottom-sheet .drag-handle { width: 48px; height: 5px; border-radius: 3px; background: #CAC4D0; margin: -4px auto 16px auto; flex-shrink: 0; }
         
         .lost-list-container, .student-manage-list {
             width: 100%; overflow-y: auto; text-align: left;
-            background: var(--md-sys-color-surface); border-radius: 16px; padding: 8px; margin-bottom: 16px;
-            display: flex; flex-direction: column; gap: 8px;
-            max-height: 38vh; flex-shrink: 1;
+            background: transparent; border-radius: 16px; padding: 8px; margin-bottom: 16px;
+            display: flex; flex-direction: column; gap: 8px; max-height: 38vh; flex-shrink: 1;
         }
-        .lost-item { padding: 16px; border-bottom: 1px solid var(--md-sys-color-surface-container); font-weight: 600; font-size: 1.1rem; }
+        .lost-item { padding: 16px; border-bottom: 1px solid #E5E5EA; font-weight: 600; font-size: 1.1rem; }
         .lost-item:last-child { border-bottom: none; }
 
         .student-manage-item {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 16px; background: var(--md-sys-color-surface-container);
+            padding: 12px 16px; background: #E5E5EA;
             border-radius: var(--md-sys-shape-corner-large); font-weight: 700; font-size: 1rem;
             transition: all 0.3s var(--md-sys-motion-easing-emphasized);
             max-height: 80px; opacity: 1;
         }
         .student-manage-item.removing {
-            max-height: 0 !important;
-            opacity: 0 !important;
-            padding-top: 0 !important;
-            padding-bottom: 0 !important;
-            margin: 0 !important;
-            transform: scale(0.9);
-            overflow: hidden;
+            max-height: 0 !important; opacity: 0 !important;
+            padding-top: 0 !important; padding-bottom: 0 !important; margin: 0 !important;
+            transform: scale(0.9); overflow: hidden;
         }
-
         .delete-student-btn {
-            background: var(--md-sys-color-error-container);
-            color: var(--md-sys-color-on-error-container);
-            border: none; border-radius: 50%;
-            width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+            background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);
+            border: none; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
             cursor: pointer; transition: transform 0.15s, filter 0.2s;
         }
         .delete-student-btn:hover { filter: brightness(1.1); }
@@ -659,38 +565,28 @@
         /* --- IN-UI CONFIRM DIALOG OVERLAY --- */
         .confirm-dialog-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.45); backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px);
             z-index: 60; display: flex; align-items: center; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.3s var(--md-sys-motion-easing-emphasized);
             padding: 16px;
         }
-        .confirm-dialog-overlay.open {
-            opacity: 1; pointer-events: all;
-        }
+        .confirm-dialog-overlay.open { opacity: 1; pointer-events: all; }
         .confirm-dialog-card {
-            background: var(--md-sys-color-surface-container-high);
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(30px);
             border-radius: var(--md-sys-shape-corner-extra-large);
             padding: 32px 28px; width: 100%; max-width: 420px;
-            text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+            text-align: center; box-shadow: 0 16px 48px rgba(0,0,0,0.1);
             transform: scale(0.85) translateY(20px);
             transition: transform 0.35s var(--md-sys-motion-easing-bounce);
         }
-        .confirm-dialog-overlay.open .confirm-dialog-card {
-            transform: scale(1) translateY(0);
-        }
+        .confirm-dialog-overlay.open .confirm-dialog-card { transform: scale(1) translateY(0); }
         .confirm-dialog-icon {
             width: 56px; height: 56px; border-radius: 50%;
-            background: var(--md-sys-color-error-container);
-            color: var(--md-sys-color-on-error-container);
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 16px auto;
+            background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container);
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 16px auto;
         }
-        .confirm-dialog-actions {
-            display: flex; gap: 12px; margin-top: 24px; width: 100%;
-        }
-        .confirm-dialog-actions .btn {
-            margin-bottom: 0; flex: 1; padding: 12px 16px; font-size: 1rem;
-        }
+        .confirm-dialog-actions { display: flex; gap: 12px; margin-top: 24px; width: 100%; }
+        .confirm-dialog-actions .btn { margin-bottom: 0; flex: 1; padding: 12px 16px; font-size: 1.1rem; }
     </style>
 </head>
 <body>
@@ -704,16 +600,19 @@
         <span class="material-symbols-outlined">more_vert</span>
     </button>
 
-    <!-- WHEEL SCREEN -->
+    <!-- WHEEL SCREEN (Redesigned Main Screen Layout) -->
     <div id="wheelScreen" class="screen animate-content-size active">
         <div class="wheel-wrapper">
-            <h1>Common Ball Quiz</h1>
+            <!-- Exact text matched to screenshot -->
+            <h1>common ball :)</h1>
+            <p class="subtitle" id="studentCountSubtitle">(as known as common knowledge, if you don't know ball)</p>
             
-            <!-- EXPANDABLE MODE TOGGLE CHIP (Hidden Bar by default) -->
-            <button id="toggleModeBtn" class="mode-toggle-chip animate-content-size">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">tune</span>
-                <span id="currentModeLabel">Mode: Students</span>
-                <span class="material-symbols-outlined" id="toggleModeArrow" style="font-size: 1.2rem;">expand_more</span>
+            <!-- Redesigned pill buttons stacked visually -->
+            <button id="spinBtn" class="btn">start</button>
+            <button id="toggleModeBtn" class="btn">
+                settings
+                <span id="currentModeLabel" style="display:none;"></span>
+                <span id="toggleModeArrow" style="display:none;"></span>
             </button>
 
             <!-- HIDDEN EXPANDABLE MODE SWITCHER CONTAINER -->
@@ -726,17 +625,14 @@
                         <span class="material-symbols-outlined">groups</span> Groups (7)
                     </button>
                 </div>
+                <button id="viewLostBtn" class="btn btn-secondary" style="margin-top: 12px; width:auto; font-size: 0.9rem;">view lost list</button>
             </div>
 
-            <p class="subtitle" id="studentCountSubtitle">Spin the wheel to select a participant!</p>
-            
+            <!-- Wheel is kept for functionality and its animations, but styled cleanly -->
             <div class="wheel-container">
                 <div class="wheel-pointer" id="wheelPointer"></div>
                 <canvas id="wheelCanvas" width="600" height="600"></canvas>
             </div>
-
-            <button id="spinBtn" class="btn">Spin the Wheel</button>
-            <button id="viewLostBtn" class="btn btn-secondary">View Lost List</button>
         </div>
     </div>
 
@@ -750,7 +646,7 @@
                 <span>Standard Questions</span>
                 <span class="material-symbols-outlined">quiz</span>
             </h3>
-            <p style="font-size: 0.95rem; opacity: 0.85;">General Knowledge, Geography, History, Science & Grammar.</p>
+            <p style="font-size: 1rem; opacity: 0.85;">General Knowledge, Geography, History, Science & Grammar.</p>
         </div>
 
         <div class="mode-card" id="selectListeningBtn">
@@ -758,7 +654,7 @@
                 <span>Listening Questions</span>
                 <span class="material-symbols-outlined">headphones</span>
             </h3>
-            <p style="font-size: 0.95rem; opacity: 0.85;">Music identification, speech dictation, and audio clips.</p>
+            <p style="font-size: 1rem; opacity: 0.85;">Music identification, speech dictation, and audio clips.</p>
             <div class="warning-badge">
                 <span class="material-symbols-outlined" style="font-size: 1rem;">warning</span>
                 May be out of topic.
@@ -803,7 +699,7 @@
             </div>
         </div>
         
-        <!-- Multiple Choice Options Container -->
+        <!-- Multiple Choice Options Container (Matches Screenshot 2 Layout) -->
         <div class="options-grid animate-content-size" id="optionsContainer"></div>
 
         <!-- Typing Container with In-Website QWERTY Keyboard -->
@@ -814,7 +710,7 @@
             <div class="qwerty-keyboard" id="qwertyKeyboard"></div>
         </div>
 
-        <button id="confirmBtn" class="btn btn-tertiary" disabled style="margin-top: 8px;">Confirm Answer</button>
+        <button id="confirmBtn" class="btn btn-tertiary" disabled style="margin-top: 16px; padding: 14px 40px; font-size:1.1rem;">Confirm Answer</button>
     </div>
 
     <!-- RESULT SCREEN -->
@@ -826,7 +722,7 @@
             <p style="font-weight: 600; opacity: 0.7;">out of 10</p>
             <h2 id="resultVerdict" style="margin-top: 24px; font-size: 2rem;"></h2>
         </div>
-        <button id="nextStudentBtn" class="btn">Return to Wheel</button>
+        <button id="nextStudentBtn" class="btn">Return to Menu</button>
     </div>
 
     <!-- BOTTOM SHEET (Lost List) -->
@@ -838,15 +734,15 @@
             <!-- Lost items added here -->
         </div>
         <button id="resetWheelBtn" class="btn btn-danger" style="margin-bottom: 8px;">Reset Wheel Progress</button>
-        <button id="closeSheetBtn" class="btn btn-secondary">Close List</button>
+        <button id="closeSheetBtn" class="btn btn-secondary">Close</button>
     </div>
 
     <!-- BOTTOM SHEET WITH animateContentSize (Manage Wheel Participants) -->
     <div class="scrim" id="manageScrim"></div>
     <div class="bottom-sheet animate-content-size" id="manageBottomSheet">
         <div class="drag-handle"></div>
-        <h2 id="manageSheetTitle">Manage Wheel Participants</h2>
-        <p style="font-size:0.9rem; opacity:0.8; margin-bottom:12px; text-align:center;">Tap the delete icon to remove a participant from the wheel.</p>
+        <h2 id="manageSheetTitle">Manage Participants</h2>
+        <p style="font-size:0.9rem; opacity:0.8; margin-bottom:12px; text-align:center;">Tap the delete icon to remove a participant.</p>
         <div class="student-manage-list animate-content-size" id="studentManageList">
             <!-- Dynamic participant list -->
         </div>
@@ -948,7 +844,7 @@
         const count = getActiveParticipants().length;
         const label = activeWheelMode === 'groups' ? 'groups' : 'students';
         if (subtitle) {
-            subtitle.innerText = `Spin the wheel! (${count} ${label} remaining)`;
+            subtitle.innerText = `(as known as common knowledge, if you don't know ball) • ${count} ${label} left`;
         }
     }
 
@@ -1239,8 +1135,6 @@
     const resultScreen = document.getElementById('resultScreen');
 
     const toggleModeBtn = document.getElementById('toggleModeBtn');
-    const currentModeLabel = document.getElementById('currentModeLabel');
-    const toggleModeArrow = document.getElementById('toggleModeArrow');
     const modeBarWrapper = document.getElementById('modeBarWrapper');
 
     const modeStudentTab = document.getElementById('modeStudentTab');
@@ -1322,19 +1216,16 @@
 
     // --- EXPANDABLE COLLAPSIBLE MODE BAR LOGIC ---
     toggleModeBtn.addEventListener('click', () => {
-        const isExpanded = modeBarWrapper.classList.toggle('expanded');
-        toggleModeArrow.innerText = isExpanded ? 'expand_less' : 'expand_more';
+        modeBarWrapper.classList.toggle('expanded');
     });
 
     function updateSegmentedTabsUI() {
         if (activeWheelMode === 'groups') {
             modeGroupTab.classList.add('active');
             modeStudentTab.classList.remove('active');
-            currentModeLabel.innerText = "Mode: Groups (7)";
         } else {
             modeStudentTab.classList.add('active');
             modeGroupTab.classList.remove('active');
-            currentModeLabel.innerText = "Mode: Students";
         }
     }
 
@@ -1357,14 +1248,14 @@
     });
 
     // --- WHEEL DRAWING ---
-    const colors = ["#EADDFF", "#FFD8E4", "#C3E8FF", "#F2B8B5", "#D8E2FF", "#E8DEF8", "#FFDBC2", "#C2F0E0"];
+    const colors = ["#F2F2F7", "#E5E5EA", "#D1D1D6", "#C7C7CC"]; // Sleek iOS greys for the wheel slices
 
     function drawWheel() {
         const participants = getActiveParticipants();
         if(participants.length === 0) {
             ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
-            ctx.fillStyle = "#E8DEF8"; ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = "#1D192B"; ctx.font = "bold 36px Inter"; ctx.textAlign = "center";
+            ctx.fillStyle = "#E5E5EA"; ctx.beginPath(); ctx.arc(300, 300, 300, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#111111"; ctx.font = "bold 36px 'SF Pro Display'"; ctx.textAlign = "center";
             ctx.fillText("All Played!", 300, 310);
             spinBtn.disabled = true;
             return;
@@ -1381,11 +1272,11 @@
             ctx.fillStyle = colors[i % colors.length]; ctx.fill();
             
             ctx.save();
-            ctx.fillStyle = "#1D1B20";
+            ctx.fillStyle = "#111111"; /* Black text for high contrast */
             ctx.translate(300 + Math.cos(angle + arc / 2) * 150, 300 + Math.sin(angle + arc / 2) * 150);
             ctx.rotate(angle + arc / 2);
             ctx.textAlign = "right";
-            ctx.font = participants.length > 20 ? "bold 13px Inter" : "bold 18px Inter";
+            ctx.font = participants.length > 20 ? "bold 13px 'SF Pro Display'" : "bold 18px 'SF Pro Display'";
             ctx.fillText(participants[i], 130, 5);
             ctx.restore();
         }
@@ -1558,7 +1449,7 @@
         if (mode === 'listening') {
             activePool = listeningMasterPool;
             
-            // PRIORITIZE FEATURED QUESTIONS (Thriller & Lyricon)
+            // PRIORITIZE FEATURED QUESTIONS
             while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
                 const featQ = featuredListeningPool.shift();
                 let opts = [...featQ.wrongs];
@@ -1616,7 +1507,7 @@
         clearInterval(timerInterval);
         timeLeft = 20;
         timerBarFill.style.width = '100%';
-        timerBarFill.style.backgroundColor = 'var(--md-sys-color-primary)';
+        timerBarFill.style.backgroundColor = '#111';
         timerText.innerHTML = `<span class="material-symbols-outlined">timer</span> <span>20s</span>`;
         
         timerInterval = setInterval(() => {
@@ -1625,7 +1516,7 @@
             timerBarFill.style.width = `${(timeLeft / 20) * 100}%`;
 
             if (timeLeft <= 10 && timeLeft > 5) {
-                timerBarFill.style.backgroundColor = '#E65100';
+                timerBarFill.style.backgroundColor = '#FF9500'; /* iOS Orange */
             } else if (timeLeft <= 5) {
                 timerBarFill.style.backgroundColor = 'var(--md-sys-color-error)';
             }
@@ -1869,10 +1760,10 @@
     function updateStudentManageUI() {
         studentManageList.innerHTML = '';
         const participants = getActiveParticipants();
-        manageSheetTitle.innerText = activeWheelMode === 'groups' ? "Manage Wheel Groups" : "Manage Wheel Students";
+        manageSheetTitle.innerText = activeWheelMode === 'groups' ? "Manage Groups" : "Manage Students";
 
         if (participants.length === 0) {
-            studentManageList.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No participants left on the wheel!</div>';
+            studentManageList.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No participants left!</div>';
         } else {
             participants.forEach((name, index) => {
                 const item = document.createElement('div');
@@ -1884,13 +1775,13 @@
                 
                 const delBtn = document.createElement('button');
                 delBtn.className = 'delete-student-btn';
-                delBtn.title = `Remove ${name} from wheel`;
+                delBtn.title = `Remove ${name}`;
                 delBtn.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1.2rem;">delete</span>`;
                 
                 delBtn.onclick = () => {
                     showConfirmDialog(
                         `Remove ${name}?`,
-                        `Are you sure you want to remove ${name} from the wheel?`,
+                        `Are you sure you want to remove ${name} from the active pool?`,
                         () => removeParticipantFromWheel(index)
                     );
                 };
