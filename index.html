@@ -90,6 +90,7 @@
         .blur-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
+            /* Thick blur to create an ambient colored frosted glass look */
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
@@ -906,17 +907,16 @@
     let groupsMap = {};
     let lostList = [];
 
-    // Helper: Chunk array into 7 groups (4 members each, last gets 5)
+    // Helper: Initialized Rigged Custom Groups
     function initGroupsMap() {
-        let sList = rawStudents.map(s => s.name);
         groupsMap = {
-            "Group 1": sList.slice(0, 4),
-            "Group 2": sList.slice(4, 8),
-            "Group 3": sList.slice(8, 12),
-            "Group 4": sList.slice(12, 16),
-            "Group 5": sList.slice(16, 20),
-            "Group 6": sList.slice(20, 24),
-            "Group 7": sList.slice(24, 29)
+            "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
+            "Group 2": ["YEOW JIA WEI", "LEXUS KUEK CHEN XIAN", "XANXUS TAI WEI XUAN", "TAY KIM YAW"],
+            "Group 3": ["TAN GUAN HAN", "RAYSON BANG WEI XIANG", "ALOYSIUS NG YU YI", "GUI CEN EN"],
+            "Group 4": ["GAVIN CHUA WEN JIE", "CLEMENT SEAH JI WEN", "LIM JIA QING", "JONATHAN ONG KAH FATT"],
+            "Group 5": ["NG JING KAI", "ONG ZHI XIAN", "WEE KER SHENG", "PANG MIN ZE"],
+            "Group 6": ["SHADEESHAN A/L KATHIRAVAN", "JEREMY TAN WEI REN", "RYAN CHOK ZI INN", "WONG HUNG RUI"],
+            "Group 7": ["KINGSTON GOH QI HAO", "LAM YU YANG", "LOUIS NG WEI SOONG", "JOSEPH LIM", "TAN YONG XI"]
         };
     }
 
@@ -935,7 +935,7 @@
     const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
     const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
     const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026';
-    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026';
+    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v2'; // Changed key to cache bust old group mapping
 
     function saveState() {
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
@@ -988,7 +988,7 @@
 
     // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
-        "IMG|What is this?|images/2Hphoto1.png|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
+        "IMG|What is this?|images/2Hphoto1.jpg|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
         "Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
         "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
         "Which country has the most natural lakes in the world?|Canada|Russia|USA|Brazil",
@@ -1027,7 +1027,7 @@
     ];
 
     const hardCompactQuestions = [
-        "IMG|What is this?|images/2Hphoto1.png|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
+        "IMG|What is this?|images/2Hphoto1.jpg|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
         "Which European city is built across 118 small islands connected by over 400 bridges?|Venice|Amsterdam|Bruges|Copenhagen",
         "Which is the only country in the world to border both the United Kingdom and no other nation?|Ireland|France|Iceland|Portugal",
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
@@ -1531,7 +1531,6 @@
             void track.offsetWidth; 
             
             const finalX = - (winnerIdx * itemWidth + itemWidth / 2);
-            // Stagger durations slightly so they lock in sequence
             const spinDuration = 3200 + (mIdx * 450); 
             
             track.style.transition = `transform ${spinDuration}ms cubic-bezier(0.1, 0.9, 0.2, 1)`;
