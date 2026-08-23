@@ -37,12 +37,12 @@
         }
 
         :root {
-            /* Minimalist / iOS Inspired Colors mapped to existing variables */
+            /* Minimalist / iOS Inspired Colors */
             --md-sys-color-primary: #111111;
             --md-sys-color-on-primary: #FFFFFF;
             --md-sys-color-primary-container: transparent;
             --md-sys-color-on-primary-container: #111111;
-            --md-sys-color-secondary-container: #E5E5EA; /* iOS Light Gray */
+            --md-sys-color-secondary-container: #E5E5EA;
             --md-sys-color-on-secondary-container: #111111;
             --md-sys-color-tertiary: #7D5260;
             --md-sys-color-tertiary-container: #F2F2F7;
@@ -62,7 +62,6 @@
             --md-sys-shape-corner-large: 24px;
             --md-sys-shape-corner-full: 9999px;
             
-            /* Preserved Easing for existing animations */
             --md-sys-motion-easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
             --md-sys-motion-easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
         }
@@ -86,14 +85,15 @@
             top: 0; left: 0; 
             width: 100vw; height: 100vh;
             z-index: -2;
-            background-color: #f2f2f7; /* fallback clean color */
+            background-color: #f2f2f7; 
         }
         .blur-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
+            /* Reduced opacity and blur so background shapes are clearly visible */
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             z-index: -1;
         }
 
@@ -133,7 +133,6 @@
         }
         .top-menu-btn:active:not(:disabled) { transform: scale(0.92); }
 
-        /* --- ANIMATION CLASSES PRESERVED --- */
         .animate-content-size {
             transition: max-height 0.4s var(--md-sys-motion-easing-emphasized),
                         max-width 0.4s var(--md-sys-motion-easing-emphasized),
@@ -146,7 +145,6 @@
             will-change: transform, opacity, height, max-height;
         }
 
-        /* Typography Matching Design */
         h1 { 
             font-size: clamp(2.5rem, 7vw, 4rem); 
             font-weight: 900; 
@@ -179,7 +177,6 @@
                         margin-bottom 0.3s var(--md-sys-motion-easing-emphasized);
             margin-bottom: 0;
         }
-        /* Increased max height so the lost list button doesn't get cut off! */
         .mode-bar-wrapper.expanded { max-height: 180px; opacity: 1; margin-bottom: 16px; }
 
         .segmented-container {
@@ -209,7 +206,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        /* --- SCREEN TRANSITIONS PRESERVED --- */
+        /* --- SCREEN TRANSITIONS --- */
         .screen {
             display: none; width: 100%; max-width: 900px; opacity: 0;
             transform: translateY(24px) scale(0.96);
@@ -264,7 +261,6 @@
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        /* Buttons Redesigned to match the pill shapes exactly */
         .btn {
             background: var(--md-sys-color-surface-container);
             color: var(--md-sys-color-on-surface);
@@ -287,19 +283,17 @@
         .btn:hover:not(:disabled) { background: var(--md-sys-color-surface-container-high); transform: translateY(-2px); }
         .btn:active:not(:disabled) { transform: scale(0.96); }
         
-        /* Modifying utility button classes to fit minimalist theme */
         .btn-secondary { font-size: 1.1rem; padding: 14px 30px; font-weight: 700; background: rgba(229, 229, 234, 0.7); }
         .btn-tertiary { background: #111; color: #fff; font-size: 1.1rem; }
         .btn-danger { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); font-size: 1.1rem; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; filter: none !important; }
 
-        /* Wheel Container - Subdued */
         .wheel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wheel-container {
             position: relative;
             width: 100%; max-width: 320px;
             aspect-ratio: 1/1;
-            margin: 24px 0 32px 0; /* Ensures gap between buttons and wheel */
+            margin: 24px 0 32px 0;
             border-radius: 50%;
             background: var(--md-sys-color-surface-container-high);
         }
@@ -414,7 +408,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Options Grid matched perfectly to the screenshot */
         .options-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 100%; margin-bottom: 24px; }
         @media (max-width: 650px) {
             .options-grid { grid-template-columns: 1fr; gap: 12px; }
@@ -422,9 +415,9 @@
         }
 
         .option-btn {
-            background: #E5E5EA; /* iOS Gray Pill */
+            background: #E5E5EA; 
             color: #111;
-            border-radius: var(--md-sys-shape-corner-full); /* Exact Pill Shape */
+            border-radius: var(--md-sys-shape-corner-full);
             padding: 16px 20px; font-size: 1.25rem; font-weight: 700;
             border: none; text-align: center;
             cursor: pointer; transition: all 0.25s var(--md-sys-motion-easing-bounce);
@@ -990,6 +983,8 @@
         "T|Type the correct spelling for: Neccessary|necessary",
         "T|Complete the grammar: I look forward to _____ (see) you.|seeing",
         "T|Type the correct past tense of 'teach':|taught",
+        "T|A quiet _____ broke out in the back of the classroom.|giggle/chuckle/whisper",
+        "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty",
         "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
         "What is the 2nd largest ocean?|Atlantic|Pacific|Indian|Arctic",
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
@@ -1074,7 +1069,8 @@
         "knowledge", "different", "important", "mystery", "adventure", "volcano", "championship", "education",
         "library", "sandwich", "stadium", "restaurant", "technology", "musician", "tradition", "symphony",
         "orchestra", "activity", "direction", "celebration", "community", "passenger", "dictionary", "vocabulary",
-        "competition", "championship", "experiment", "electricity", "photograph", "university", "refrigerator"
+        "competition", "championship", "experiment", "electricity", "photograph", "university", "refrigerator",
+        "cacophony", "ephemeral", "obfuscate", "eloquent", "ubiquitous", "frugal" 
     ];
 
     const form2DictationPhrases = [
@@ -1207,39 +1203,34 @@
     }
 
     // --- ZERO-LAG AUDIO TICK SYNTHESIZER --- //
-    // Fixes the typing lag by PRE-BAKING the audio buffer instead of generating it on every keypress!
+    // Fixed the extreme lag during typing/wheel spinning using lightweight hardware oscillators!
     let audioCtx = null;
-    let cachedTickBuffer = null;
-
     function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Pre-bake the noise buffer entirely ONCE. No Biquad Filters per keystroke!
-            const bufferSize = Math.floor(audioCtx.sampleRate * 0.012);
-            cachedTickBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = cachedTickBuffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3)); // Fast envelope
-            }
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
     function playTick() {
-        if (!audioCtx || !cachedTickBuffer) return;
+        if (!audioCtx) return;
         try {
-            const source = audioCtx.createBufferSource();
-            source.buffer = cachedTickBuffer;
-            
+            const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            // Fast decay for mechanical typing feel
-            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.012);
             
-            source.connect(gain);
+            // Ultra-fast math-based sound (0 lag)
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.05);
+            
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime); // Low volume pop
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            
+            osc.connect(gain);
             gain.connect(audioCtx.destination);
-            source.start();
+            
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.05);
         } catch (e) {}
     }
     // --- END AUDIO TICK LOGIC --- //
@@ -1453,7 +1444,7 @@
     function spinWheel() {
         const participants = getActiveParticipants();
         if (participants.length === 0) return;
-        initAudio();
+        initAudio(); // Audio Context is safely initialized ONLY when the user clicks 'Start'
         spinBtn.disabled = true;
         viewLostBtn.disabled = true;
         topMenuBtn.disabled = true;
@@ -1490,6 +1481,7 @@
     });
 
     selectListeningBtn.addEventListener('click', () => {
+        initAudio(); // Also init on selecting mode just in case
         startQuiz('listening');
     });
 
@@ -1529,7 +1521,6 @@
     }
 
     function handleKeyPress(char) {
-        initAudio(); // Initialize audio context securely if not yet done
         playTick(); // Fast zero-lag tick playing
         
         const q = currentQuestions[currentQuestionIndex];
