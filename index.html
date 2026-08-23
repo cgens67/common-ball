@@ -9,30 +9,30 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
     
     <style>
-        /* --- CUSTOM SF PRO FONTS FROM REPOSITORY --- */
+        /* --- CUSTOM SF PRO FONTS FROM LOCAL DIRECTORY --- */
         @font-face {
             font-family: 'SF Pro Display';
-            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Regular.otf') format('opentype');
+            src: url('fonts/SF-Pro-Display-Regular.otf') format('opentype');
             font-weight: 400;
         }
         @font-face {
             font-family: 'SF Pro Display';
-            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Medium.otf') format('opentype');
+            src: url('fonts/SF-Pro-Display-Medium.otf') format('opentype');
             font-weight: 500;
         }
         @font-face {
             font-family: 'SF Pro Display';
-            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Bold.otf') format('opentype');
+            src: url('fonts/SF-Pro-Display-Bold.otf') format('opentype');
             font-weight: 700;
         }
         @font-face {
             font-family: 'SF Pro Display';
-            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Heavy.otf') format('opentype');
+            src: url('fonts/SF-Pro-Display-Heavy.otf') format('opentype');
             font-weight: 800;
         }
         @font-face {
             font-family: 'SF Pro Display';
-            src: url('https://raw.githubusercontent.com/cgens67/common-ball/main/fonts/SF-Pro-Display-Black.otf') format('opentype');
+            src: url('fonts/SF-Pro-Display-Black.otf') format('opentype');
             font-weight: 900;
         }
 
@@ -80,29 +80,21 @@
             line-height: 1;
         }
 
-        /* --- IMMERSIVE ANIMATED BACKGROUND --- */
-        .bg-layer {
+        /* --- IMMERSIVE PHYSICS BACKGROUND --- */
+        #bgCanvas {
             position: fixed;
-            top: -10%; left: -10%; width: 120%; height: 120%;
-            background-image: url('https://raw.githubusercontent.com/loochinsiang/Assets/main/background.jpg');
-            background-size: cover;
-            background-position: center;
-            animation: panBg 45s infinite alternate ease-in-out;
+            top: 0; left: 0; 
+            width: 100vw; height: 100vh;
             z-index: -2;
+            background-color: #f2f2f7; /* fallback clean color */
         }
         .blur-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Adjusted to match the highly washed out, frosted glass look */
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(40px);
             -webkit-backdrop-filter: blur(40px);
             z-index: -1;
-        }
-
-        @keyframes panBg {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(-2%, -2%) scale(1.05); }
         }
 
         body {
@@ -187,7 +179,8 @@
                         margin-bottom 0.3s var(--md-sys-motion-easing-emphasized);
             margin-bottom: 0;
         }
-        .mode-bar-wrapper.expanded { max-height: 80px; opacity: 1; margin-bottom: 16px; }
+        /* Increased max height so the lost list button doesn't get cut off! */
+        .mode-bar-wrapper.expanded { max-height: 180px; opacity: 1; margin-bottom: 16px; }
 
         .segmented-container {
             display: flex;
@@ -304,9 +297,9 @@
         .wheel-wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
         .wheel-container {
             position: relative;
-            width: 100%; max-width: 320px; /* Made slightly smaller for visual balance */
+            width: 100%; max-width: 320px;
             aspect-ratio: 1/1;
-            margin: 24px 0 32px 0;
+            margin: 24px 0 32px 0; /* Ensures gap between buttons and wheel */
             border-radius: 50%;
             background: var(--md-sys-color-surface-container-high);
         }
@@ -592,7 +585,7 @@
 <body>
 
     <!-- IMMERSIVE BACKGROUND LAYERS -->
-    <div class="bg-layer"></div>
+    <canvas id="bgCanvas"></canvas>
     <div class="blur-layer"></div>
 
     <!-- TOP-RIGHT THREE DOTS MENU BUTTON -->
@@ -618,10 +611,11 @@
             <!-- HIDDEN EXPANDABLE MODE SWITCHER CONTAINER -->
             <div class="mode-bar-wrapper animate-content-size" id="modeBarWrapper">
                 <div class="segmented-container">
-                    <button id="modeStudentTab" class="segmented-btn active">
+                    <button id="modeStudentTab" class="segmented-btn">
                         <span class="material-symbols-outlined">person</span> Students
                     </button>
-                    <button id="modeGroupTab" class="segmented-btn">
+                    <!-- Make Groups Active Default -->
+                    <button id="modeGroupTab" class="segmented-btn active">
                         <span class="material-symbols-outlined">groups</span> Groups (7)
                     </button>
                 </div>
@@ -699,7 +693,7 @@
             </div>
         </div>
         
-        <!-- Multiple Choice Options Container (Matches Screenshot 2 Layout) -->
+        <!-- Multiple Choice Options Container -->
         <div class="options-grid animate-content-size" id="optionsContainer"></div>
 
         <!-- Typing Container with In-Website QWERTY Keyboard -->
@@ -765,6 +759,128 @@
     </div>
 
 <script>
+    // --- HIGH-PERFORMANCE BACKGROUND SPACE PHYSICS ENGINE --- //
+    const bgCanvas = document.getElementById('bgCanvas');
+    const bgCtx = bgCanvas.getContext('2d', { alpha: false }); // Optimize for no transparency buffer
+    let bgWidth, bgHeight;
+    let physicsShapes = [];
+    
+    // High quality aesthetic Unsplash image sources to cache offscreen
+    const bgImages = [
+        'https://images.unsplash.com/photo-1542204165-65bf26472b9b?w=500&q=80',
+        'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=500&q=80',
+        'https://images.unsplash.com/photo-1552053831-71594a27632d?w=500&q=80',
+        'https://images.unsplash.com/photo-1507146426996-ef05306b995a?w=500&q=80',
+        'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&q=80',
+        'https://images.unsplash.com/photo-1517849845537-4d257902454a?w=500&q=80'
+    ];
+    
+    // Pre-cache clipped shapes onto offscreen canvases for blazing fast zero-lag GPU rendering
+    const cachedPreRenders = [];
+    const shapeRadius = Math.min(window.innerWidth, window.innerHeight) * 0.15; // Dynamic sizing
+    
+    bgImages.forEach(src => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = src;
+        img.onload = () => {
+            const osc = document.createElement('canvas');
+            const diam = shapeRadius * 2;
+            osc.width = diam; osc.height = diam * 1.35; // slightly taller for photo look
+            const octx = osc.getContext('2d');
+            octx.beginPath();
+            octx.roundRect(0, 0, osc.width, osc.height, 35);
+            octx.clip();
+            octx.drawImage(img, 0, 0, osc.width, osc.height);
+            cachedPreRenders.push({ img: osc, w: osc.width, h: osc.height, r: shapeRadius });
+        };
+    });
+
+    function initPhysicsEngine() {
+        bgWidth = bgCanvas.width = window.innerWidth;
+        bgHeight = bgCanvas.height = window.innerHeight;
+        physicsShapes = [];
+        for(let i=0; i < 7; i++) {
+            physicsShapes.push({
+                x: Math.random() * (bgWidth - shapeRadius*2) + shapeRadius,
+                y: Math.random() * (bgHeight - shapeRadius*2) + shapeRadius,
+                vx: (Math.random() - 0.5) * 3, // Initial velocity
+                vy: (Math.random() - 0.5) * 3,
+                mass: 1,
+                imgIndex: i % bgImages.length
+            });
+        }
+    }
+
+    function runPhysicsLoop() {
+        bgCtx.fillStyle = '#f2f2f7'; // clear background
+        bgCtx.fillRect(0, 0, bgWidth, bgHeight);
+
+        // Update positions & Edge collision
+        for(let s of physicsShapes) {
+            s.x += s.vx;
+            s.y += s.vy;
+            const r = shapeRadius; // simplified hit box
+            
+            if (s.x - r < 0) { s.x = r; s.vx *= -1; }
+            if (s.x + r > bgWidth) { s.x = bgWidth - r; s.vx *= -1; }
+            if (s.y - r < 0) { s.y = r; s.vy *= -1; }
+            if (s.y + r > bgHeight) { s.y = bgHeight - r; s.vy *= -1; }
+        }
+
+        // Extremely fast circle-collision (Elastic)
+        for (let i = 0; i < physicsShapes.length; i++) {
+            for (let j = i + 1; j < physicsShapes.length; j++) {
+                let s1 = physicsShapes[i];
+                let s2 = physicsShapes[j];
+                let dx = s2.x - s1.x;
+                let dy = s2.y - s1.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                let minDist = shapeRadius * 2; // Treat as circles for perfect lag-free physics
+
+                if (dist < minDist && dist !== 0) {
+                    let overlap = minDist - dist;
+                    let nx = dx / dist;
+                    let ny = dy / dist;
+
+                    // Separate shapes to avoid sticking
+                    s1.x -= nx * (overlap / 2);
+                    s1.y -= ny * (overlap / 2);
+                    s2.x += nx * (overlap / 2);
+                    s2.y += ny * (overlap / 2);
+
+                    // Elastic Bounce Response
+                    let rvx = s2.vx - s1.vx;
+                    let rvy = s2.vy - s1.vy;
+                    let velAlongNormal = rvx * nx + rvy * ny;
+                    
+                    if (velAlongNormal > 0) continue; // Moving apart already
+                    
+                    let bounce = -(1.0) * velAlongNormal;
+                    let impulse = bounce / 2;
+                    s1.vx -= impulse * nx;
+                    s1.vy -= impulse * ny;
+                    s2.vx += impulse * nx;
+                    s2.vy += impulse * ny;
+                }
+            }
+        }
+
+        // Draw Pre-Renders
+        for(let s of physicsShapes) {
+            if (cachedPreRenders.length > s.imgIndex) {
+                const asset = cachedPreRenders[s.imgIndex];
+                bgCtx.drawImage(asset.img, s.x - asset.r, s.y - asset.r);
+            }
+        }
+        requestAnimationFrame(runPhysicsLoop);
+    }
+    window.addEventListener('resize', initPhysicsEngine);
+    initPhysicsEngine();
+    runPhysicsLoop();
+    // --- END PHYSICS ENGINE --- //
+
+
     // --- DATA ---
     const rawStudents = [
         {"name": "ALOYSIUS NG YU YI"}, {"name": "ALVIN TANG ZHENG HAO"}, {"name": "CLEMENT SEAH JI WEN"}, 
@@ -783,7 +899,8 @@
         "Group 1", "Group 2", "Group 3", "Group 4", "Group 5", "Group 6", "Group 7"
     ];
 
-    let activeWheelMode = 'students'; // 'students' or 'groups'
+    // UPDATED: 'groups' is now the active default mode
+    let activeWheelMode = 'groups'; 
     let students = rawStudents.map(s => s.name);
     let groups = [...defaultGroups];
     let lostList = [];
@@ -945,13 +1062,11 @@
         "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
     ];
 
-    // --- FEATURED HIGH-PROBABILITY AUDIO QUESTIONS ---
     let featuredListeningQuestions = [
         "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
         "FA|Which electronic wind instrument can be heard in this audio clip?|audios/billiejeanlyricon.mp3|Computone Lyricon I|Akai EWI1000|Yamaha WX5|Casio DH-100"
     ];
 
-    // --- FORM 2 APPROPRIATE LISTENING VOCABULARY & PHRASES ---
     const form2DictationWords = [
         "colour/color", "favourite/favorite", "centre/center", "neighbour/neighbor", "theatre/theater",
         "travelling/traveling", "organise/organize", "realise/realize", "licence/license", "catalog/catalogue",
@@ -1091,41 +1206,45 @@
         }
     }
 
-    // ORGANIC MECHANICAL TICK SYNTHESIZER
-    let audioCtx;
+    // --- ZERO-LAG AUDIO TICK SYNTHESIZER --- //
+    // Fixes the typing lag by PRE-BAKING the audio buffer instead of generating it on every keypress!
+    let audioCtx = null;
+    let cachedTickBuffer = null;
+
     function initAudio() {
-        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // Pre-bake the noise buffer entirely ONCE. No Biquad Filters per keystroke!
+            const bufferSize = Math.floor(audioCtx.sampleRate * 0.012);
+            cachedTickBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = cachedTickBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3)); // Fast envelope
+            }
+        }
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
 
-    const wheelPointer = document.getElementById('wheelPointer');
-
     function playTick() {
-        if (!audioCtx) return;
+        if (!audioCtx || !cachedTickBuffer) return;
         try {
-            const now = audioCtx.currentTime;
-            const bufferSize = Math.floor(audioCtx.sampleRate * 0.012);
-            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-                data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.3));
-            }
-            const noise = audioCtx.createBufferSource();
-            noise.buffer = buffer;
-
-            const filter = audioCtx.createBiquadFilter();
-            filter.type = 'bandpass';
-            filter.frequency.setValueAtTime(1800 + (Math.random() - 0.5) * 400, now);
-            filter.Q.setValueAtTime(4, now);
-
+            const source = audioCtx.createBufferSource();
+            source.buffer = cachedTickBuffer;
+            
             const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(0.8, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.012);
-
-            noise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
-            noise.start(now);
+            // Fast decay for mechanical typing feel
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.012);
+            
+            source.connect(gain);
+            gain.connect(audioCtx.destination);
+            source.start();
         } catch (e) {}
     }
+    // --- END AUDIO TICK LOGIC --- //
+
+    const wheelPointer = document.getElementById('wheelPointer');
 
     // --- ELEMENTS ---
     const topMenuBtn = document.getElementById('topMenuBtn');
@@ -1314,7 +1433,7 @@
         let currentSlice = Math.floor(relAngle / degreesPerSlice);
         
         if(currentSlice !== lastSlice && lastSlice !== -1) {
-            playTick();
+            playTick(); // Utilizing the zero-lag ticking method
         }
         lastSlice = currentSlice;
 
@@ -1410,7 +1529,9 @@
     }
 
     function handleKeyPress(char) {
-        initAudio();
+        initAudio(); // Initialize audio context securely if not yet done
+        playTick(); // Fast zero-lag tick playing
+        
         const q = currentQuestions[currentQuestionIndex];
         if (!q || (q.type !== 'typing' && q.type !== 'audio')) return;
 
