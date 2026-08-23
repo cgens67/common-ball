@@ -42,7 +42,7 @@
             --md-sys-color-on-primary: #FFFFFF;
             --md-sys-color-primary-container: transparent;
             --md-sys-color-on-primary-container: #111111;
-            --md-sys-color-secondary-container: #E5E5EA; /* iOS Light Gray */
+            --md-sys-color-secondary-container: #E5E5EA;
             --md-sys-color-on-secondary-container: #111111;
             --md-sys-color-tertiary: #7D5260;
             --md-sys-color-tertiary-container: #F2F2F7;
@@ -90,7 +90,6 @@
         .blur-layer {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            /* Thick blur to create an ambient colored frosted glass look */
             background: rgba(255, 255, 255, 0.65);
             backdrop-filter: blur(35px);
             -webkit-backdrop-filter: blur(35px);
@@ -310,7 +309,7 @@
             position: absolute;
             width: 280px;
             height: 100%;
-            background: #E5E5EA; /* Darker pill highlight */
+            background: #E5E5EA; 
             border-radius: 32px;
             left: 50%;
             transform: translateX(-50%);
@@ -321,7 +320,6 @@
             position: absolute;
             left: 50%;
             z-index: 2;
-            /* Animation handled via JS */
         }
         .picker-item {
             width: 280px;
@@ -336,9 +334,7 @@
             padding: 0 16px;
             line-height: 64px; 
         }
-        .picker-item.active {
-            color: #111; 
-        }
+        .picker-item.active { color: #111; }
 
         /* --- MODE SELECTION CARDS --- */
         .mode-card {
@@ -499,7 +495,6 @@
 
         .qwerty-keyboard { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 650px; user-select: none; }
         .kb-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
-        /* LAG FIX: Removed backdrop-filter to guarantee 60fps on mobile */
         .key {
             background: #FFFFFF;
             color: #111; border: none; border-radius: 8px; padding: 14px 0;
@@ -910,13 +905,13 @@
     // Helper: Initialized Rigged Custom Groups
     function initGroupsMap() {
         groupsMap = {
-            "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
-            "Group 2": ["YEOW JIA WEI", "LEXUS KUEK CHEN XIAN", "XANXUS TAI WEI XUAN", "TAY KIM YAW"],
-            "Group 3": ["TAN GUAN HAN", "RAYSON BANG WEI XIANG", "ALOYSIUS NG YU YI", "GUI CEN EN"],
-            "Group 4": ["GAVIN CHUA WEN JIE", "CLEMENT SEAH JI WEN", "LIM JIA QING", "JONATHAN ONG KAH FATT"],
-            "Group 5": ["NG JING KAI", "ONG ZHI XIAN", "WEE KER SHENG", "PANG MIN ZE"],
-            "Group 6": ["SHADEESHAN A/L KATHIRAVAN", "JEREMY TAN WEI REN", "RYAN CHOK ZI INN", "WONG HUNG RUI"],
-            "Group 7": ["KINGSTON GOH QI HAO", "LAM YU YANG", "LOUIS NG WEI SOONG", "JOSEPH LIM", "TAN YONG XI"]
+            "Group 1": ["ALVIN TANG ZHENG HAO", "ELVIS LOW YI HAO", "KINGSTON GOH QI HAO", "NG JING KAI"],
+            "Group 2": ["ALOYSIUS NG YU YI", "CLEMENT SEAH JI WEN", "GUI CEN EN", "JONATHAN ONG KAH FATT"],
+            "Group 3": ["GAVIN CHUA WEN JIE", "JEREMY TAN WEI REN", "LAM YU YANG", "NG YU JIN"],
+            "Group 4": ["JOSEPH LIM", "LOUIS NG WEI SOONG", "LIM JIA QING", "ONG ZHI XIAN"],
+            "Group 5": ["LEXUS KUEK CHEN XIAN", "PANG MIN ZE", "WEE KER SHENG", "TAY KIM YAW"],
+            "Group 6": ["YEOW JIA WEI", "TAN GUAN HAN", "SHADEESHAN A/L KATHIRAVAN", "TAN YU ZHONG"],
+            "Group 7": ["XANXUS TAI WEI XUAN", "RAYSON BANG WEI XIANG", "RYAN CHOK ZI INN", "TAN YONG XI", "WONG HUNG RUI"]
         };
     }
 
@@ -935,7 +930,7 @@
     const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
     const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
     const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026';
-    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v2'; // Changed key to cache bust old group mapping
+    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v3'; // Changed key to cache bust old group mapping
 
     function saveState() {
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
@@ -954,6 +949,10 @@
         const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
         const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
         const savedGroupsMap = localStorage.getItem(STORAGE_KEY_GROUPS_MAP);
+        
+        // Refresh Safe Guard
+        const savedScreen = localStorage.getItem('md3_quiz_current_screen');
+        const savedCurrentStudent = localStorage.getItem('md3_quiz_current_student');
 
         if (savedStudents) { try { students = JSON.parse(savedStudents); } catch(e) {} }
         if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
@@ -969,6 +968,12 @@
 
         updateSegmentedTabsUI();
         updateStudentCountUI();
+
+        // Restore State if refreshed on modeScreen
+        if (savedScreen === 'modeScreen' && savedCurrentStudent) {
+            currentStudent = savedCurrentStudent;
+            setTimeout(() => promptQuestionMode(), 100);
+        }
     }
 
     function updateStudentCountUI() {
@@ -989,12 +994,23 @@
     // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
         "IMG|What is this?|images/2Hphoto1.jpg|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
-        "Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
-        "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
-        "Which country has the most natural lakes in the world?|Canada|Russia|USA|Brazil",
-        "What is the deepest lake in the world?|Lake Baikal|Lake Superior|Lake Tanganyika|Caspian Sea",
-        "Which desert is the driest non-polar desert on Earth?|Atacama Desert|Sahara Desert|Gobi Desert|Kalahari Desert",
-        "Mount Everest lies on the border between which two countries?|Nepal and China|India and Nepal|China and Bhutan|India and China",
+        "What was EPCOT at Walt Disney World originally supposed to be?|A utopian futuristic city|A space training center|A giant shopping mall|A movie studio",
+        "Which Disney ride was originally supposed to feature real live animals?|Jungle Cruise|Pirates of the Caribbean|Big Thunder Mountain|Splash Mountain",
+        "What was the original planned name for Mickey Mouse?|Mortimer|Marshall|Milton|Maxwell",
+        "GEO|Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
+        "GEO|Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
+        "GEO|Which country has the most natural lakes in the world?|Canada|Russia|USA|Brazil",
+        "GEO|What is the deepest lake in the world?|Lake Baikal|Lake Superior|Lake Tanganyika|Caspian Sea",
+        "GEO|Which desert is the driest non-polar desert on Earth?|Atacama Desert|Sahara Desert|Gobi Desert|Kalahari Desert",
+        "GEO|Mount Everest lies on the border between which two countries?|Nepal and China|India and Nepal|China and Bhutan|India and China",
+        "GEO|What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
+        "GEO|What is the longest river in the world?|Nile|Amazon|Yangtze|Mississippi",
+        "GEO|Which continent is the Sahara Desert located in?|Africa|Asia|North America|Australia",
+        "GEO|What is the capital of Japan?|Tokyo|Kyoto|Osaka|Hokkaido",
+        "GEO|Which is the smallest country in the world?|Vatican City|Monaco|Nauru|Tuvalu",
+        "GEO|Which planet is known as the Red Planet?|Mars|Venus|Jupiter|Saturn",
+        "GEO|What is the capital of Australia?|Canberra|Sydney|Melbourne|Perth",
+        "GEO|How many continents are there?|7|5|6|8",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
         "T|Complete the sentence: He is interested _____ learning music.|in",
@@ -1004,11 +1020,9 @@
         "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty/modest",
         "T|Please _____ your seatbelt during the flight.|fasten/secure",
         "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
-        "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
         "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
         "Which is the tallest building in Malaysia (as of 2024)?|Merdeka 118|Petronas Twin Towers|Exchange 106|KL Tower",
         "In what year did Malaysia gain independence?|1957|1963|1969|1955",
-        "What is the longest river in the world?|Nile|Amazon|Yangtze|Mississippi",
         "Which element has the chemical symbol 'O'?|Oxygen|Osmium|Gold|Iron",
         "Who was the first Prime Minister of Malaysia?|Tunku Abdul Rahman|Mahathir Mohamad|Najib Razak|Hussein Onn",
         "What is the hardest natural substance on Earth?|Diamond|Gold|Iron|Quartz",
@@ -1017,8 +1031,6 @@
         "Which animal is the tallest in the world?|Giraffe|Elephant|Ostrich|Kangaroo",
         "Which Malaysian island is known as the 'Pearl of the Orient'?|Penang|Langkawi|Tioman|Redang",
         "How many colors are in a rainbow?|7|5|6|8",
-        "Which is the smallest country in the world?|Vatican City|Monaco|Nauru|Tuvalu",
-        "Which planet is known as the Red Planet?|Mars|Venus|Jupiter|Saturn",
         "How many legs does a spider have?|8|6|10|12",
         "What is the square root of 64?|8|6|7|9",
         "What is the largest mammal in the world?|Blue Whale|Elephant|Giraffe|Shark",
@@ -1063,7 +1075,7 @@
         "library", "sandwich", "stadium", "restaurant", "technology", "musician", "tradition", "symphony",
         "orchestra", "activity", "direction", "celebration", "community", "passenger", "dictionary", "vocabulary",
         "competition", "championship", "experiment", "electricity", "photograph", "university", "refrigerator",
-        "cacophony", "ephemeral", "obfuscate", "eloquent", "ubiquitous", "frugal" 
+        "cacophony", "ephemeral", "obfuscate", "eloquent", "ubiquitous", "frugal", "niggardly"
     ];
 
     const form2DictationPhrases = [
@@ -1102,8 +1114,10 @@
                     correct: parts[3],
                     wrongs: parts.slice(4)
                 };
+            } else if (parts[0] === 'GEO') {
+                return { type: 'mcq', q: parts[1], correct: parts[2], wrongs: parts.slice(3), isGeo: true };
             } else {
-                return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: parts.slice(2) };
+                return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: parts.slice(2), isGeo: false };
             }
         });
     }
@@ -1578,6 +1592,10 @@
         }
         modeSubtitle.innerHTML = subtitleText;
 
+        // Save current turn state to prevent data loss on refresh
+        localStorage.setItem('md3_quiz_current_screen', 'modeScreen');
+        localStorage.setItem('md3_quiz_current_student', currentStudent);
+
         showScreen(modeScreen);
     }
 
@@ -1663,9 +1681,8 @@
         score = 0; currentQuestionIndex = 0; currentQuestions = [];
         const hardMode = isHardStudent(currentStudent);
 
-        let activePool = [];
         if (mode === 'listening') {
-            activePool = listeningMasterPool;
+            let activePool = listeningMasterPool;
             while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
                 const featQ = featuredListeningPool.shift();
                 let opts = [...featQ.wrongs];
@@ -1679,36 +1696,63 @@
                     ans: correctIndex
                 });
             }
-            saveState();
-        } else {
-            activePool = hardMode ? hardMasterPool : normalMasterPool;
-        }
 
-        while (currentQuestions.length < 10) {
-            if (activePool.length === 0) {
-                if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
-                else activePool = parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions);
-            }
-            const randIdx = Math.floor(Math.random() * activePool.length);
-            const selectedQ = activePool.splice(randIdx, 1)[0]; 
-            
-            if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq' || selectedQ.type === 'img_mcq') {
-                let opts = [...selectedQ.wrongs];
-                const correctIndex = Math.floor(Math.random() * (opts.length + 1));
-                opts.splice(correctIndex, 0, selectedQ.correct);
-                currentQuestions.push({ 
-                    type: selectedQ.type, 
-                    q: selectedQ.q, 
-                    audioSrc: selectedQ.audioSrc,
-                    imgSrc: selectedQ.imgSrc,
-                    opts: opts, 
-                    ans: correctIndex 
-                });
-            } else {
+            while (currentQuestions.length < 10) {
+                if (activePool.length === 0) activePool = parsePool(dynamicListeningPool);
+                const randIdx = Math.floor(Math.random() * activePool.length);
+                const selectedQ = activePool.splice(randIdx, 1)[0];
                 currentQuestions.push({ type: selectedQ.type, q: selectedQ.q, ans: selectedQ.ans });
             }
+            saveState();
+
+        } else {
+            // STANDARD / HARD MODE LOGIC WITH GEO RULE
+            let poolRef = hardMode ? hardMasterPool : normalMasterPool;
+            
+            while (currentQuestions.length < 10) {
+                if (poolRef.length === 0) {
+                    poolRef.push(...parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions));
+                }
+
+                let validIndices = [];
+                for (let i = 0; i < poolRef.length; i++) {
+                    if (currentStudent === 'Group 5') {
+                        // Group 5 prefers 5 Geo questions max
+                        if (currentQuestions.length < 5 && poolRef[i].isGeo) validIndices.push(i);
+                        else if (currentQuestions.length >= 5 && !poolRef[i].isGeo) validIndices.push(i);
+                    } else {
+                        // Other groups prefer Non-Geo questions
+                        if (!poolRef[i].isGeo) validIndices.push(i);
+                    }
+                }
+
+                // Fallback if ideal questions ran out
+                if (validIndices.length === 0) {
+                    for (let i = 0; i < poolRef.length; i++) validIndices.push(i);
+                }
+
+                const randSelect = validIndices[Math.floor(Math.random() * validIndices.length)];
+                const selectedQ = poolRef.splice(randSelect, 1)[0]; 
+                
+                if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq' || selectedQ.type === 'img_mcq') {
+                    let opts = [...selectedQ.wrongs];
+                    const correctIndex = Math.floor(Math.random() * (opts.length + 1));
+                    opts.splice(correctIndex, 0, selectedQ.correct);
+                    currentQuestions.push({ 
+                        type: selectedQ.type, 
+                        q: selectedQ.q, 
+                        audioSrc: selectedQ.audioSrc,
+                        imgSrc: selectedQ.imgSrc,
+                        opts: opts, 
+                        ans: correctIndex 
+                    });
+                } else {
+                    currentQuestions.push({ type: selectedQ.type, q: selectedQ.q, ans: selectedQ.ans });
+                }
+            }
         }
 
+        // Shuffle questions but keep index 0 intact if it's a featured item just to be safe
         for (let i = currentQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
@@ -1844,7 +1888,6 @@
         });
     }
 
-    // Systematically remove a group (and its members) or a single student.
     function removeStudentSystematically(entityName) {
         if (activeWheelMode === 'groups') {
             groups = groups.filter(g => g !== entityName);
@@ -1922,6 +1965,7 @@
         stopAllAudio();
         
         removeStudentSystematically(currentStudent);
+        localStorage.removeItem('md3_quiz_current_screen'); // Clear refresh state flag
         
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = score;
@@ -1985,6 +2029,7 @@
                 localStorage.removeItem(STORAGE_KEY_LOST);
                 localStorage.removeItem(STORAGE_KEY_FEATURED);
                 localStorage.removeItem(STORAGE_KEY_GROUPS_MAP);
+                localStorage.removeItem('md3_quiz_current_screen');
                 students = rawStudents.map(s => s.name);
                 groups = [...defaultGroups];
                 lostList = [];
