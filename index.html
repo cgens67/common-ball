@@ -281,30 +281,37 @@
             will-change: transform;
         }
 
-        /* --- SLOT MACHINE PICKER UI --- */
+        /* --- MULTI-ROW SLOT MACHINE PICKER UI --- */
         .picker-wrapper {
-            margin-top: 40px;
+            margin-top: 20px;
             width: 100%;
             display: flex;
             justify-content: center;
         }
-        .picker-window {
+        .picker-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
             width: 100%;
             max-width: 600px;
-            height: 70px;
+        }
+        .picker-window {
+            width: 100%;
+            height: 64px; 
             background: #F2F2F7;
-            border-radius: 35px;
+            border-radius: 32px;
             position: relative;
             overflow: hidden;
             display: flex;
             align-items: center;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.05);
         }
         .picker-highlight {
             position: absolute;
-            width: 240px;
+            width: 280px;
             height: 100%;
-            background: #E5E5EA; /* Darker pill */
-            border-radius: 35px;
+            background: #E5E5EA; /* Darker pill highlight */
+            border-radius: 32px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 1;
@@ -314,12 +321,12 @@
             position: absolute;
             left: 50%;
             z-index: 2;
-            /* Animation handled via JS for perfect alignment */
+            /* Animation handled via JS */
         }
         .picker-item {
-            width: 240px;
+            width: 280px;
             text-align: center;
-            font-size: 1.35rem;
+            font-size: 1.15rem;
             font-weight: 800;
             color: #999;
             transition: color 0.3s;
@@ -327,10 +334,10 @@
             overflow: hidden;
             text-overflow: ellipsis;
             padding: 0 16px;
-            line-height: 70px; /* Vertically center text perfectly */
+            line-height: 64px; 
         }
         .picker-item.active {
-            color: #111; /* Highlight text */
+            color: #111; 
         }
 
         /* --- MODE SELECTION CARDS --- */
@@ -642,13 +649,10 @@
 
     <!-- SLOT MACHINE GROUP PICKER SCREEN -->
     <div id="pickerScreen" class="screen animate-content-size">
-        <h1 id="pickerGroupTitle" style="font-size: 2.8rem; margin-bottom: 40px; color:#444;">For group 1:</h1>
+        <h1 id="pickerGroupTitle" style="font-size: 2.8rem; margin-bottom: 20px; color:#111;">For group 1:</h1>
         <div class="picker-wrapper">
-            <div class="picker-window">
-                <div class="picker-highlight"></div>
-                <div class="picker-track" id="pickerTrack">
-                    <!-- Dynamic items appended via JS -->
-                </div>
+            <div class="picker-container" id="pickerContainer">
+                <!-- Dynamically injected multiple picker windows here -->
             </div>
         </div>
     </div>
@@ -895,7 +899,7 @@
     let groupsMap = {};
     let lostList = [];
 
-    // Helper: Chunk array perfectly into 7 groups (4 members each, last gets 5)
+    // Helper: Chunk array into 7 groups (4 members each, last gets 5)
     function initGroupsMap() {
         let sList = rawStudents.map(s => s.name);
         groupsMap = {
@@ -975,7 +979,7 @@
         return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
     }
 
-    // --- STANDARD QUESTION POOLS (Added Fill in the Blank requested questions) ---
+    // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
         "Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
         "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
@@ -988,7 +992,7 @@
         "T|Complete the sentence: He is interested _____ learning music.|in",
         "T|Type the correct spelling for: Neccessary|necessary",
         "T|Type the correct past tense of 'teach':|taught",
-        "T|A quiet _____ broke out in the back of the classroom.|giggle/chuckle/whisper/snicker",
+        "T|A quiet _____ broke out in the back of the classroom.|snigger/snicker/giggle/chuckle/whisper",
         "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty/modest",
         "T|Please _____ your seatbelt during the flight.|fasten/secure",
         "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
@@ -1182,7 +1186,7 @@
         }
     }
 
-    // --- ZERO-LAG AUDIO TICK SYNTHESIZER (Fixed Keyboard Lag) --- //
+    // --- ZERO-LAG AUDIO TICK SYNTHESIZER ---
     let audioCtx = null;
     function initAudio() {
         if (!audioCtx) {
@@ -1235,7 +1239,7 @@
     const confirmBtn = document.getElementById('confirmBtn');
 
     const pickerGroupTitle = document.getElementById('pickerGroupTitle');
-    const pickerTrack = document.getElementById('pickerTrack');
+    const pickerContainer = document.getElementById('pickerContainer');
     const modeStudentTitle = document.getElementById('modeStudentTitle');
     
     const selectStandardBtn = document.getElementById('selectStandardBtn');
@@ -1339,7 +1343,7 @@
     });
 
     // --- WHEEL DRAWING ---
-    const wheelColors = ["#F2F2F7", "#E5E5EA", "#D1D1D6", "#C7C7CC"]; // Sleek iOS greys for the wheel slices
+    const wheelColors = ["#F2F2F7", "#E5E5EA", "#D1D1D6", "#C7C7CC"];
 
     function drawWheel() {
         const participants = getActiveParticipants();
@@ -1425,7 +1429,7 @@
     function spinWheel() {
         const participants = getActiveParticipants();
         if (participants.length === 0) return;
-        initAudio(); // Audio Context initialized safely on interaction
+        initAudio(); 
         spinBtn.disabled = true;
         viewLostBtn.disabled = true;
         topMenuBtn.disabled = true;
@@ -1450,7 +1454,7 @@
             let landedEntity = participants[randomSlice];
             
             if (activeWheelMode === 'groups') {
-                startGroupPicker(landedEntity);
+                startMultiPicker(landedEntity);
             } else {
                 currentStudent = landedEntity;
                 promptQuestionMode();
@@ -1458,83 +1462,91 @@
         }, 7100); 
     }
 
-    // --- SLOT MACHINE LOGIC FOR GROUPS ---
-    function startGroupPicker(groupName) {
+    // --- MULTI-ROW SLOT MACHINE LOGIC FOR GROUPS ---
+    function startMultiPicker(groupName) {
         showScreen(pickerScreen);
         pickerGroupTitle.innerText = `For ${groupName.toLowerCase()}:`;
         
         const members = groupsMap[groupName] || [];
         if(members.length === 0) {
-             currentStudent = "Nobody";
+             currentStudent = groupName;
              promptQuestionMode();
              return;
         }
 
-        pickerTrack.innerHTML = '';
-        pickerTrack.style.transition = 'none';
+        pickerContainer.innerHTML = '';
         
-        const totalItems = 25; // How many names to scroll through
-        const winnerIdx = 20; // 21st item is the chosen one
-        const itemWidth = 240; // match CSS exactly
-        
-        const trackItems = [];
-        let lastMember = "";
-        for (let i = 0; i < totalItems; i++) {
-            let randomMember = members[Math.floor(Math.random() * members.length)];
-            // prevent consecutive dupes visually
-            while(randomMember === lastMember && members.length > 1) {
-                randomMember = members[Math.floor(Math.random() * members.length)];
-            }
-            lastMember = randomMember;
-            trackItems.push(randomMember);
-            
-            const div = document.createElement('div');
-            div.className = 'picker-item';
-            div.innerText = randomMember;
-            pickerTrack.appendChild(div);
-        }
-        
-        currentStudent = trackItems[winnerIdx];
+        const totalItems = 25; 
+        const winnerIdx = 20; 
+        const itemWidth = 280; 
+        let activeAnimations = members.length;
 
-        // initialX aligns the first item exactly centered in the window
-        const initialX = - (itemWidth / 2); 
-        pickerTrack.style.transform = `translateX(${initialX}px)`;
-        
-        // Force Reflow
-        void pickerTrack.offsetWidth; 
-        
-        const finalX = - (winnerIdx * itemWidth + itemWidth / 2);
-        const spinDuration = 3500;
-        
-        pickerTrack.style.transition = `transform ${spinDuration}ms cubic-bezier(0.1, 0.9, 0.2, 1)`;
-        pickerTrack.style.transform = `translateX(${finalX}px)`;
-        
-        let startTime = performance.now();
-        let currentItem = 0;
-        
-        function checkTick(time) {
-            let elapsed = time - startTime;
-            let progress = Math.min(elapsed / spinDuration, 1);
-            let eased = 1 - Math.pow(1 - progress, 3); // match cubic-bezier roughly
-            let currentPosX = initialX + (finalX - initialX) * eased;
+        members.forEach((member, mIdx) => {
+            const winDiv = document.createElement('div');
+            winDiv.className = 'picker-window';
             
-            // Trigger tick if we pass a new item boundary
-            let activeIndex = Math.floor(Math.abs(currentPosX) / itemWidth);
-            if (activeIndex !== currentItem) {
-                playTick();
-                currentItem = activeIndex;
+            const highlight = document.createElement('div');
+            highlight.className = 'picker-highlight';
+            winDiv.appendChild(highlight);
+            
+            const track = document.createElement('div');
+            track.className = 'picker-track';
+            winDiv.appendChild(track);
+            pickerContainer.appendChild(winDiv);
+            
+            let lastRandom = "";
+            for (let i = 0; i < totalItems; i++) {
+                let text = students[Math.floor(Math.random() * students.length)];
+                if (i === winnerIdx) text = member;
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'picker-item';
+                itemDiv.innerText = text;
+                track.appendChild(itemDiv);
             }
             
-            if (progress < 1) {
-                requestAnimationFrame(checkTick);
-            } else {
-                pickerTrack.children[winnerIdx].classList.add('active');
-                setTimeout(() => {
-                    promptQuestionMode();
-                }, 1200);
+            const initialX = - (itemWidth / 2); 
+            track.style.transform = `translateX(${initialX}px)`;
+            
+            void track.offsetWidth; 
+            
+            const finalX = - (winnerIdx * itemWidth + itemWidth / 2);
+            // Stagger durations slightly so they lock in sequence
+            const spinDuration = 3200 + (mIdx * 450); 
+            
+            track.style.transition = `transform ${spinDuration}ms cubic-bezier(0.1, 0.9, 0.2, 1)`;
+            track.style.transform = `translateX(${finalX}px)`;
+            
+            let startTime = performance.now();
+            let currentItem = 0;
+            
+            function checkTick(time) {
+                let elapsed = time - startTime;
+                let progress = Math.min(elapsed / spinDuration, 1);
+                let eased = 1 - Math.pow(1 - progress, 3);
+                let currentPosX = initialX + (finalX - initialX) * eased;
+                
+                let activeIndex = Math.floor(Math.abs(currentPosX) / itemWidth);
+                if (activeIndex !== currentItem) {
+                    playTick();
+                    currentItem = activeIndex;
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(checkTick);
+                } else {
+                    track.children[winnerIdx].classList.add('active');
+                    activeAnimations--;
+                    if (activeAnimations === 0) {
+                        setTimeout(() => {
+                            currentStudent = groupName;
+                            promptQuestionMode();
+                        }, 1200);
+                    }
+                }
             }
-        }
-        requestAnimationFrame(checkTick);
+            requestAnimationFrame(checkTick);
+        });
     }
 
     function promptQuestionMode() {
@@ -1796,20 +1808,20 @@
         });
     }
 
-    // Function to handle the removal of a student systematically
-    function removeStudentSystematically(studentName) {
+    // Systematically remove a group (and its members) or a single student.
+    function removeStudentSystematically(entityName) {
         if (activeWheelMode === 'groups') {
-            // Remove student from their group in groupsMap
+            groups = groups.filter(g => g !== entityName);
+            const membersToRemove = groupsMap[entityName] || [];
+            students = students.filter(s => !membersToRemove.includes(s));
+        } else {
+            students = students.filter(s => s !== entityName);
             for (let g in groupsMap) {
-                groupsMap[g] = groupsMap[g].filter(s => s !== studentName);
-                // If group is empty, remove it from the active participants list entirely
+                groupsMap[g] = groupsMap[g].filter(s => s !== entityName);
                 if (groupsMap[g].length === 0) {
                     groups = groups.filter(group => group !== g);
                 }
             }
-        } else {
-            // Remove student directly
-            students = students.filter(s => s !== studentName);
         }
     }
 
@@ -1995,12 +2007,12 @@
             setTimeout(() => {
                 const participants = getActiveParticipants();
                 if (index >= 0 && index < participants.length) {
-                    participants.splice(index, 1);
-                    setActiveParticipants(participants);
+                    const toRemove = participants[index];
+                    removeStudentSystematically(toRemove);
                     saveState();
                     drawWheel();
                     updateStudentManageUI();
-                    spinBtn.disabled = participants.length === 0;
+                    spinBtn.disabled = getActiveParticipants().length === 0;
                 }
             }, 300);
         }
