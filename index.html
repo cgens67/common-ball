@@ -900,8 +900,9 @@
     let groups = [...defaultGroups];
     let groupsMap = {};
     let lostList = [];
+    let classPhotoUsed = false; // Flag to guarantee appearance on first turn only
 
-    // Rigged targeted groups as requested
+    // Rigged targeted groups
     function initGroupsMap() {
         groupsMap = {
             "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
@@ -928,10 +929,11 @@
     const STORAGE_KEY_GROUPS = 'md3_quiz_groups_2026';
     const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
     const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
-    const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026';
+    const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026_v4'; 
     const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v3'; 
     const STORAGE_KEY_CURRENT_STUDENT = 'md3_quiz_current_student';
     const STORAGE_KEY_CURRENT_SCREEN = 'md3_quiz_current_screen';
+    const STORAGE_KEY_PHOTO_USED = 'md3_quiz_photo_used_2026';
 
     function saveState() {
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
@@ -940,6 +942,7 @@
         localStorage.setItem(STORAGE_KEY_LOST, JSON.stringify(lostList));
         localStorage.setItem(STORAGE_KEY_FEATURED, JSON.stringify(featuredListeningPool));
         localStorage.setItem(STORAGE_KEY_GROUPS_MAP, JSON.stringify(groupsMap));
+        localStorage.setItem(STORAGE_KEY_PHOTO_USED, JSON.stringify(classPhotoUsed));
         updateStudentCountUI();
     }
 
@@ -950,12 +953,14 @@
         const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
         const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
         const savedGroupsMap = localStorage.getItem(STORAGE_KEY_GROUPS_MAP);
+        const savedPhotoUsed = localStorage.getItem(STORAGE_KEY_PHOTO_USED);
 
         if (savedStudents) { try { students = JSON.parse(savedStudents); } catch(e) {} }
         if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
         if (savedMode) { activeWheelMode = savedMode; }
         if (savedLost) { try { lostList = JSON.parse(savedLost); } catch(e) {} }
         if (savedFeatured) { try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {} }
+        if (savedPhotoUsed !== null) { try { classPhotoUsed = JSON.parse(savedPhotoUsed); } catch(e) {} }
         
         if (savedGroupsMap) { 
             try { groupsMap = JSON.parse(savedGroupsMap); } catch(e) { initGroupsMap(); }
@@ -966,7 +971,7 @@
         updateSegmentedTabsUI();
         updateStudentCountUI();
 
-        // PERSISTENCE FIX: Restore to mode screen if accidentally refreshed
+        // Restore to mode screen if refreshed
         const savedCurrentStudent = localStorage.getItem(STORAGE_KEY_CURRENT_STUDENT);
         const savedScreen = localStorage.getItem(STORAGE_KEY_CURRENT_SCREEN);
         if (savedCurrentStudent && savedScreen === 'modeScreen') {
@@ -995,7 +1000,6 @@
 
     // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
-        "IMG|What is this?|images/2Hphoto1.jpg|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
         "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
         "T|Fill in the blank: They have _____ (eat) their dinner.|eaten",
@@ -1025,7 +1029,6 @@
     ];
 
     const hardCompactQuestions = [
-        "IMG|What is this?|images/2Hphoto1.jpg|Class Photo|Graduation Photo|Family Portrait|Staff Picture",
         "T|Type the subjunctive verb: If I _____ (be) you, I would study harder.|were",
         "T|Complete the grammar: Neither of the boys _____ (be) present.|was",
         "T|Type the past participle of 'shrink':|shrunken",
@@ -1037,6 +1040,7 @@
         "What is the half-life of Carbon-14 used in radiocarbon dating?|5,730 years|1,000 years|12,300 years|50,000 years",
         "Who was the architect who designed the Petronas Twin Towers?|César Pelli|Norman Foster|Zaha Hadid|I. M. Pei",
         "Which element has the highest melting point of all metals?|Tungsten|Titanium|Platinum|Osmium",
+        "What is the deepest known point in Earth's oceans?|Challenger Deep|Java Trench|Puerto Rico Trench|Sunda Trench",
         "Who formulated the general theory of relativity?|Albert Einstein|Isaac Newton|Niels Bohr|Max Planck",
         "Which organic compound gives durian its distinct pungent aroma?|Ethanethiol / Organosulfur|Citric Acid|Methanoic Acid|Sodium Glutamate",
         "In quantum mechanics, what principle states you cannot simultaneously know position and momentum precisely?|Heisenberg Uncertainty Principle|Pauli Exclusion Principle|Schrödinger Wave Principle|Planck Postulate",
@@ -1072,9 +1076,13 @@
         "What is the highest mountain peak in South America?|Aconcagua|Ojos del Salado|Huascarán|Chimborazo"
     ];
 
+    // FEATURED HIGH-PROBABILITY AUDIO QUESTIONS
     let featuredListeningQuestions = [
         "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
-        "FA|Which electronic wind instrument can be heard in this audio clip?|audios/billiejeanlyricon.mp3|Computone Lyricon I|Akai EWI1000|Yamaha WX5|Casio DH-100"
+        "FA|Which electronic wind instrument can be heard in this audio clip?|audios/billiejeanlyricon.mp3|Computone Lyricon I|Akai EWI1000|Yamaha WX5|Casio DH-100",
+        "FA|Which song is this instrumental from?|audios/rockwithyouinstrumental.mp3|Rock With You - Michael Jackson|JUST LIKE THAT - The Kid LAROI|Intentions - Justin Bieber|Close Your Eyes - Drake",
+        "FA|Which song is this instrumental from?|audios/babyinstrumental.mp3|Baby - Justin Bieber|Boyfriend - Justin Bieber|Sorry - Justin Bieber|What Do You Mean? - Justin Bieber",
+        "FA|Which song is this instrumental from?|audios/thatswhatilikeinstrumental.mp3|That's What I Like - Bruno Mars|24K Magic - Bruno Mars|Treasure - Bruno Mars|Uptown Funk - Bruno Mars & Mark Ronson"
     ];
 
     const form2DictationWords = [
@@ -1704,7 +1712,7 @@
 
     // --- QUIZ LOGIC & TIMER ---
     function startQuiz(mode) {
-        localStorage.removeItem(STORAGE_KEY_CURRENT_SCREEN); // Unset refresh catch once quiz begins
+        localStorage.removeItem(STORAGE_KEY_CURRENT_SCREEN);
 
         score = 0; currentQuestionIndex = 0; currentQuestions = [];
         const hardMode = isHardStudent(currentStudent);
@@ -1727,6 +1735,23 @@
         } else {
             activePool = hardMode ? [...hardMasterPool] : [...normalMasterPool];
             
+            // GUARANTEED CLASS PHOTO ON FIRST GROUP/PARTICIPANT TURN
+            if (!classPhotoUsed) {
+                const photoQ = {
+                    type: 'img_mcq',
+                    q: 'What is this?',
+                    imgSrc: 'images/2Hphoto1.jpg',
+                    correct: 'Class Photo',
+                    wrongs: ['Graduation Photo', 'Family Portrait', 'Staff Picture']
+                };
+                addQuestionToCurrent(photoQ);
+                classPhotoUsed = true;
+                saveState();
+            }
+
+            // Filter out class photo from random pool so it doesn't duplicate
+            activePool = activePool.filter(item => !(item.imgSrc && item.imgSrc.includes('2Hphoto1.jpg')));
+
             // Inject targeted rigid questions here
             if (currentStudent === 'Group 1' || currentStudent === 'ALVIN TANG ZHENG HAO') {
                 specializedPool = parsePool(disneyCompactQuestions);
@@ -2030,9 +2055,11 @@
                 localStorage.removeItem(STORAGE_KEY_GROUPS_MAP);
                 localStorage.removeItem(STORAGE_KEY_CURRENT_STUDENT);
                 localStorage.removeItem(STORAGE_KEY_CURRENT_SCREEN);
+                localStorage.removeItem(STORAGE_KEY_PHOTO_USED);
                 students = rawStudents.map(s => s.name);
                 groups = [...defaultGroups];
                 lostList = [];
+                classPhotoUsed = false;
                 featuredListeningPool = parsePool(featuredListeningQuestions);
                 initGroupsMap();
                 saveState();
