@@ -309,7 +309,7 @@
             position: absolute;
             width: 280px;
             height: 100%;
-            background: #E5E5EA; 
+            background: #E5E5EA;
             border-radius: 32px;
             left: 50%;
             transform: translateX(-50%);
@@ -531,7 +531,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- BOTTOM SHEETS & SCRIM --- */
+        /* --- BOTTOM SHEETS & LEADERBOARD UI --- */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -552,13 +552,28 @@
         }
         .bottom-sheet .drag-handle { width: 48px; height: 5px; border-radius: 3px; background: #CAC4D0; margin: -4px auto 16px auto; flex-shrink: 0; }
         
-        .lost-list-container, .student-manage-list {
+        .leaderboard-list-container, .student-manage-list {
             width: 100%; overflow-y: auto; text-align: left;
             background: transparent; border-radius: 16px; padding: 8px; margin-bottom: 16px;
             display: flex; flex-direction: column; gap: 8px; max-height: 38vh; flex-shrink: 1;
         }
-        .lost-item { padding: 16px; border-bottom: 1px solid #E5E5EA; font-weight: 600; font-size: 1.1rem; }
-        .lost-item:last-child { border-bottom: none; }
+        .leaderboard-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 16px; background: #E5E5EA;
+            border-radius: var(--md-sys-shape-corner-large); font-weight: 700;
+            transition: transform 0.2s;
+        }
+        .rank-badge {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 28px; height: 28px; padding: 0 8px;
+            border-radius: 9999px; background: rgba(0,0,0,0.08);
+            font-size: 0.85rem; font-weight: 800;
+        }
+        .rank-badge.rank-1 { background: #FFD700; color: #111; }
+        .rank-badge.rank-lowest {
+            background: var(--md-sys-color-error-container);
+            color: var(--md-sys-color-on-error-container);
+        }
 
         .student-manage-item {
             display: flex; align-items: center; justify-content: space-between;
@@ -622,7 +637,7 @@
     <div id="wheelScreen" class="screen animate-content-size active">
         <div class="wheel-wrapper">
             <h1>common ball :)</h1>
-            <p class="subtitle" id="studentCountSubtitle">(as known as common knowledge, if you don't know ball)</p>
+            <p class="subtitle" id="studentCountSubtitle">(also known as common knowledge, if you don't know ball)</p>
             
             <button id="spinBtn" class="btn">start</button>
             <button id="toggleModeBtn" class="btn">
@@ -642,7 +657,7 @@
                         <span class="material-symbols-outlined">groups</span> Groups (7)
                     </button>
                 </div>
-                <button id="viewLostBtn" class="btn btn-secondary" style="margin-top: 12px; width:auto; font-size: 0.9rem;">view lost list</button>
+                <button id="viewLostBtn" class="btn btn-secondary" style="margin-top: 12px; width:auto; font-size: 0.9rem;">view leaderboard</button>
             </div>
 
             <div class="wheel-container">
@@ -752,15 +767,16 @@
         <button id="nextStudentBtn" class="btn">Return to Menu</button>
     </div>
 
-    <!-- BOTTOM SHEET (Lost List) -->
+    <!-- BOTTOM SHEET (Leaderboard) -->
     <div class="scrim" id="scrim"></div>
     <div class="bottom-sheet animate-content-size" id="bottomSheet">
         <div class="drag-handle"></div>
-        <h2>Lost List (Score < 6)</h2>
-        <div class="lost-list-container" id="lostListContainer">
-            <!-- Lost items added here -->
+        <h2>Leaderboard</h2>
+        <p style="font-size:0.85rem; opacity:0.7; text-align:center; margin-bottom:12px;">The group with the lowest score loses!</p>
+        <div class="leaderboard-list-container" id="leaderboardContainer">
+            <!-- Leaderboard items added here -->
         </div>
-        <button id="resetWheelBtn" class="btn btn-danger" style="margin-bottom: 8px;">Reset Wheel Progress</button>
+        <button id="resetWheelBtn" class="btn btn-danger" style="margin-bottom: 8px;">Reset Wheel & Scores</button>
         <button id="closeSheetBtn" class="btn btn-secondary">Close</button>
     </div>
 
@@ -899,8 +915,8 @@
     let students = rawStudents.map(s => s.name);
     let groups = [...defaultGroups];
     let groupsMap = {};
-    let lostList = [];
-    let classPhotoUsed = false; // Flag to guarantee appearance on first turn only
+    let leaderboard = []; // Replaced lostList with leaderboard array of { name, score, isForfeit }
+    let classPhotoUsed = false;
 
     // Rigged targeted groups
     function initGroupsMap() {
@@ -928,7 +944,7 @@
     const STORAGE_KEY_STUDENTS = 'md3_quiz_students_2026';
     const STORAGE_KEY_GROUPS = 'md3_quiz_groups_2026';
     const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
-    const STORAGE_KEY_LOST = 'md3_quiz_lost_2026';
+    const STORAGE_KEY_LEADERBOARD = 'md3_quiz_leaderboard_2026';
     const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026_v4'; 
     const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v3'; 
     const STORAGE_KEY_CURRENT_STUDENT = 'md3_quiz_current_student';
@@ -939,7 +955,7 @@
         localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
         localStorage.setItem(STORAGE_KEY_GROUPS, JSON.stringify(groups));
         localStorage.setItem(STORAGE_KEY_MODE, activeWheelMode);
-        localStorage.setItem(STORAGE_KEY_LOST, JSON.stringify(lostList));
+        localStorage.setItem(STORAGE_KEY_LEADERBOARD, JSON.stringify(leaderboard));
         localStorage.setItem(STORAGE_KEY_FEATURED, JSON.stringify(featuredListeningPool));
         localStorage.setItem(STORAGE_KEY_GROUPS_MAP, JSON.stringify(groupsMap));
         localStorage.setItem(STORAGE_KEY_PHOTO_USED, JSON.stringify(classPhotoUsed));
@@ -950,7 +966,7 @@
         const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
         const savedGroups = localStorage.getItem(STORAGE_KEY_GROUPS);
         const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
-        const savedLost = localStorage.getItem(STORAGE_KEY_LOST);
+        const savedLeaderboard = localStorage.getItem(STORAGE_KEY_LEADERBOARD);
         const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
         const savedGroupsMap = localStorage.getItem(STORAGE_KEY_GROUPS_MAP);
         const savedPhotoUsed = localStorage.getItem(STORAGE_KEY_PHOTO_USED);
@@ -958,7 +974,7 @@
         if (savedStudents) { try { students = JSON.parse(savedStudents); } catch(e) {} }
         if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
         if (savedMode) { activeWheelMode = savedMode; }
-        if (savedLost) { try { lostList = JSON.parse(savedLost); } catch(e) {} }
+        if (savedLeaderboard) { try { leaderboard = JSON.parse(savedLeaderboard); } catch(e) {} }
         if (savedFeatured) { try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {} }
         if (savedPhotoUsed !== null) { try { classPhotoUsed = JSON.parse(savedPhotoUsed); } catch(e) {} }
         
@@ -988,7 +1004,7 @@
         const count = getActiveParticipants().length;
         const label = activeWheelMode === 'groups' ? 'groups' : 'students';
         if (subtitle) {
-            subtitle.innerText = `(as known as common knowledge, if you don't know ball) • ${count} ${label} left`;
+            subtitle.innerText = `(also known as common knowledge, if you don't know ball) • ${count} ${label} left`;
         }
     }
 
@@ -1325,7 +1341,7 @@
     const scrim = document.getElementById('scrim');
     const closeSheetBtn = document.getElementById('closeSheetBtn');
     const resetWheelBtn = document.getElementById('resetWheelBtn');
-    const lostListContainer = document.getElementById('lostListContainer');
+    const leaderboardContainer = document.getElementById('leaderboardContainer');
 
     const manageBottomSheet = document.getElementById('manageBottomSheet');
     const manageScrim = document.getElementById('manageScrim');
@@ -1749,10 +1765,8 @@
                 saveState();
             }
 
-            // Filter out class photo from random pool so it doesn't duplicate
             activePool = activePool.filter(item => !(item.imgSrc && item.imgSrc.includes('2Hphoto1.jpg')));
 
-            // Inject targeted rigid questions here
             if (currentStudent === 'Group 1' || currentStudent === 'ALVIN TANG ZHENG HAO') {
                 specializedPool = parsePool(disneyCompactQuestions);
             } else if (currentStudent === 'Group 5' || currentStudent === 'WEE KER SHENG') {
@@ -1760,13 +1774,11 @@
             }
         }
 
-        // Force picking up to 5 special questions first (if any exist)
         while (specializedPool.length > 0 && currentQuestions.length < 5) {
             const randIdx = Math.floor(Math.random() * specializedPool.length);
             addQuestionToCurrent(specializedPool.splice(randIdx, 1)[0]);
         }
 
-        // Fill remaining with generic questions
         while (currentQuestions.length < 10) {
             if (activePool.length === 0) {
                 if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
@@ -1984,6 +1996,7 @@
         submitAnswer();
     });
 
+    // --- UPDATED: LOWEST SCORE LOSES + LEADERBOARD LOGIC ---
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
         stopAllAudio();
@@ -1991,17 +2004,37 @@
         removeStudentSystematically(currentStudent);
         localStorage.removeItem(STORAGE_KEY_CURRENT_STUDENT);
         
-        resultMsg.innerText = `${currentStudent}`;
-        resultScore.innerText = score;
+        const finalScore = isForfeit ? 0 : score;
         
+        // Add or update entry in the Leaderboard
+        leaderboard.push({
+            name: currentStudent,
+            score: finalScore,
+            isForfeit: isForfeit,
+            timestamp: Date.now()
+        });
+        
+        resultMsg.innerText = `${currentStudent}`;
+        resultScore.innerText = finalScore;
+        
+        // Calculate ranking in current leaderboard
+        const sorted = [...leaderboard].sort((a, b) => {
+            if (a.isForfeit && !b.isForfeit) return 1;
+            if (!a.isForfeit && b.isForfeit) return -1;
+            return b.score - a.score;
+        });
+
+        const rank = sorted.findIndex(e => e.name === currentStudent) + 1;
+        const isLowest = sorted.length > 1 && (sorted[sorted.length - 1].name === currentStudent);
+
         if (isForfeit) {
             resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">flag</span> FORFEITED!`;
-            lostList.push(`${currentStudent} - Forfeit`);
-        } else if (score >= 6) {
-            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">celebration</span> YOU WIN!`;
+        } else if (isLowest) {
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">trending_down</span> LOWEST SCORE!`;
+        } else if (rank === 1) {
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">emoji_events</span> 1ST PLACE!`;
         } else {
-            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">cancel</span> YOU LOSE!`;
-            lostList.push(`${currentStudent} - ${score} Pts`);
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-primary);">military_tech</span> RANK #${rank}`;
         }
 
         saveState();
@@ -2035,7 +2068,7 @@
     forfeitBtn.addEventListener('click', () => {
         showConfirmDialog(
             "Forfeit Turn?", 
-            `Are you sure ${currentStudent} wants to forfeit? They will automatically lose and be added to the Lost List.`,
+            `Are you sure ${currentStudent} wants to forfeit? They will get 0 points and sit at the bottom of the Leaderboard.`,
             () => {
                 score = 0;
                 finishQuiz(true);
@@ -2045,12 +2078,12 @@
 
     resetWheelBtn.addEventListener('click', () => {
         showConfirmDialog(
-            "Reset Wheel Progress?",
-            "Are you sure you want to restore all participants and reset the lost list?",
+            "Reset Progress?",
+            "Are you sure you want to restore all participants and clear the leaderboard?",
             () => {
                 localStorage.removeItem(STORAGE_KEY_STUDENTS);
                 localStorage.removeItem(STORAGE_KEY_GROUPS);
-                localStorage.removeItem(STORAGE_KEY_LOST);
+                localStorage.removeItem(STORAGE_KEY_LEADERBOARD);
                 localStorage.removeItem(STORAGE_KEY_FEATURED);
                 localStorage.removeItem(STORAGE_KEY_GROUPS_MAP);
                 localStorage.removeItem(STORAGE_KEY_CURRENT_STUDENT);
@@ -2058,14 +2091,14 @@
                 localStorage.removeItem(STORAGE_KEY_PHOTO_USED);
                 students = rawStudents.map(s => s.name);
                 groups = [...defaultGroups];
-                lostList = [];
+                leaderboard = [];
                 classPhotoUsed = false;
                 featuredListeningPool = parsePool(featuredListeningQuestions);
                 initGroupsMap();
                 saveState();
                 drawWheel();
                 spinBtn.disabled = false;
-                updateLostListUI();
+                updateLeaderboardUI();
                 closeBottomSheet();
             }
         );
@@ -2141,25 +2174,58 @@
     closeManageBtn.addEventListener('click', closeManageSheet);
     manageScrim.addEventListener('click', closeManageSheet);
 
-    // --- BOTTOM SHEET LOGIC (Lost List) ---
-    function updateLostListUI() {
-        lostListContainer.innerHTML = '';
-        if(lostList.length === 0) {
-            lostListContainer.innerHTML = '<div class="lost-item" style="color: #666; text-align: center;">No one on the lost list yet!</div>';
-        } else {
-            lostList.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'lost-item'; div.innerText = item;
-                lostListContainer.appendChild(div);
-            });
+    // --- LEADERBOARD BOTTOM SHEET LOGIC ---
+    function updateLeaderboardUI() {
+        leaderboardContainer.innerHTML = '';
+        if (leaderboard.length === 0) {
+            leaderboardContainer.innerHTML = '<div style="padding:16px; color: #666; text-align: center; font-weight:600;">No turns played yet!</div>';
+            return;
         }
+
+        // Sort descending by score. Forfeits ranked at the bottom.
+        const sorted = [...leaderboard].sort((a, b) => {
+            if (a.isForfeit && !b.isForfeit) return 1;
+            if (!a.isForfeit && b.isForfeit) return -1;
+            return b.score - a.score;
+        });
+
+        const minScore = sorted[sorted.length - 1].score;
+
+        sorted.forEach((entry, idx) => {
+            const div = document.createElement('div');
+            div.className = 'leaderboard-item';
+            
+            const isLowest = sorted.length > 1 && (entry.score === minScore || entry.isForfeit);
+            const isTop = idx === 0 && !entry.isForfeit;
+
+            let badge = `<span class="rank-badge">${idx + 1}</span>`;
+            if (isTop) {
+                badge = `<span class="rank-badge rank-1">🏆 1</span>`;
+            } else if (isLowest) {
+                badge = `<span class="rank-badge rank-lowest">⚠️ Lowest</span>`;
+            }
+
+            let scoreText = entry.isForfeit ? 'Forfeit' : `${entry.score}/10 pts`;
+
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:12px;">
+                    ${badge}
+                    <span style="font-weight:700;">${entry.name}</span>
+                </div>
+                <span style="font-weight:800; font-size:1.05rem; color:${isLowest ? 'var(--md-sys-color-error)' : '#111'};">${scoreText}</span>
+            `;
+            leaderboardContainer.appendChild(div);
+        });
     }
 
     function openBottomSheet() {
-        updateLostListUI(); scrim.classList.add('open'); bottomSheet.classList.add('open');
+        updateLeaderboardUI(); 
+        scrim.classList.add('open'); 
+        bottomSheet.classList.add('open');
     }
     function closeBottomSheet() {
-        scrim.classList.remove('open'); bottomSheet.classList.remove('open');
+        scrim.classList.remove('open'); 
+        bottomSheet.classList.remove('open');
     }
 
     viewLostBtn.addEventListener('click', openBottomSheet);
