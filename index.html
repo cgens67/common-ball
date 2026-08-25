@@ -1,3 +1,8 @@
+Here is the complete RAW file with the two grammar questions removed and
+replaced by your new IMG_OPTS American Football G.O.A.T question (with Tom
+Brady, Michael Jackson, Lionel Messi, and LeBron James) and a new geography
+question:
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -210,7 +215,7 @@
             overflow: hidden;
             transition: max-height 0.35s var(--md-sys-motion-easing-emphasized),
                         opacity 0.3s var(--md-sys-motion-easing-emphasized),
-                        margin-bottom: 0.3s var(--md-sys-motion-easing-emphasized);
+                        margin-bottom 0.3s var(--md-sys-motion-easing-emphasized);
             margin-bottom: 0;
         }
         .mode-bar-wrapper.expanded { max-height: 180px; opacity: 1; margin-bottom: 16px; }
@@ -689,7 +694,7 @@
             display: flex; flex-direction: column; gap: 8px; max-height: 38vh; flex-shrink: 1;
         }
         .leaderboard-item {
-            display: flex; align-items: flex-start; justify-content: space-between;
+            display: flex; align-items: center; justify-content: space-between;
             padding: 14px 16px; background: #E5E5EA;
             border-radius: var(--md-sys-shape-corner-large); font-weight: 700;
             transition: transform 0.2s;
@@ -699,7 +704,6 @@
             min-width: 32px; height: 28px; padding: 0 10px;
             border-radius: 9999px; background: rgba(0,0,0,0.08);
             font-size: 0.85rem; font-weight: 800;
-            flex-shrink: 0;
         }
         .rank-badge.rank-1 { background: #FFD700; color: #111; }
         .rank-badge.rank-lowest {
@@ -1064,16 +1068,6 @@
         "Group 1", "Group 2", "Group 3", "Group 4", "Group 5", "Group 6", "Group 7"
     ];
 
-    const initialGroupsMap = {
-        "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
-        "Group 2": ["YEOW JIA WEI", "LEXUS KUEK CHEN XIAN", "XANXUS TAI WEI XUAN", "TAY KIM YAW"],
-        "Group 3": ["TAN GUAN HAN", "RAYSON BANG WEI XIANG", "ALOYSIUS NG YU YI", "GUI CEN EN"],
-        "Group 4": ["GAVIN CHUA WEN JIE", "CLEMENT SEAH JI WEN", "LIM JIA QING", "JONATHAN ONG KAH FATT"],
-        "Group 5": ["NG JING KAI", "ONG ZHI XIAN", "WEE KER SHENG", "PANG MIN ZE"],
-        "Group 6": ["SHADEESHAN A/L KATHIRAVAN", "JEREMY TAN WEI REN", "RYAN CHOK ZI INN", "WONG HUNG RUI"],
-        "Group 7": ["KINGSTON GOH QI HAO", "LAM YU YANG", "LOUIS NG WEI SOONG", "JOSEPH LIM", "TAN YONG XI"]
-    };
-
     let activeWheelMode = 'groups'; 
     let students = rawStudents.map(s => s.name);
     let groups = [...defaultGroups];
@@ -1082,7 +1076,15 @@
     let classPhotoUsed = false;
 
     function initGroupsMap() {
-        groupsMap = JSON.parse(JSON.stringify(initialGroupsMap));
+        groupsMap = {
+            "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
+            "Group 2": ["YEOW JIA WEI", "LEXUS KUEK CHEN XIAN", "XANXUS TAI WEI XUAN", "TAY KIM YAW"],
+            "Group 3": ["TAN GUAN HAN", "RAYSON BANG WEI XIANG", "ALOYSIUS NG YU YI", "GUI CEN EN"],
+            "Group 4": ["GAVIN CHUA WEN JIE", "CLEMENT SEAH JI WEN", "LIM JIA QING", "JONATHAN ONG KAH FATT"],
+            "Group 5": ["NG JING KAI", "ONG ZHI XIAN", "WEE KER SHENG", "PANG MIN ZE"],
+            "Group 6": ["SHADEESHAN A/L KATHIRAVAN", "JEREMY TAN WEI REN", "RYAN CHOK ZI INN", "WONG HUNG RUI"],
+            "Group 7": ["KINGSTON GOH QI HAO", "LAM YU YANG", "LOUIS NG WEI SOONG", "JOSEPH LIM", "TAN YONG XI"]
+        };
     }
 
     function getActiveParticipants() {
@@ -1094,11 +1096,10 @@
         else students = newArr;
     }
 
-    // --- HIGH PRIORITY FEATURED STANDARD QUESTIONS (ALBUMS & G.O.A.T) ---
+    // --- HIGH PRIORITY FEATURED STANDARD QUESTIONS (ALBUMS) ---
     const featuredStandardQuestions = [
         "IMG_OPTS|What is the most selling album of all time?|Thriller - Michael Jackson*images/thrillermj.png|Bad - Michael Jackson*images/badmj.png|reputation - Taylor Swift*images/reputation.png|Speed Gang - IShowSpeed*images/speedgang.png",
-        "IMG_OPTS|What album was the first album to produce five US Billboard Hot 100 number-one singles?|Bad - Michael Jackson*images/badmj.png|Thriller - Michael Jackson*images/thrillermj.png|ICEMAN - Drake*images/iceman1.png|KPop Demon Hunters (Soundtrack from the Netflix Film) - HUNTR/X, Saja Boys, KPop Demon Hunters Cast*images/kpopdemonhunters.png",
-        "IMG_OPTS|Who is considered the greatest of all time (G.O.A.T) in american football?|Tom Brady*images/tom-brady.png|Michael Jackson*images/mj.jpg|Lionel Messi*images/messi.jpg|LeBron James*images/lebron.jpg"
+        "IMG_OPTS|What album was the first album to produce five US Billboard Hot 100 number-one singles?|Bad - Michael Jackson*images/badmj.png|Thriller - Michael Jackson*images/thrillermj.png|ICEMAN - Drake*images/iceman1.png|KPop Demon Hunters (Soundtrack from the Netflix Film) - HUNTR/X, Saja Boys, KPop Demon Hunters Cast*images/kpopdemonhunters.png"
     ];
 
     // --- STANDARD QUESTION POOLS ---
@@ -1109,8 +1110,8 @@
         "T|Complete the sentence: He is interested _____ learning music.|in",
         "T|Type the correct spelling for: Neccessary|necessary",
         "T|Type the correct past tense of 'teach':|taught",
+        "IMG_OPTS|Who is considered the greatest of all time (G.O.A.T) in american football?|Tom Brady*images/tom-brady.png|Michael Jackson*images/mj.jpg|Lionel Messi*images/messi.jpg|LeBron James*images/lebron.jpg|Yeow Jia Wei*images/jiawei.jpg",
         "Which country has the most natural islands in the world?|Sweden|Norway|Canada|Indonesia",
-        "What is the largest island in the Mediterranean Sea?|Sicily|Sardinia|Cyprus|Crete",
         "T|Please _____ your seatbelt during the flight.|fasten/secure",
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
         "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
@@ -2071,8 +2072,7 @@
                 }
             }
 
-            // High Priority Featured Standard Questions (Includes Albums & G.O.A.T)
-            while (featuredStandardPool.length > 0 && currentQuestions.length < 4) {
+            while (featuredStandardPool.length > 0 && currentQuestions.length < 3) {
                 const randIdx = Math.floor(Math.random() * featuredStandardPool.length);
                 addQuestionToCurrent(featuredStandardPool.splice(randIdx, 1)[0]);
             }
@@ -2523,7 +2523,6 @@
     closeManageBtn.addEventListener('click', closeManageSheet);
     manageScrim.addEventListener('click', closeManageSheet);
 
-    // --- LEADERBOARD BOTTOM SHEET LOGIC WITH GROUP MEMBERS & MATERIAL ICONS ---
     function updateLeaderboardUI() {
         leaderboardContainer.innerHTML = '';
         if (leaderboard.length === 0) {
@@ -2552,22 +2551,12 @@
 
             let scoreText = entry.isForfeit ? 'Forfeit' : `${entry.score}/10 pts`;
 
-            // Display members if it's a group
-            const members = initialGroupsMap[entry.name] || groupsMap[entry.name];
-            let membersHtml = '';
-            if (members && members.length > 0) {
-                membersHtml = `<div style="font-size: 0.82rem; font-weight: 500; opacity: 0.65; margin-top: 3px; line-height: 1.25;">${members.join(', ')}</div>`;
-            }
-
             div.innerHTML = `
-                <div style="display:flex; align-items:flex-start; gap:12px;">
+                <div style="display:flex; align-items:center; gap:12px;">
                     ${badge}
-                    <div style="display:flex; flex-direction:column;">
-                        <span style="font-weight:700; font-size: 1.05rem;">${entry.name}</span>
-                        ${membersHtml}
-                    </div>
+                    <span style="font-weight:700;">${entry.name}</span>
                 </div>
-                <span style="font-weight:800; font-size:1.05rem; color:${isLowest ? 'var(--md-sys-color-error)' : '#111'}; align-self: flex-start; padding-top: 2px;">${scoreText}</span>
+                <span style="font-weight:800; font-size:1.05rem; color:${isLowest ? 'var(--md-sys-color-error)' : '#111'};">${scoreText}</span>
             `;
             leaderboardContainer.appendChild(div);
         });
