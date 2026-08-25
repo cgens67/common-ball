@@ -840,9 +840,18 @@
         <!-- Multiple Choice Options Container -->
         <div class="options-grid animate-content-size" id="optionsContainer"></div>
 
-        <!-- Typing Container with Caret Text Input -->
+        <!-- Typing Container with Interactive Caret Input (Mobile Soft-Keyboard Suppressed) -->
         <div class="typing-container animate-content-size" id="typingContainer" style="display: none;">
-            <input type="text" id="typingInput" class="typing-display" placeholder="Tap here or use keyboard to type..." autocomplete="off" spellcheck="false" />
+            <input 
+                type="text" 
+                id="typingInput" 
+                class="typing-display" 
+                placeholder="Tap here or use keyboard to type..." 
+                autocomplete="off" 
+                spellcheck="false" 
+                inputmode="none" 
+                virtualkeyboardpolicy="manual" 
+            />
             <div class="qwerty-keyboard" id="qwertyKeyboard"></div>
         </div>
 
@@ -1809,7 +1818,7 @@
         startQuiz('listening');
     });
 
-    // --- IN-WEBSITE QWERTY KEYBOARD BUILDER WITH CARET POSITIONING ---
+    // --- IN-WEBSITE QWERTY KEYBOARD BUILDER ---
     const keyboardLayout = [
         ['q','w','e','r','t','y','u','i','o','p'],
         ['a','s','d','f','g','h','j','k','l', "'"],
@@ -1827,7 +1836,7 @@
                 keyBtn.className = 'key';
                 keyBtn.type = 'button';
                 
-                // Prevent loss of focus on mouse click without blocking touch events
+                // Prevent mouse click from stealing caret focus while allowing touch events naturally
                 keyBtn.addEventListener('mousedown', (e) => e.preventDefault());
                 
                 let actionChar = keyChar;
@@ -1843,7 +1852,6 @@
                     keyBtn.innerText = keyChar === "'" ? "'" : keyChar.toUpperCase();
                 }
 
-                // Use direct click handler that works seamlessly on mouse & touch screens
                 keyBtn.onclick = (e) => {
                     e.preventDefault();
                     handleKeyPress(actionChar);
@@ -1866,7 +1874,7 @@
         let start = input.selectionStart;
         let end = input.selectionEnd;
 
-        // Default to the end if not actively focused
+        // Default to the end if not actively selected
         if (start === null || start === undefined) {
             start = input.value.length;
             end = input.value.length;
@@ -1890,7 +1898,7 @@
         }
 
         confirmBtn.disabled = input.value.trim().length === 0;
-        input.focus();
+        input.focus({ preventScroll: true });
     }
 
     // Sync input events for physical keyboard & caret clicking
@@ -2108,12 +2116,12 @@
             audioPlayerContainer.style.display = 'flex';
 
             playAudioPlayback();
-            setTimeout(() => typingInput.focus(), 100);
+            setTimeout(() => typingInput.focus({ preventScroll: true }), 100);
         } else {
             optionsContainer.style.display = 'none';
             typingContainer.style.display = 'flex';
             audioPlayerContainer.style.display = 'none';
-            setTimeout(() => typingInput.focus(), 100);
+            setTimeout(() => typingInput.focus({ preventScroll: true }), 100);
         }
 
         resetTimer();
