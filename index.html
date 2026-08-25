@@ -456,6 +456,20 @@
             display: flex; align-items: center; justify-content: center; min-height: 76px;
             opacity: 1; transform: translateY(0);
         }
+        /* -- NEW OPTION STYLES FOR IMAGES -- */
+        .option-btn.has-img {
+            flex-direction: column;
+            gap: 12px;
+            padding: 12px 16px;
+        }
+        .option-btn.has-img img {
+            width: 100%;
+            max-height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
         .option-btn.animate-in { animation: slideUp 0.4s var(--md-sys-motion-easing-emphasized) both; }
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -915,7 +929,7 @@
     let students = rawStudents.map(s => s.name);
     let groups = [...defaultGroups];
     let groupsMap = {};
-    let leaderboard = []; // Replaced lostList with leaderboard array of { name, score, isForfeit }
+    let leaderboard = []; 
     let classPhotoUsed = false;
 
     // Rigged targeted groups
@@ -1025,7 +1039,11 @@
         "T|A quiet _____ broke out in the back of the classroom.|snigger/snicker/giggle/chuckle/whisper",
         "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty/modest",
         "T|Please _____ your seatbelt during the flight.|fasten/secure",
-        "What is the most selling album ever?|Thriller|Back in Black|Dark Side of the Moon|The Bodyguard",
+        
+        // NEW IMAGE OPTIONS QUESTIONS
+        "IMG_OPTS|What is the most selling album of all time?|Thriller - Michael Jackson*images/thrillermj.png|Bad - Michael Jackson*images/badmj.png|reputation - Taylor Swift*images/reputation.png|Speed Gang - IShowSpeed*images/speedgang.png",
+        "IMG_OPTS|What album was the first album to produce five US Billboard Hot 100 number-one singles?|Bad - Michael Jackson*images/badmj.png|Thriller - Michael Jackson*images/thrillermj.png|ICEMAN - Drake*images/iceman1.png|KPop Demon Hunters (Soundtrack from the Netflix Film) - HUNTR/X, Saja Boys, KPop Demon Hunters Cast*images/kpopdemonhunters.png",
+
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
         "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
         "Which is the tallest building in Malaysia (as of 2024)?|Merdeka 118|Petronas Twin Towers|Exchange 106|KL Tower",
@@ -1041,7 +1059,24 @@
         "How many legs does a spider have?|8|6|10|12",
         "What is the square root of 64?|8|6|7|9",
         "Which fruit is known as the 'King of Fruits' in Malaysia?|Durian|Mangosteen|Rambutan|Papaya",
-        "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain"
+        "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain",
+        
+        // NEW EXTRA QUESTIONS TO PREVENT REPEATS
+        "What is the smallest country in the world by land area?|Vatican City|Monaco|Nauru|Tuvalu",
+        "What is the most spoken language in the world by total number of native speakers?|Mandarin Chinese|English|Hindi|Spanish",
+        "Which ocean is the largest on Earth?|Pacific Ocean|Atlantic Ocean|Indian Ocean|Arctic Ocean",
+        "Who is often called the 'Father of Computers'?|Charles Babbage|Alan Turing|Bill Gates|Steve Jobs",
+        "What is the capital of Japan?|Tokyo|Kyoto|Osaka|Seoul",
+        "Which planet is closest to the Sun?|Mercury|Venus|Earth|Mars",
+        "What is the chemical symbol for Gold?|Au|Ag|Gd|Go",
+        "Who painted the Starry Night?|Vincent van Gogh|Pablo Picasso|Leonardo da Vinci|Claude Monet",
+        "Which gas is most abundant in the Earth's atmosphere?|Nitrogen|Oxygen|Carbon Dioxide|Hydrogen",
+        "In what year did the Titanic sink?|1912|1905|1920|1898",
+        "What is the longest bone in the human body?|Femur|Tibia|Humerus|Radius",
+        "T|Type the correct spelling for: Accommodate|accommodate",
+        "T|Type the correct spelling for: Definately|definitely",
+        "T|Type the correct past tense of 'catch':|caught",
+        "Which of these is NOT a primary color?|Green|Red|Blue|Yellow"
     ];
 
     const hardCompactQuestions = [
@@ -1134,19 +1169,15 @@
                 return { type: 'audio', q: parts[1], ans: parts[2] };
             } else if (parts[0] === 'FA') {
                 return {
-                    type: 'file_audio_mcq',
-                    q: parts[1],
-                    audioSrc: parts[2],
-                    correct: parts[3],
-                    wrongs: parts.slice(4)
+                    type: 'file_audio_mcq', q: parts[1], audioSrc: parts[2], correct: parts[3], wrongs: parts.slice(4)
                 };
             } else if (parts[0] === 'IMG') {
                 return {
-                    type: 'img_mcq',
-                    q: parts[1],
-                    imgSrc: parts[2],
-                    correct: parts[3],
-                    wrongs: parts.slice(4)
+                    type: 'img_mcq', q: parts[1], imgSrc: parts[2], correct: parts[3], wrongs: parts.slice(4)
+                };
+            } else if (parts[0] === 'IMG_OPTS') { // <-- NEW ADDITION
+                return {
+                    type: 'img_opts_mcq', q: parts[1], correct: parts[2], wrongs: parts.slice(3)
                 };
             } else {
                 return { type: 'mcq', q: parts[0], correct: parts[1], wrongs: parts.slice(2) };
@@ -1709,7 +1740,7 @@
 
     // Helper formatting func
     function addQuestionToCurrent(selectedQ) {
-        if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq' || selectedQ.type === 'img_mcq') {
+        if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq' || selectedQ.type === 'img_mcq' || selectedQ.type === 'img_opts_mcq') {
             let opts = [...selectedQ.wrongs];
             const correctIndex = Math.floor(Math.random() * (opts.length + 1));
             opts.splice(correctIndex, 0, selectedQ.correct);
@@ -1841,7 +1872,7 @@
         questionProgress.innerText = `Question ${currentQuestionIndex + 1} of 10`;
         questionText.innerText = q.q;
 
-        if (q.type === 'mcq' || q.type === 'file_audio_mcq' || q.type === 'img_mcq') {
+        if (q.type === 'mcq' || q.type === 'file_audio_mcq' || q.type === 'img_mcq' || q.type === 'img_opts_mcq') {
             optionsContainer.style.display = 'grid';
             typingContainer.style.display = 'none';
             optionsContainer.innerHTML = '';
@@ -1855,7 +1886,16 @@
                 const btn = document.createElement('button');
                 btn.className = 'option-btn animate-in';
                 btn.style.animationDelay = `${idx * 0.08}s`;
-                btn.innerText = opt;
+                
+                // --- NEW IMAGE OPTION LOGIC ---
+                if (q.type === 'img_opts_mcq') {
+                    const [text, img] = opt.split('*'); // split text and image path
+                    btn.classList.add('has-img');
+                    btn.innerHTML = `<img src="${img}" alt="${text}"><span style="font-size: 0.95rem; line-height: 1.2;">${text}</span>`;
+                } else {
+                    btn.innerText = opt;
+                }
+
                 btn.onclick = () => selectOption(idx);
                 optionsContainer.appendChild(btn);
             });
@@ -1947,7 +1987,7 @@
         
         const q = currentQuestions[currentQuestionIndex];
 
-        if (q.type === 'mcq' || q.type === 'file_audio_mcq' || q.type === 'img_mcq') {
+        if (q.type === 'mcq' || q.type === 'file_audio_mcq' || q.type === 'img_mcq' || q.type === 'img_opts_mcq') {
             const allBtns = optionsContainer.querySelectorAll('.option-btn');
             allBtns.forEach(b => b.disabled = true);
 
