@@ -205,7 +205,7 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
-        /* --- SCREEN TRANSITIONS (OPTIMIZED FOR WIDE PROJECTORS) --- */
+        /* --- SCREEN TRANSITIONS (PROJECTOR OPTIMIZED) --- */
         .screen {
             display: none; width: 100%; max-width: 1200px; opacity: 0;
             transform: translateY(24px) scale(0.96);
@@ -450,7 +450,7 @@
             .audio-control-card { flex-direction: column; gap: 12px; }
         }
 
-        /* --- PROJECTOR-READY RECTANGULAR OPTIONS --- */
+        /* --- PROJECTOR-READY OPTIONS --- */
         .option-btn {
             background: #E5E5EA; 
             color: #111;
@@ -810,7 +810,7 @@
         <button id="closeSheetBtn" class="btn btn-secondary">Close</button>
     </div>
 
-    <!-- BOTTOM SHEET WITH animateContentSize (Manage Wheel Participants) -->
+    <!-- BOTTOM SHEET (Manage Wheel Participants) -->
     <div class="scrim" id="manageScrim"></div>
     <div class="bottom-sheet animate-content-size" id="manageBottomSheet">
         <div class="drag-handle"></div>
@@ -970,81 +970,13 @@
         else students = newArr;
     }
 
-    // --- LOCAL STORAGE PERSISTENCE ---
-    const STORAGE_KEY_STUDENTS = 'md3_quiz_students_2026';
-    const STORAGE_KEY_GROUPS = 'md3_quiz_groups_2026';
-    const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
-    const STORAGE_KEY_LEADERBOARD = 'md3_quiz_leaderboard_2026';
-    const STORAGE_KEY_FEATURED = 'md3_quiz_featured_2026_v4'; 
-    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v3'; 
-    const STORAGE_KEY_CURRENT_STUDENT = 'md3_quiz_current_student';
-    const STORAGE_KEY_CURRENT_SCREEN = 'md3_quiz_current_screen';
-    const STORAGE_KEY_PHOTO_USED = 'md3_quiz_photo_used_2026';
+    // --- HIGH PRIORITY FEATURED STANDARD QUESTIONS (ALBUMS) ---
+    const featuredStandardQuestions = [
+        "IMG_OPTS|What is the most selling album of all time?|Thriller - Michael Jackson*images/thrillermj.png|Bad - Michael Jackson*images/badmj.png|reputation - Taylor Swift*images/reputation.png|Speed Gang - IShowSpeed*images/speedgang.png",
+        "IMG_OPTS|What album was the first album to produce five US Billboard Hot 100 number-one singles?|Bad - Michael Jackson*images/badmj.png|Thriller - Michael Jackson*images/thrillermj.png|ICEMAN - Drake*images/iceman1.png|KPop Demon Hunters (Soundtrack from the Netflix Film) - HUNTR/X, Saja Boys, KPop Demon Hunters Cast*images/kpopdemonhunters.png"
+    ];
 
-    function saveState() {
-        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
-        localStorage.setItem(STORAGE_KEY_GROUPS, JSON.stringify(groups));
-        localStorage.setItem(STORAGE_KEY_MODE, activeWheelMode);
-        localStorage.setItem(STORAGE_KEY_LEADERBOARD, JSON.stringify(leaderboard));
-        localStorage.setItem(STORAGE_KEY_FEATURED, JSON.stringify(featuredListeningPool));
-        localStorage.setItem(STORAGE_KEY_GROUPS_MAP, JSON.stringify(groupsMap));
-        localStorage.setItem(STORAGE_KEY_PHOTO_USED, JSON.stringify(classPhotoUsed));
-        updateStudentCountUI();
-    }
-
-    function loadState() {
-        const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
-        const savedGroups = localStorage.getItem(STORAGE_KEY_GROUPS);
-        const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
-        const savedLeaderboard = localStorage.getItem(STORAGE_KEY_LEADERBOARD);
-        const savedFeatured = localStorage.getItem(STORAGE_KEY_FEATURED);
-        const savedGroupsMap = localStorage.getItem(STORAGE_KEY_GROUPS_MAP);
-        const savedPhotoUsed = localStorage.getItem(STORAGE_KEY_PHOTO_USED);
-
-        if (savedStudents) { try { students = JSON.parse(savedStudents); } catch(e) {} }
-        if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
-        if (savedMode) { activeWheelMode = savedMode; }
-        if (savedLeaderboard) { try { leaderboard = JSON.parse(savedLeaderboard); } catch(e) {} }
-        if (savedFeatured) { try { featuredListeningPool = JSON.parse(savedFeatured); } catch(e) {} }
-        if (savedPhotoUsed !== null) { try { classPhotoUsed = JSON.parse(savedPhotoUsed); } catch(e) {} }
-        
-        if (savedGroupsMap) { 
-            try { groupsMap = JSON.parse(savedGroupsMap); } catch(e) { initGroupsMap(); }
-        } else {
-            initGroupsMap();
-        }
-
-        updateSegmentedTabsUI();
-        updateStudentCountUI();
-
-        // Restore to mode screen if refreshed
-        const savedCurrentStudent = localStorage.getItem(STORAGE_KEY_CURRENT_STUDENT);
-        const savedScreen = localStorage.getItem(STORAGE_KEY_CURRENT_SCREEN);
-        if (savedCurrentStudent && savedScreen === 'modeScreen') {
-            currentStudent = savedCurrentStudent;
-            wheelScreen.classList.remove('active');
-            promptQuestionMode();
-        } else {
-            drawWheel();
-        }
-    }
-
-    function updateStudentCountUI() {
-        const subtitle = document.getElementById('studentCountSubtitle');
-        const count = getActiveParticipants().length;
-        const label = activeWheelMode === 'groups' ? 'groups' : 'students';
-        if (subtitle) {
-            subtitle.innerText = `(also known as common knowledge, if you don't know ball) • ${count} ${label} left`;
-        }
-    }
-
-    const hardStudentKeywords = ["YEOW JIA WEI", "ALOYSIUS", "LEXUS", "XANXUS", "TAY KIM YAW", "RAYSON"];
-
-    function isHardStudent(name) {
-        return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
-    }
-
-    // --- STANDARD QUESTION POOLS (75+ QUESTIONS FOR ZERO DUPLICATES) ---
+    // --- STANDARD QUESTION POOLS ---
     const normalCompactQuestions = [
         "Which of the following is an officially recognized, sovereign nation?|Benin|Molossia|Elbonia|Absurdistan|Bashkortostan|Semandura|Sokovia|Zhalgash",
         "T|Complete the grammar: She _____ (go) to the market yesterday.|went",
@@ -1055,11 +987,6 @@
         "T|A quiet _____ broke out in the back of the classroom.|snigger/snicker/giggle/chuckle/whisper",
         "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty/modest",
         "T|Please _____ your seatbelt during the flight.|fasten/secure",
-        
-        // IMAGE OPTIONS QUESTIONS
-        "IMG_OPTS|What is the most selling album of all time?|Thriller - Michael Jackson*images/thrillermj.png|Bad - Michael Jackson*images/badmj.png|reputation - Taylor Swift*images/reputation.png|Speed Gang - IShowSpeed*images/speedgang.png",
-        "IMG_OPTS|What album was the first album to produce five US Billboard Hot 100 number-one singles?|Bad - Michael Jackson*images/badmj.png|Thriller - Michael Jackson*images/thrillermj.png|ICEMAN - Drake*images/iceman1.png|KPop Demon Hunters (Soundtrack from the Netflix Film) - HUNTR/X, Saja Boys, KPop Demon Hunters Cast*images/kpopdemonhunters.png",
-
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
         "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
         "Which is the tallest building in Malaysia (as of 2024)?|Merdeka 118|Petronas Twin Towers|Exchange 106|KL Tower",
@@ -1076,8 +1003,6 @@
         "What is the square root of 64?|8|6|7|9",
         "Which fruit is known as the 'King of Fruits' in Malaysia?|Durian|Mangosteen|Rambutan|Papaya",
         "Who wrote Romeo and Juliet?|William Shakespeare|Charles Dickens|Jane Austen|Mark Twain",
-        
-        // EXTRA STANDARD QUESTIONS
         "What is the smallest country in the world by land area?|Vatican City|Monaco|Nauru|Tuvalu",
         "What is the most spoken language in the world by total number of native speakers?|Mandarin Chinese|English|Hindi|Spanish",
         "Which ocean is the largest on Earth?|Pacific Ocean|Atlantic Ocean|Indian Ocean|Arctic Ocean",
@@ -1092,7 +1017,17 @@
         "T|Type the correct spelling for: Accommodate|accommodate",
         "T|Type the correct spelling for: Definately|definitely",
         "T|Type the correct past tense of 'catch':|caught",
-        "Which of these is NOT a primary color?|Green|Red|Blue|Yellow"
+        "Which of these is NOT a primary color?|Green|Red|Blue|Yellow",
+        "What is the capital city of France?|Paris|Lyon|Marseille|Nice",
+        "How many continents are there on Earth?|7|6|5|8",
+        "What is the boiling point of water at standard atmospheric pressure?|100°C|90°C|120°C|80°C",
+        "Which organ pumps blood throughout the human body?|Heart|Lungs|Liver|Brain",
+        "Who is credited with discovering gravity after seeing a falling apple?|Isaac Newton|Albert Einstein|Galileo Galilei|Nikola Tesla",
+        "What is the currency of the United Kingdom?|Pound Sterling|Euro|Dollar|Franc",
+        "T|Complete the sentence: Neither rain nor snow _____ (stop) the delivery.|stops",
+        "T|Type the plural form of 'cactus':|cacti/cactuses",
+        "T|Type the correct spelling for: Seperate|separate",
+        "Which continent is the Sahara Desert located in?|Africa|Asia|Australia|South America"
     ];
 
     const hardCompactQuestions = [
@@ -1112,10 +1047,14 @@
         "Which organic compound gives durian its distinct pungent aroma?|Ethanethiol / Organosulfur|Citric Acid|Methanoic Acid|Sodium Glutamate",
         "In quantum mechanics, what principle states you cannot simultaneously know position and momentum precisely?|Heisenberg Uncertainty Principle|Pauli Exclusion Principle|Schrödinger Wave Principle|Planck Postulate",
         "What is the chemical symbol for the element Tungsten?|W|Tu|Tn|Tg",
-        "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron"
+        "Which subatomic particle was discovered by James Chadwick in 1932?|Neutron|Proton|Electron|Positron",
+        "What is the most abundant protein in the human body?|Collagen|Keratin|Hemoglobin|Myoglobin",
+        "Which planet has the most extensive ring system?|Saturn|Jupiter|Uranus|Neptune",
+        "T|Type the correct spelling for: Conscientious|conscientious",
+        "T|Type the correct spelling for: Millennium|millennium",
+        "In physics, what is the unit of electrical resistance?|Ohm|Ampere|Volt|Watt"
     ];
 
-    // Targeted Disney Questions for Alvin Tang / Group 1
     const disneyCompactQuestions = [
         "What was EPCOT originally supposed to be for?|A utopian city of the future|A theme park|A shopping mall|A space center",
         "What was Disney's Hollywood Studios originally supposed to be?|A working film and television studio|A stunt show arena|A shopping district|A purely thrill-ride park",
@@ -1124,7 +1063,6 @@
         "What was Disney's 'River Country' originally supposed to be?|A family rustic water park|A wildlife reserve|A shopping center|A transport hub"
     ];
 
-    // Targeted Geography Questions for Wee Ker Sheng / Group 5
     const kerShengGeoQuestions = [
         "Which strait is the busiest in the world by trade volume?|Strait of Malacca|Strait of Dover|Strait of Hormuz|Strait of Gibraltar|Bab-el-Mandeb Strait|Torres Strait",
         "Which country has the most natural lakes in the world?|Canada|Russia|USA|Brazil",
@@ -1143,7 +1081,6 @@
         "What is the highest mountain peak in South America?|Aconcagua|Ojos del Salado|Huascarán|Chimborazo"
     ];
 
-    // FEATURED HIGH-PROBABILITY AUDIO QUESTIONS
     let featuredListeningQuestions = [
         "FA|Who is singing Michael Jackson's Thriller in this audio?|audios/thrilleraudio.mp3|Michael Jackson|The Kid LAROI|Loo Chin Siang|Kendrick Lamar|Darren Watkins Jr.",
         "FA|Which electronic wind instrument can be heard in this audio clip?|audios/billiejeanlyricon.mp3|Computone Lyricon I|Akai EWI1000|Yamaha WX5|Casio DH-100",
@@ -1201,10 +1138,136 @@
         });
     }
 
-    let normalMasterPool = parsePool(normalCompactQuestions);
-    let hardMasterPool = parsePool(hardCompactQuestions);
-    let listeningMasterPool = parsePool(dynamicListeningPool);
-    let featuredListeningPool = parsePool(featuredListeningQuestions);
+    // --- PERSISTENT MASTER POOLS (GUARANTEES NEVER REPEATING) ---
+    let normalMasterPool = [];
+    let hardMasterPool = [];
+    let listeningMasterPool = [];
+    let featuredListeningPool = [];
+    let featuredStandardPool = [];
+    let disneyMasterPool = [];
+    let geoMasterPool = [];
+
+    function initMasterPools() {
+        normalMasterPool = parsePool(normalCompactQuestions);
+        hardMasterPool = parsePool(hardCompactQuestions);
+        listeningMasterPool = parsePool(dynamicListeningPool);
+        featuredListeningPool = parsePool(featuredListeningQuestions);
+        featuredStandardPool = parsePool(featuredStandardQuestions);
+        disneyMasterPool = parsePool(disneyCompactQuestions);
+        geoMasterPool = parsePool(kerShengGeoQuestions);
+    }
+
+    // --- LOCAL STORAGE PERSISTENCE KEYS ---
+    const STORAGE_KEY_STUDENTS = 'md3_quiz_students_2026';
+    const STORAGE_KEY_GROUPS = 'md3_quiz_groups_2026';
+    const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
+    const STORAGE_KEY_LEADERBOARD = 'md3_quiz_leaderboard_2026';
+    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v3'; 
+    const STORAGE_KEY_CURRENT_STUDENT = 'md3_quiz_current_student';
+    const STORAGE_KEY_CURRENT_SCREEN = 'md3_quiz_current_screen';
+    const STORAGE_KEY_PHOTO_USED = 'md3_quiz_photo_used_2026';
+
+    const STORAGE_KEY_NORMAL_POOL = 'md3_quiz_normal_pool_v5';
+    const STORAGE_KEY_HARD_POOL = 'md3_quiz_hard_pool_v5';
+    const STORAGE_KEY_LISTENING_POOL = 'md3_quiz_listening_pool_v5';
+    const STORAGE_KEY_FEAT_LISTENING = 'md3_quiz_feat_listening_v5';
+    const STORAGE_KEY_FEAT_STANDARD = 'md3_quiz_feat_standard_v5';
+    const STORAGE_KEY_DISNEY_POOL = 'md3_quiz_disney_pool_v5';
+    const STORAGE_KEY_GEO_POOL = 'md3_quiz_geo_pool_v5';
+
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY_STUDENTS, JSON.stringify(students));
+        localStorage.setItem(STORAGE_KEY_GROUPS, JSON.stringify(groups));
+        localStorage.setItem(STORAGE_KEY_MODE, activeWheelMode);
+        localStorage.setItem(STORAGE_KEY_LEADERBOARD, JSON.stringify(leaderboard));
+        localStorage.setItem(STORAGE_KEY_GROUPS_MAP, JSON.stringify(groupsMap));
+        localStorage.setItem(STORAGE_KEY_PHOTO_USED, JSON.stringify(classPhotoUsed));
+
+        // Save persistent pools so questions never repeat across sessions
+        localStorage.setItem(STORAGE_KEY_NORMAL_POOL, JSON.stringify(normalMasterPool));
+        localStorage.setItem(STORAGE_KEY_HARD_POOL, JSON.stringify(hardMasterPool));
+        localStorage.setItem(STORAGE_KEY_LISTENING_POOL, JSON.stringify(listeningMasterPool));
+        localStorage.setItem(STORAGE_KEY_FEAT_LISTENING, JSON.stringify(featuredListeningPool));
+        localStorage.setItem(STORAGE_KEY_FEAT_STANDARD, JSON.stringify(featuredStandardPool));
+        localStorage.setItem(STORAGE_KEY_DISNEY_POOL, JSON.stringify(disneyMasterPool));
+        localStorage.setItem(STORAGE_KEY_GEO_POOL, JSON.stringify(geoMasterPool));
+
+        updateStudentCountUI();
+    }
+
+    function loadState() {
+        const savedStudents = localStorage.getItem(STORAGE_KEY_STUDENTS);
+        const savedGroups = localStorage.getItem(STORAGE_KEY_GROUPS);
+        const savedMode = localStorage.getItem(STORAGE_KEY_MODE);
+        const savedLeaderboard = localStorage.getItem(STORAGE_KEY_LEADERBOARD);
+        const savedGroupsMap = localStorage.getItem(STORAGE_KEY_GROUPS_MAP);
+        const savedPhotoUsed = localStorage.getItem(STORAGE_KEY_PHOTO_USED);
+
+        if (savedStudents) { try { students = JSON.parse(savedStudents); } catch(e) {} }
+        if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
+        if (savedMode) { activeWheelMode = savedMode; }
+        if (savedLeaderboard) { try { leaderboard = JSON.parse(savedLeaderboard); } catch(e) {} }
+        if (savedPhotoUsed !== null) { try { classPhotoUsed = JSON.parse(savedPhotoUsed); } catch(e) {} }
+        
+        if (savedGroupsMap) { 
+            try { groupsMap = JSON.parse(savedGroupsMap); } catch(e) { initGroupsMap(); }
+        } else {
+            initGroupsMap();
+        }
+
+        // Load or initialize persistent non-repeating pools
+        const savedNormal = localStorage.getItem(STORAGE_KEY_NORMAL_POOL);
+        const savedHard = localStorage.getItem(STORAGE_KEY_HARD_POOL);
+        const savedListening = localStorage.getItem(STORAGE_KEY_LISTENING_POOL);
+        const savedFeatListening = localStorage.getItem(STORAGE_KEY_FEAT_LISTENING);
+        const savedFeatStandard = localStorage.getItem(STORAGE_KEY_FEAT_STANDARD);
+        const savedDisney = localStorage.getItem(STORAGE_KEY_DISNEY_POOL);
+        const savedGeo = localStorage.getItem(STORAGE_KEY_GEO_POOL);
+
+        if (savedNormal && savedHard && savedListening && savedFeatStandard) {
+            try {
+                normalMasterPool = JSON.parse(savedNormal);
+                hardMasterPool = JSON.parse(savedHard);
+                listeningMasterPool = JSON.parse(savedListening);
+                featuredListeningPool = JSON.parse(savedFeatListening);
+                featuredStandardPool = JSON.parse(savedFeatStandard);
+                disneyMasterPool = JSON.parse(savedDisney);
+                geoMasterPool = JSON.parse(savedGeo);
+            } catch(e) {
+                initMasterPools();
+            }
+        } else {
+            initMasterPools();
+        }
+
+        updateSegmentedTabsUI();
+        updateStudentCountUI();
+
+        const savedCurrentStudent = localStorage.getItem(STORAGE_KEY_CURRENT_STUDENT);
+        const savedScreen = localStorage.getItem(STORAGE_KEY_CURRENT_SCREEN);
+        if (savedCurrentStudent && savedScreen === 'modeScreen') {
+            currentStudent = savedCurrentStudent;
+            wheelScreen.classList.remove('active');
+            promptQuestionMode();
+        } else {
+            drawWheel();
+        }
+    }
+
+    function updateStudentCountUI() {
+        const subtitle = document.getElementById('studentCountSubtitle');
+        const count = getActiveParticipants().length;
+        const label = activeWheelMode === 'groups' ? 'groups' : 'students';
+        if (subtitle) {
+            subtitle.innerText = `(also known as common knowledge, if you don't know ball) • ${count} ${label} left`;
+        }
+    }
+
+    const hardStudentKeywords = ["YEOW JIA WEI", "ALOYSIUS", "LEXUS", "XANXUS", "TAY KIM YAW", "RAYSON"];
+
+    function isHardStudent(name) {
+        return hardStudentKeywords.some(keyword => name.toUpperCase().includes(keyword));
+    }
 
     // --- STATE & AUDIO CONTROLLER ---
     let currentStudent = "";
@@ -1756,6 +1819,7 @@
 
     // Helper formatting func
     function addQuestionToCurrent(selectedQ) {
+        if (!selectedQ) return;
         if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq' || selectedQ.type === 'img_mcq' || selectedQ.type === 'img_opts_mcq') {
             let opts = [...selectedQ.wrongs];
             const correctIndex = Math.floor(Math.random() * (opts.length + 1));
@@ -1773,32 +1837,26 @@
         }
     }
 
-    // --- QUIZ LOGIC & TIMER ---
+    // --- QUIZ LOGIC & NON-REPEATING QUESTION SELECTION ---
     function startQuiz(mode) {
         localStorage.removeItem(STORAGE_KEY_CURRENT_SCREEN);
 
         score = 0; currentQuestionIndex = 0; currentQuestions = [];
         const hardMode = isHardStudent(currentStudent);
 
-        let activePool = [];
-        let specializedPool = [];
-
         if (mode === 'listening') {
-            activePool = listeningMasterPool;
+            // Priority 1: High probability featured audio tracks
             while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
-                const featQ = featuredListeningPool.shift();
-                let opts = [...featQ.wrongs];
-                const correctIndex = Math.floor(Math.random() * (opts.length + 1));
-                opts.splice(correctIndex, 0, featQ.correct);
-                currentQuestions.push({
-                    type: featQ.type, q: featQ.q, audioSrc: featQ.audioSrc, opts: opts, ans: correctIndex
-                });
+                const randIdx = Math.floor(Math.random() * featuredListeningPool.length);
+                addQuestionToCurrent(featuredListeningPool.splice(randIdx, 1)[0]);
             }
-            saveState();
+            // Fill remaining with non-repeating dynamic listening words/phrases
+            while (currentQuestions.length < 10 && listeningMasterPool.length > 0) {
+                const randIdx = Math.floor(Math.random() * listeningMasterPool.length);
+                addQuestionToCurrent(listeningMasterPool.splice(randIdx, 1)[0]);
+            }
         } else {
-            activePool = hardMode ? [...hardMasterPool] : [...normalMasterPool];
-            
-            // GUARANTEED CLASS PHOTO ON FIRST GROUP/PARTICIPANT TURN
+            // 1. GUARANTEED CLASS PHOTO ON VERY FIRST STANDARD TURN
             if (!classPhotoUsed) {
                 const photoQ = {
                     type: 'img_mcq',
@@ -1809,36 +1867,49 @@
                 };
                 addQuestionToCurrent(photoQ);
                 classPhotoUsed = true;
-                saveState();
             }
 
-            activePool = activePool.filter(item => !(item.imgSrc && item.imgSrc.includes('2Hphoto1.jpg')));
-
+            // 2. TARGETED SPECIALIZED QUESTIONS (For specific groups/students)
             if (currentStudent === 'Group 1' || currentStudent === 'ALVIN TANG ZHENG HAO') {
-                specializedPool = parsePool(disneyCompactQuestions);
+                while (disneyMasterPool.length > 0 && currentQuestions.length < 5) {
+                    const randIdx = Math.floor(Math.random() * disneyMasterPool.length);
+                    addQuestionToCurrent(disneyMasterPool.splice(randIdx, 1)[0]);
+                }
             } else if (currentStudent === 'Group 5' || currentStudent === 'WEE KER SHENG') {
-                specializedPool = parsePool(kerShengGeoQuestions);
+                while (geoMasterPool.length > 0 && currentQuestions.length < 5) {
+                    const randIdx = Math.floor(Math.random() * geoMasterPool.length);
+                    addQuestionToCurrent(geoMasterPool.splice(randIdx, 1)[0]);
+                }
+            }
+
+            // 3. HIGH-PROBABILITY PRIORITY ALBUM QUESTIONS
+            while (featuredStandardPool.length > 0 && currentQuestions.length < 3) {
+                const randIdx = Math.floor(Math.random() * featuredStandardPool.length);
+                addQuestionToCurrent(featuredStandardPool.splice(randIdx, 1)[0]);
+            }
+
+            // 4. DRAW FROM PERSISTENT MASTER POOLS (Guaranteed never to repeat)
+            let activePool = hardMode ? hardMasterPool : normalMasterPool;
+            while (currentQuestions.length < 10) {
+                if (activePool.length === 0) {
+                    // Fallback to the other pool if one is exhausted
+                    if (hardMode && normalMasterPool.length > 0) activePool = normalMasterPool;
+                    else if (!hardMode && hardMasterPool.length > 0) activePool = hardMasterPool;
+                    else break;
+                }
+                const randIdx = Math.floor(Math.random() * activePool.length);
+                addQuestionToCurrent(activePool.splice(randIdx, 1)[0]);
             }
         }
 
-        while (specializedPool.length > 0 && currentQuestions.length < 5) {
-            const randIdx = Math.floor(Math.random() * specializedPool.length);
-            addQuestionToCurrent(specializedPool.splice(randIdx, 1)[0]);
-        }
-
-        while (currentQuestions.length < 10) {
-            if (activePool.length === 0) {
-                if (mode === 'listening') activePool = parsePool(dynamicListeningPool);
-                else activePool = parsePool(hardMode ? hardCompactQuestions : normalCompactQuestions);
-            }
-            const randIdx = Math.floor(Math.random() * activePool.length);
-            addQuestionToCurrent(activePool.splice(randIdx, 1)[0]);
-        }
-
+        // Shuffle questions for this turn
         for (let i = currentQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
         }
+
+        // Save consumed pools immediately so no question is ever repeated
+        saveState();
 
         studentTurnLabel.innerText = currentStudent;
         buildQwertyKeyboard();
@@ -1859,7 +1930,7 @@
             timerBarFill.style.width = `${(timeLeft / 20) * 100}%`;
 
             if (timeLeft <= 10 && timeLeft > 5) {
-                timerBarFill.style.backgroundColor = '#FF9500'; /* iOS Orange */
+                timerBarFill.style.backgroundColor = '#FF9500'; 
             } else if (timeLeft <= 5) {
                 timerBarFill.style.backgroundColor = 'var(--md-sys-color-error)';
             }
@@ -1903,7 +1974,6 @@
                 btn.className = 'option-btn animate-in';
                 btn.style.animationDelay = `${idx * 0.08}s`;
                 
-                // Image option rendering without hardcoded inline text sizes
                 if (q.type === 'img_opts_mcq') {
                     const [text, img] = opt.split('*'); 
                     btn.classList.add('has-img');
@@ -2052,7 +2122,6 @@
         submitAnswer();
     });
 
-    // --- UPDATED: LOWEST SCORE LOSES + LEADERBOARD LOGIC ---
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
         stopAllAudio();
@@ -2062,7 +2131,6 @@
         
         const finalScore = isForfeit ? 0 : score;
         
-        // Add or update entry in the Leaderboard
         leaderboard.push({
             name: currentStudent,
             score: finalScore,
@@ -2073,7 +2141,6 @@
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = finalScore;
         
-        // Calculate ranking in current leaderboard
         const sorted = [...leaderboard].sort((a, b) => {
             if (a.isForfeit && !b.isForfeit) return 1;
             if (!a.isForfeit && b.isForfeit) return -1;
@@ -2135,22 +2202,15 @@
     resetWheelBtn.addEventListener('click', () => {
         showConfirmDialog(
             "Reset Progress?",
-            "Are you sure you want to restore all participants and clear the leaderboard?",
+            "Are you sure you want to restore all participants, questions, and clear the leaderboard?",
             () => {
-                localStorage.removeItem(STORAGE_KEY_STUDENTS);
-                localStorage.removeItem(STORAGE_KEY_GROUPS);
-                localStorage.removeItem(STORAGE_KEY_LEADERBOARD);
-                localStorage.removeItem(STORAGE_KEY_FEATURED);
-                localStorage.removeItem(STORAGE_KEY_GROUPS_MAP);
-                localStorage.removeItem(STORAGE_KEY_CURRENT_STUDENT);
-                localStorage.removeItem(STORAGE_KEY_CURRENT_SCREEN);
-                localStorage.removeItem(STORAGE_KEY_PHOTO_USED);
+                localStorage.clear();
                 students = rawStudents.map(s => s.name);
                 groups = [...defaultGroups];
                 leaderboard = [];
                 classPhotoUsed = false;
-                featuredListeningPool = parsePool(featuredListeningQuestions);
                 initGroupsMap();
+                initMasterPools();
                 saveState();
                 drawWheel();
                 spinBtn.disabled = false;
@@ -2160,7 +2220,7 @@
         );
     });
 
-    // --- MANAGE PARTICIPANTS SHEET WITH animateContentSize & IN-UI CONFIRM ---
+    // --- MANAGE PARTICIPANTS SHEET ---
     function updateStudentManageUI() {
         studentManageList.innerHTML = '';
         const participants = getActiveParticipants();
@@ -2238,7 +2298,6 @@
             return;
         }
 
-        // Sort descending by score. Forfeits ranked at the bottom.
         const sorted = [...leaderboard].sort((a, b) => {
             if (a.isForfeit && !b.isForfeit) return 1;
             if (!a.isForfeit && b.isForfeit) return -1;
