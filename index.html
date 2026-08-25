@@ -840,7 +840,7 @@
         <!-- Multiple Choice Options Container -->
         <div class="options-grid animate-content-size" id="optionsContainer"></div>
 
-        <!-- Typing Container with Interactive Caret Text Input -->
+        <!-- Typing Container with Caret Text Input -->
         <div class="typing-container animate-content-size" id="typingContainer" style="display: none;">
             <input type="text" id="typingInput" class="typing-display" placeholder="Tap here or use keyboard to type..." autocomplete="off" spellcheck="false" />
             <div class="qwerty-keyboard" id="qwertyKeyboard"></div>
@@ -1827,22 +1827,28 @@
                 keyBtn.className = 'key';
                 keyBtn.type = 'button';
                 
-                // Prevent loss of focus/caret position in the input field when tapping on-screen keys
+                // Prevent loss of focus on mouse click without blocking touch events
                 keyBtn.addEventListener('mousedown', (e) => e.preventDefault());
-                keyBtn.addEventListener('touchstart', (e) => e.preventDefault());
                 
+                let actionChar = keyChar;
                 if (keyChar === 'backspace') {
                     keyBtn.className += ' wide-key';
                     keyBtn.innerHTML = `<span class="material-symbols-outlined">backspace</span>`;
-                    keyBtn.onclick = () => handleKeyPress('BACKSPACE');
+                    actionChar = 'BACKSPACE';
                 } else if (keyChar === 'space') {
                     keyBtn.className += ' space-key';
                     keyBtn.innerText = 'SPACE';
-                    keyBtn.onclick = () => handleKeyPress(' ');
+                    actionChar = ' ';
                 } else {
                     keyBtn.innerText = keyChar === "'" ? "'" : keyChar.toUpperCase();
-                    keyBtn.onclick = () => handleKeyPress(keyChar);
                 }
+
+                // Use direct click handler that works seamlessly on mouse & touch screens
+                keyBtn.onclick = (e) => {
+                    e.preventDefault();
+                    handleKeyPress(actionChar);
+                };
+
                 rowDiv.appendChild(keyBtn);
             });
             qwertyKeyboard.appendChild(rowDiv);
@@ -1854,28 +1860,37 @@
         initAudio();
         playTick(); 
         
-        if (!typingInput) return;
-        const start = typingInput.selectionStart ?? typingInput.value.length;
-        const end = typingInput.selectionEnd ?? typingInput.value.length;
-        const val = typingInput.value;
+        const input = document.getElementById('typingInput');
+        if (!input) return;
+
+        let start = input.selectionStart;
+        let end = input.selectionEnd;
+
+        // Default to the end if not actively focused
+        if (start === null || start === undefined) {
+            start = input.value.length;
+            end = input.value.length;
+        }
+
+        const val = input.value;
 
         if (char === 'BACKSPACE') {
             if (start === end) {
                 if (start > 0) {
-                    typingInput.value = val.slice(0, start - 1) + val.slice(end);
-                    typingInput.selectionStart = typingInput.selectionEnd = start - 1;
+                    input.value = val.slice(0, start - 1) + val.slice(end);
+                    input.selectionStart = input.selectionEnd = start - 1;
                 }
             } else {
-                typingInput.value = val.slice(0, start) + val.slice(end);
-                typingInput.selectionStart = typingInput.selectionEnd = start;
+                input.value = val.slice(0, start) + val.slice(end);
+                input.selectionStart = input.selectionEnd = start;
             }
         } else {
-            typingInput.value = val.slice(0, start) + char + val.slice(end);
-            typingInput.selectionStart = typingInput.selectionEnd = start + char.length;
+            input.value = val.slice(0, start) + char + val.slice(end);
+            input.selectionStart = input.selectionEnd = start + char.length;
         }
 
-        confirmBtn.disabled = typingInput.value.trim().length === 0;
-        typingInput.focus();
+        confirmBtn.disabled = input.value.trim().length === 0;
+        input.focus();
     }
 
     // Sync input events for physical keyboard & caret clicking
@@ -1887,6 +1902,37 @@
         if (e.key === 'Enter') {
             e.preventDefault();
             if (!confirmBtn.disabled) confirmBtn.click();
+        }
+    });
+
+    // Global keyboard listener that redirects physical typing if input is not focused
+    window.addEventListener('keydown', (e) => {
+        const q = currentQuestions[currentQuestionIndex];
+        if (!q || (q.type !== 'typing' && q.type !== 'audio') || quizScreen.classList.contains('active') === false) return;
+
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (!confirmBtn.disabled) confirmBtn.click();
+            return;
+        }
+
+        // If typingInput is already focused, let the browser handle natural keystrokes
+        if (document.activeElement === typingInput) {
+            return;
+        }
+
+        if (e.key === 'Backspace') {
+            e.preventDefault();
+            handleKeyPress('BACKSPACE');
+        } else if (e.key === ' ') {
+            e.preventDefault();
+            handleKeyPress(' ');
+        } else if (e.key === "'") {
+            e.preventDefault();
+            handleKeyPress("'");
+        } else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
+            e.preventDefault();
+            handleKeyPress(e.key.toLowerCase());
         }
     });
 
