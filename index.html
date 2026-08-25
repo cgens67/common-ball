@@ -79,6 +79,43 @@
             line-height: 1;
         }
 
+        /* --- STARTUP LOADING SCREEN OVERLAY --- */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #F2F2F7;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s var(--md-sys-motion-easing-emphasized), visibility 0.5s;
+        }
+        .loading-overlay.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: popIn 0.6s var(--md-sys-motion-easing-bounce);
+        }
+        .loading-spinner {
+            width: 52px;
+            height: 52px;
+            border: 4px solid #E5E5EA;
+            border-top: 4px solid #111111;
+            border-radius: 50%;
+            animation: spinLoader 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spinLoader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* --- IMMERSIVE PHYSICS BACKGROUND --- */
         #bgCanvas {
             position: fixed;
@@ -561,7 +598,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- BOTTOM SHEETS & LEADERBOARD UI --- */
+        /* --- BOTTOM SHEETS & LEADERBOARD UI WITH TIE BADGES --- */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -595,7 +632,7 @@
         }
         .rank-badge {
             display: inline-flex; align-items: center; justify-content: center;
-            min-width: 28px; height: 28px; padding: 0 8px;
+            min-width: 32px; height: 28px; padding: 0 10px;
             border-radius: 9999px; background: rgba(0,0,0,0.08);
             font-size: 0.85rem; font-weight: 800;
         }
@@ -653,6 +690,15 @@
     </style>
 </head>
 <body>
+
+    <!-- STARTUP LOADING SCREEN OVERLAY -->
+    <div id="appLoadingScreen" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 style="font-weight: 900; font-size: 2.2rem; letter-spacing: -0.8px; color: #111;">common ball :)</h2>
+            <p style="font-size: 0.95rem; font-weight: 600; opacity: 0.6; margin-top: 6px;">Preparing quiz resources...</p>
+        </div>
+    </div>
 
     <!-- IMMERSIVE SOLID-COLOR PHYSICS BACKGROUND LAYERS -->
     <canvas id="bgCanvas"></canvas>
@@ -1138,7 +1184,7 @@
         });
     }
 
-    // --- PERSISTENT MASTER POOLS (GUARANTEES NEVER REPEATING) ---
+    // --- PERSISTENT MASTER POOLS ---
     let normalMasterPool = [];
     let hardMasterPool = [];
     let listeningMasterPool = [];
@@ -1183,7 +1229,6 @@
         localStorage.setItem(STORAGE_KEY_GROUPS_MAP, JSON.stringify(groupsMap));
         localStorage.setItem(STORAGE_KEY_PHOTO_USED, JSON.stringify(classPhotoUsed));
 
-        // Save persistent pools so questions never repeat across sessions
         localStorage.setItem(STORAGE_KEY_NORMAL_POOL, JSON.stringify(normalMasterPool));
         localStorage.setItem(STORAGE_KEY_HARD_POOL, JSON.stringify(hardMasterPool));
         localStorage.setItem(STORAGE_KEY_LISTENING_POOL, JSON.stringify(listeningMasterPool));
@@ -1215,7 +1260,6 @@
             initGroupsMap();
         }
 
-        // Load or initialize persistent non-repeating pools
         const savedNormal = localStorage.getItem(STORAGE_KEY_NORMAL_POOL);
         const savedHard = localStorage.getItem(STORAGE_KEY_HARD_POOL);
         const savedListening = localStorage.getItem(STORAGE_KEY_LISTENING_POOL);
@@ -1817,7 +1861,6 @@
         }
     });
 
-    // Helper formatting func
     function addQuestionToCurrent(selectedQ) {
         if (!selectedQ) return;
         if (selectedQ.type === 'mcq' || selectedQ.type === 'file_audio_mcq' || selectedQ.type === 'img_mcq' || selectedQ.type === 'img_opts_mcq') {
@@ -1845,18 +1888,15 @@
         const hardMode = isHardStudent(currentStudent);
 
         if (mode === 'listening') {
-            // Priority 1: High probability featured audio tracks
             while (featuredListeningPool.length > 0 && currentQuestions.length < 10) {
                 const randIdx = Math.floor(Math.random() * featuredListeningPool.length);
                 addQuestionToCurrent(featuredListeningPool.splice(randIdx, 1)[0]);
             }
-            // Fill remaining with non-repeating dynamic listening words/phrases
             while (currentQuestions.length < 10 && listeningMasterPool.length > 0) {
                 const randIdx = Math.floor(Math.random() * listeningMasterPool.length);
                 addQuestionToCurrent(listeningMasterPool.splice(randIdx, 1)[0]);
             }
         } else {
-            // 1. GUARANTEED CLASS PHOTO ON VERY FIRST STANDARD TURN
             if (!classPhotoUsed) {
                 const photoQ = {
                     type: 'img_mcq',
@@ -1869,7 +1909,6 @@
                 classPhotoUsed = true;
             }
 
-            // 2. TARGETED SPECIALIZED QUESTIONS (For specific groups/students)
             if (currentStudent === 'Group 1' || currentStudent === 'ALVIN TANG ZHENG HAO') {
                 while (disneyMasterPool.length > 0 && currentQuestions.length < 5) {
                     const randIdx = Math.floor(Math.random() * disneyMasterPool.length);
@@ -1882,17 +1921,14 @@
                 }
             }
 
-            // 3. HIGH-PROBABILITY PRIORITY ALBUM QUESTIONS
             while (featuredStandardPool.length > 0 && currentQuestions.length < 3) {
                 const randIdx = Math.floor(Math.random() * featuredStandardPool.length);
                 addQuestionToCurrent(featuredStandardPool.splice(randIdx, 1)[0]);
             }
 
-            // 4. DRAW FROM PERSISTENT MASTER POOLS (Guaranteed never to repeat)
             let activePool = hardMode ? hardMasterPool : normalMasterPool;
             while (currentQuestions.length < 10) {
                 if (activePool.length === 0) {
-                    // Fallback to the other pool if one is exhausted
                     if (hardMode && normalMasterPool.length > 0) activePool = normalMasterPool;
                     else if (!hardMode && hardMasterPool.length > 0) activePool = hardMasterPool;
                     else break;
@@ -1902,13 +1938,11 @@
             }
         }
 
-        // Shuffle questions for this turn
         for (let i = currentQuestions.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [currentQuestions[i], currentQuestions[j]] = [currentQuestions[j], currentQuestions[i]];
         }
 
-        // Save consumed pools immediately so no question is ever repeated
         saveState();
 
         studentTurnLabel.innerText = currentStudent;
@@ -2049,7 +2083,6 @@
         });
     }
 
-    // Systematically remove a group (and its members) or a single student.
     function removeStudentSystematically(entityName) {
         if (activeWheelMode === 'groups') {
             groups = groups.filter(g => g !== entityName);
@@ -2122,6 +2155,41 @@
         submitAnswer();
     });
 
+    // --- TOURNAMENT TIE-AWARE RANKING ENGINE ---
+    function getRankedLeaderboard() {
+        if (leaderboard.length === 0) return [];
+        
+        const sorted = [...leaderboard].sort((a, b) => {
+            if (a.isForfeit && !b.isForfeit) return 1;
+            if (!a.isForfeit && b.isForfeit) return -1;
+            return b.score - a.score;
+        });
+
+        let ranks = [];
+        for (let i = 0; i < sorted.length; i++) {
+            if (i > 0) {
+                const prev = sorted[i - 1];
+                const curr = sorted[i];
+                if (curr.isForfeit === prev.isForfeit && curr.score === prev.score) {
+                    ranks.push(ranks[i - 1]);
+                } else {
+                    ranks.push(i + 1);
+                }
+            } else {
+                ranks.push(1);
+            }
+        }
+
+        const rankCounts = {};
+        ranks.forEach(r => rankCounts[r] = (rankCounts[r] || 0) + 1);
+
+        return sorted.map((item, idx) => ({
+            ...item,
+            rank: ranks[idx],
+            isTie: rankCounts[ranks[idx]] > 1
+        }));
+    }
+
     function finishQuiz(isForfeit = false) {
         clearInterval(timerInterval);
         stopAllAudio();
@@ -2141,23 +2209,22 @@
         resultMsg.innerText = `${currentStudent}`;
         resultScore.innerText = finalScore;
         
-        const sorted = [...leaderboard].sort((a, b) => {
-            if (a.isForfeit && !b.isForfeit) return 1;
-            if (!a.isForfeit && b.isForfeit) return -1;
-            return b.score - a.score;
-        });
-
-        const rank = sorted.findIndex(e => e.name === currentStudent) + 1;
-        const isLowest = sorted.length > 1 && (sorted[sorted.length - 1].name === currentStudent);
+        const ranked = getRankedLeaderboard();
+        const currentEntry = ranked.find(e => e.name === currentStudent);
+        const rank = currentEntry ? currentEntry.rank : 1;
+        const isTie = currentEntry ? currentEntry.isTie : false;
+        
+        const minScore = ranked[ranked.length - 1].score;
+        const isLowest = ranked.length > 1 && (finalScore === minScore || isForfeit);
 
         if (isForfeit) {
             resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">flag</span> FORFEITED!`;
         } else if (isLowest) {
-            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">trending_down</span> LOWEST SCORE!`;
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-error);">trending_down</span> LOWEST SCORE${isTie ? ' (TIED)' : ''}!`;
         } else if (rank === 1) {
-            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">emoji_events</span> 1ST PLACE!`;
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-success);">emoji_events</span> 1ST PLACE${isTie ? ' (TIED)' : ''}!`;
         } else {
-            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-primary);">military_tech</span> RANK #${rank}`;
+            resultVerdict.innerHTML = `<span class="material-symbols-outlined" style="font-size: 2.5rem; color: var(--md-sys-color-primary);">military_tech</span> RANK #${rank}${isTie ? ' (TIED)' : ''}`;
         }
 
         saveState();
@@ -2290,7 +2357,7 @@
     closeManageBtn.addEventListener('click', closeManageSheet);
     manageScrim.addEventListener('click', closeManageSheet);
 
-    // --- LEADERBOARD BOTTOM SHEET LOGIC ---
+    // --- LEADERBOARD BOTTOM SHEET LOGIC WITH TIE BADGES ---
     function updateLeaderboardUI() {
         leaderboardContainer.innerHTML = '';
         if (leaderboard.length === 0) {
@@ -2298,26 +2365,23 @@
             return;
         }
 
-        const sorted = [...leaderboard].sort((a, b) => {
-            if (a.isForfeit && !b.isForfeit) return 1;
-            if (!a.isForfeit && b.isForfeit) return -1;
-            return b.score - a.score;
-        });
+        const ranked = getRankedLeaderboard();
+        const minScore = ranked[ranked.length - 1].score;
 
-        const minScore = sorted[sorted.length - 1].score;
-
-        sorted.forEach((entry, idx) => {
+        ranked.forEach((entry) => {
             const div = document.createElement('div');
             div.className = 'leaderboard-item';
             
-            const isLowest = sorted.length > 1 && (entry.score === minScore || entry.isForfeit);
-            const isTop = idx === 0 && !entry.isForfeit;
+            const isLowest = ranked.length > 1 && (entry.score === minScore || entry.isForfeit);
+            const isTop = entry.rank === 1 && !entry.isForfeit;
 
-            let badge = `<span class="rank-badge">${idx + 1}</span>`;
+            let rankLabel = entry.isTie ? `T-${entry.rank}` : `${entry.rank}`;
+            let badge = `<span class="rank-badge">${rankLabel}</span>`;
+            
             if (isTop) {
-                badge = `<span class="rank-badge rank-1">🏆 1</span>`;
+                badge = `<span class="rank-badge rank-1">🏆 ${entry.isTie ? 'T-1' : '1'}</span>`;
             } else if (isLowest) {
-                badge = `<span class="rank-badge rank-lowest">⚠️ Lowest</span>`;
+                badge = `<span class="rank-badge rank-lowest">⚠️ Lowest${entry.isTie ? ' (Tie)' : ''}</span>`;
             }
 
             let scoreText = entry.isForfeit ? 'Forfeit' : `${entry.score}/10 pts`;
@@ -2347,8 +2411,15 @@
     closeSheetBtn.addEventListener('click', closeBottomSheet);
     scrim.addEventListener('click', closeBottomSheet);
 
-    // Init App
+    // --- APP INITIALIZATION & DISMISS LOADING OVERLAY ---
     loadState();
+
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const loader = document.getElementById('appLoadingScreen');
+            if (loader) loader.classList.add('fade-out');
+        }, 850);
+    });
 </script>
 </body>
 </html>
