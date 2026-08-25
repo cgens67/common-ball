@@ -466,14 +466,38 @@
             line-height: 1.25; 
         }
 
+        /* --- DYNAMIC LOADERS FOR IMAGES --- */
+        .question-image-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            min-height: 150px;
+            margin: 16px auto 0 auto;
+            border-radius: var(--md-sys-shape-corner-large);
+            display: none; 
+        }
+        .question-image-loader {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px; height: 32px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top: 3px solid #111;
+            border-radius: 50%;
+            animation: spinLoader 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+        }
         .question-img {
-            max-width: 100%;
+            width: 100%;
             max-height: 250px;
             border-radius: var(--md-sys-shape-corner-large);
-            margin: 16px auto 0 auto;
             box-shadow: 0 12px 32px rgba(0,0,0,0.15);
-            display: none;
             object-fit: cover;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .question-img.loaded {
+            opacity: 1;
         }
 
         @keyframes popIn {
@@ -501,21 +525,41 @@
             opacity: 1; transform: translateY(0);
         }
 
-        /* --- SQUARE RESPONSIVE IMAGE OPTIONS --- */
+        /* --- SQUARE RESPONSIVE IMAGE OPTIONS WITH LOADERS --- */
         .option-btn.has-img {
             flex-direction: column;
             gap: 16px;
             padding: 24px 20px;
             justify-content: flex-start;
         }
-        .option-btn.has-img img {
+        .opt-img-wrapper {
+            position: relative;
             width: 100%;
             max-width: 220px;
             aspect-ratio: 1 / 1;
+            margin: 0 auto;
+        }
+        .opt-img-loader {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 32px; height: 32px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top: 3px solid #111;
+            border-radius: 50%;
+            animation: spinLoader 0.9s cubic-bezier(0.5, 0.1, 0.4, 0.9) infinite;
+        }
+        .option-btn.has-img img {
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-            margin: 0 auto;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .option-btn.has-img img.loaded {
+            opacity: 1;
         }
         .option-btn.has-img span {
             font-size: 1.35rem;
@@ -818,7 +862,12 @@
         <div class="question-card animate-content-size" id="questionCard">
             <div style="font-size: 0.9rem; font-weight: 700; opacity: 0.6; margin-bottom: 8px;" id="questionProgress">Question 1 of 10</div>
             <h3 id="questionText">Question Text Goes Here</h3>
-            <img id="questionImage" class="question-img" src="" alt="Question Image" />
+            
+            <!-- Dynamic Main Image Loader Wrapper -->
+            <div class="question-image-wrapper" id="questionImageWrapper">
+                <div class="question-image-loader" id="questionImageLoader"></div>
+                <img id="questionImage" class="question-img" src="" alt="Question Image" />
+            </div>
         </div>
 
         <!-- INTERACTIVE AUDIO PLAYER CONTROL CARD -->
@@ -1021,7 +1070,6 @@
     let leaderboard = []; 
     let classPhotoUsed = false;
 
-    // Rigged targeted groups
     function initGroupsMap() {
         groupsMap = {
             "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
@@ -1352,22 +1400,27 @@
 
     let activeAudioObj = null;
     let isAudioPlaying = false;
+    let isAudioPending = false; 
     let currentVolume = 1.0;
 
     function stopAllAudio() {
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         if (activeAudioObj) {
-            activeAudioObj.pause();
+            // Cannot reliably call pause() while a promise is strictly pending, 
+            // but we can catch the exception quietly.
+            try { activeAudioObj.pause(); } catch(e) {}
             activeAudioObj.currentTime = 0;
             activeAudioObj = null;
         }
         isAudioPlaying = false;
+        isAudioPending = false;
         updatePlayPauseIcon();
     }
 
     function toggleAudioPlayback() {
         const q = currentQuestions[currentQuestionIndex];
         if (!q) return;
+        if (isAudioPending) return; // Prevent double trigger that breaks Promises
 
         if (q.type === 'file_audio_mcq') {
             if (!activeAudioObj) {
@@ -1381,21 +1434,37 @@
             if (isAudioPlaying) {
                 activeAudioObj.pause();
                 isAudioPlaying = false;
+                updatePlayPauseIcon();
             } else {
-                activeAudioObj.play().then(() => {
+                isAudioPending = true;
+                const playPromise = activeAudioObj.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        isAudioPlaying = true;
+                        isAudioPending = false;
+                        updatePlayPauseIcon();
+                    }).catch(e => {
+                        console.log("Audio play error:", e);
+                        isAudioPlaying = false;
+                        isAudioPending = false;
+                        updatePlayPauseIcon();
+                    });
+                } else {
                     isAudioPlaying = true;
+                    isAudioPending = false;
                     updatePlayPauseIcon();
-                }).catch(e => console.log("Audio play error:", e));
+                }
             }
-            updatePlayPauseIcon();
         } else if (q.type === 'audio') {
             if ('speechSynthesis' in window) {
                 if (window.speechSynthesis.speaking && isAudioPlaying) {
                     window.speechSynthesis.pause();
                     isAudioPlaying = false;
+                    updatePlayPauseIcon();
                 } else if (window.speechSynthesis.paused) {
                     window.speechSynthesis.resume();
                     isAudioPlaying = true;
+                    updatePlayPauseIcon();
                 } else {
                     stopAllAudio();
                     const spokenText = q.ans.split('/')[0];
@@ -1409,13 +1478,14 @@
                     };
                     window.speechSynthesis.speak(utterance);
                     isAudioPlaying = true;
+                    updatePlayPauseIcon();
                 }
-                updatePlayPauseIcon();
             }
         }
     }
 
     function rewindAudio() {
+        if (isAudioPending) return;
         const q = currentQuestions[currentQuestionIndex];
         if (!q) return;
         stopAllAudio();
@@ -1494,6 +1564,8 @@
     const questionProgress = document.getElementById('questionProgress');
     const questionText = document.getElementById('questionText');
     const questionImage = document.getElementById('questionImage');
+    const questionImageWrapper = document.getElementById('questionImageWrapper');
+    const questionImageLoader = document.getElementById('questionImageLoader');
     
     const optionsContainer = document.getElementById('optionsContainer');
     const typingContainer = document.getElementById('typingContainer');
@@ -1836,7 +1908,7 @@
                 keyBtn.className = 'key';
                 keyBtn.type = 'button';
                 
-                // Prevent mouse click from stealing caret focus while allowing touch events naturally
+                // Allow direct execution across mouse/touch without hijacking focus 
                 keyBtn.addEventListener('mousedown', (e) => e.preventDefault());
                 
                 let actionChar = keyChar;
@@ -1863,7 +1935,6 @@
         });
     }
 
-    // Handles typing & deletion at the EXACT caret/cursor position
     function handleKeyPress(char) {
         initAudio();
         playTick(); 
@@ -1874,7 +1945,6 @@
         let start = input.selectionStart;
         let end = input.selectionEnd;
 
-        // Default to the end if not actively selected
         if (start === null || start === undefined) {
             start = input.value.length;
             end = input.value.length;
@@ -1901,7 +1971,6 @@
         input.focus({ preventScroll: true });
     }
 
-    // Sync input events for physical keyboard & caret clicking
     typingInput.addEventListener('input', () => {
         confirmBtn.disabled = typingInput.value.trim().length === 0;
     });
@@ -1913,7 +1982,6 @@
         }
     });
 
-    // Global keyboard listener that redirects physical typing if input is not focused
     window.addEventListener('keydown', (e) => {
         const q = currentQuestions[currentQuestionIndex];
         if (!q || (q.type !== 'typing' && q.type !== 'audio') || quizScreen.classList.contains('active') === false) return;
@@ -1924,7 +1992,6 @@
             return;
         }
 
-        // If typingInput is already focused, let the browser handle natural keystrokes
         if (document.activeElement === typingInput) {
             return;
         }
@@ -1963,7 +2030,6 @@
         }
     }
 
-    // --- QUIZ LOGIC & NON-REPEATING QUESTION SELECTION ---
     function startQuiz(mode) {
         localStorage.removeItem(STORAGE_KEY_CURRENT_SCREEN);
 
@@ -2067,7 +2133,9 @@
         typingInput.disabled = false;
         typingInput.className = "typing-display";
         
-        questionImage.style.display = 'none';
+        questionImageWrapper.style.display = 'none';
+        questionImage.classList.remove('loaded');
+        questionImageLoader.style.display = 'block';
         questionImage.src = '';
 
         confirmBtn.disabled = true;
@@ -2083,8 +2151,12 @@
             optionsContainer.innerHTML = '';
 
             if (q.type === 'img_mcq' && q.imgSrc) {
+                questionImageWrapper.style.display = 'block';
+                questionImage.onload = () => {
+                    questionImage.classList.add('loaded');
+                    questionImageLoader.style.display = 'none';
+                };
                 questionImage.src = q.imgSrc;
-                questionImage.style.display = 'block';
             }
 
             q.opts.forEach((opt, idx) => {
@@ -2095,7 +2167,13 @@
                 if (q.type === 'img_opts_mcq') {
                     const [text, img] = opt.split('*'); 
                     btn.classList.add('has-img');
-                    btn.innerHTML = `<img src="${img}" alt="${text}"><span>${text}</span>`;
+                    btn.innerHTML = `
+                        <div class="opt-img-wrapper">
+                            <div class="opt-img-loader"></div>
+                            <img src="${img}" alt="${text}" onload="this.classList.add('loaded'); this.previousElementSibling.style.display='none';">
+                        </div>
+                        <span>${text}</span>
+                    `;
                 } else {
                     btn.innerText = opt;
                 }
@@ -2242,7 +2320,6 @@
         submitAnswer();
     });
 
-    // --- TOURNAMENT TIE-AWARE RANKING ENGINE ---
     function getRankedLeaderboard() {
         if (leaderboard.length === 0) return [];
         
@@ -2318,7 +2395,6 @@
         showScreen(resultScreen);
     }
 
-    // --- NAVIGATION & UI ---
     function showScreen(screenEl) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         screenEl.classList.add('active');
@@ -2374,7 +2450,6 @@
         );
     });
 
-    // --- MANAGE PARTICIPANTS SHEET ---
     function updateStudentManageUI() {
         studentManageList.innerHTML = '';
         const participants = getActiveParticipants();
@@ -2444,7 +2519,6 @@
     closeManageBtn.addEventListener('click', closeManageSheet);
     manageScrim.addEventListener('click', closeManageSheet);
 
-    // --- LEADERBOARD BOTTOM SHEET LOGIC WITH MATERIAL ICONS ---
     function updateLeaderboardUI() {
         leaderboardContainer.innerHTML = '';
         if (leaderboard.length === 0) {
@@ -2498,7 +2572,6 @@
     closeSheetBtn.addEventListener('click', closeBottomSheet);
     scrim.addEventListener('click', closeBottomSheet);
 
-    // --- APP INITIALIZATION & DISMISS LOADING OVERLAY ---
     loadState();
 
     window.addEventListener('load', () => {
