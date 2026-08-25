@@ -544,21 +544,41 @@
             100% { transform: scale(1); }
         }
 
-        /* --- TYPING QUESTION & QWERTY KEYBOARD UI --- */
+        /* --- INTERACTIVE CLICK-BEHIND TYPING FIELD --- */
         .typing-container { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; margin-bottom: 24px; }
         .typing-display {
-            width: 100%; max-width: 500px;
+            width: 100%; max-width: 540px;
             background: #E5E5EA;
+            border: 2px solid transparent;
             border-radius: var(--md-sys-shape-corner-full);
-            padding: 16px 24px; font-size: 1.4rem; font-weight: 700;
-            text-align: center; min-height: 64px; display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; word-break: break-word; color: #111;
+            padding: 16px 28px; font-size: 1.5rem; font-weight: 700;
+            text-align: center; height: 68px; color: #111;
+            outline: none;
+            transition: all 0.25s var(--md-sys-motion-easing-emphasized);
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.06);
+            letter-spacing: 0.5px;
         }
-        .blinking-cursor { animation: blink 1s infinite; color: #111; font-weight: 300; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .typing-display:focus {
+            background: #FFFFFF;
+            border-color: #111;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .typing-display::placeholder {
+            color: #8E8E93;
+            font-weight: 500;
+            font-size: 1.2rem;
+        }
 
-        .typing-display.correct { background: var(--md-sys-color-success); color: #fff; }
-        .typing-display.wrong { background: var(--md-sys-color-error); color: #fff; }
+        .typing-display.correct { 
+            background: var(--md-sys-color-success) !important; 
+            color: #fff !important; 
+            border-color: var(--md-sys-color-success) !important;
+        }
+        .typing-display.wrong { 
+            background: var(--md-sys-color-error) !important; 
+            color: #fff !important; 
+            border-color: var(--md-sys-color-error) !important;
+        }
 
         .qwerty-keyboard { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 650px; user-select: none; }
         .kb-row { display: flex; justify-content: center; gap: 6px; width: 100%; }
@@ -598,7 +618,7 @@
             100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- BOTTOM SHEETS & LEADERBOARD UI WITH TIE BADGES --- */
+        /* --- BOTTOM SHEETS & LEADERBOARD UI WITH MATERIAL BADGES --- */
         .scrim {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.3); z-index: 40; opacity: 0; pointer-events: none; transition: opacity 0.3s;
@@ -631,7 +651,7 @@
             transition: transform 0.2s;
         }
         .rank-badge {
-            display: inline-flex; align-items: center; justify-content: center;
+            display: inline-flex; align-items: center; justify-content: center; gap: 4px;
             min-width: 32px; height: 28px; padding: 0 10px;
             border-radius: 9999px; background: rgba(0,0,0,0.08);
             font-size: 0.85rem; font-weight: 800;
@@ -820,11 +840,9 @@
         <!-- Multiple Choice Options Container -->
         <div class="options-grid animate-content-size" id="optionsContainer"></div>
 
-        <!-- Typing Container with In-Website QWERTY Keyboard -->
+        <!-- Typing Container with Interactive Caret Text Input -->
         <div class="typing-container animate-content-size" id="typingContainer" style="display: none;">
-            <div class="typing-display" id="typingDisplay">
-                <span id="typedText"></span><span class="blinking-cursor">|</span>
-            </div>
+            <input type="text" id="typingInput" class="typing-display" placeholder="Tap here or use keyboard to type..." autocomplete="off" spellcheck="false" />
             <div class="qwerty-keyboard" id="qwertyKeyboard"></div>
         </div>
 
@@ -1318,7 +1336,6 @@
     let currentQuestions = [];
     let currentQuestionIndex = 0;
     let selectedOptionIndex = null;
-    let currentTypedText = "";
     let score = 0;
     let wheelRotation = 0;
     let timerInterval = null;
@@ -1471,8 +1488,7 @@
     
     const optionsContainer = document.getElementById('optionsContainer');
     const typingContainer = document.getElementById('typingContainer');
-    const typingDisplay = document.getElementById('typingDisplay');
-    const typedText = document.getElementById('typedText');
+    const typingInput = document.getElementById('typingInput');
     const qwertyKeyboard = document.getElementById('qwertyKeyboard');
 
     const audioPlayerContainer = document.getElementById('audioPlayerContainer');
@@ -1793,7 +1809,7 @@
         startQuiz('listening');
     });
 
-    // --- IN-WEBSITE QWERTY KEYBOARD BUILDER WITH APOSTROPHE (') ---
+    // --- IN-WEBSITE QWERTY KEYBOARD BUILDER WITH CARET POSITIONING ---
     const keyboardLayout = [
         ['q','w','e','r','t','y','u','i','o','p'],
         ['a','s','d','f','g','h','j','k','l', "'"],
@@ -1809,6 +1825,11 @@
             row.forEach(keyChar => {
                 const keyBtn = document.createElement('button');
                 keyBtn.className = 'key';
+                keyBtn.type = 'button';
+                
+                // Prevent loss of focus/caret position in the input field when tapping on-screen keys
+                keyBtn.addEventListener('mousedown', (e) => e.preventDefault());
+                keyBtn.addEventListener('touchstart', (e) => e.preventDefault());
                 
                 if (keyChar === 'backspace') {
                     keyBtn.className += ' wide-key';
@@ -1828,36 +1849,44 @@
         });
     }
 
+    // Handles typing & deletion at the EXACT caret/cursor position
     function handleKeyPress(char) {
         initAudio();
         playTick(); 
         
-        const q = currentQuestions[currentQuestionIndex];
-        if (!q || (q.type !== 'typing' && q.type !== 'audio')) return;
+        if (!typingInput) return;
+        const start = typingInput.selectionStart ?? typingInput.value.length;
+        const end = typingInput.selectionEnd ?? typingInput.value.length;
+        const val = typingInput.value;
 
         if (char === 'BACKSPACE') {
-            currentTypedText = currentTypedText.slice(0, -1);
+            if (start === end) {
+                if (start > 0) {
+                    typingInput.value = val.slice(0, start - 1) + val.slice(end);
+                    typingInput.selectionStart = typingInput.selectionEnd = start - 1;
+                }
+            } else {
+                typingInput.value = val.slice(0, start) + val.slice(end);
+                typingInput.selectionStart = typingInput.selectionEnd = start;
+            }
         } else {
-            currentTypedText += char;
+            typingInput.value = val.slice(0, start) + char + val.slice(end);
+            typingInput.selectionStart = typingInput.selectionEnd = start + char.length;
         }
-        typedText.innerText = currentTypedText;
-        confirmBtn.disabled = currentTypedText.trim().length === 0;
+
+        confirmBtn.disabled = typingInput.value.trim().length === 0;
+        typingInput.focus();
     }
 
-    window.addEventListener('keydown', (e) => {
-        const q = currentQuestions[currentQuestionIndex];
-        if (!q || (q.type !== 'typing' && q.type !== 'audio') || quizScreen.classList.contains('active') === false) return;
+    // Sync input events for physical keyboard & caret clicking
+    typingInput.addEventListener('input', () => {
+        confirmBtn.disabled = typingInput.value.trim().length === 0;
+    });
 
-        if (e.key === 'Backspace') {
-            handleKeyPress('BACKSPACE');
-        } else if (e.key === 'Enter') {
+    typingInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
             if (!confirmBtn.disabled) confirmBtn.click();
-        } else if (e.key === ' ') {
-            handleKeyPress(' ');
-        } else if (e.key === "'") {
-            handleKeyPress("'");
-        } else if (e.key.length === 1 && /[a-zA-Z0-9]/.test(e.key)) {
-            handleKeyPress(e.key.toLowerCase());
         }
     });
 
@@ -1979,9 +2008,10 @@
     function renderQuestion() {
         stopAllAudio();
         selectedOptionIndex = null;
-        currentTypedText = "";
-        typedText.innerText = "";
-        typingDisplay.className = "typing-display";
+        
+        typingInput.value = "";
+        typingInput.disabled = false;
+        typingInput.className = "typing-display";
         
         questionImage.style.display = 'none';
         questionImage.src = '';
@@ -2032,10 +2062,12 @@
             audioPlayerContainer.style.display = 'flex';
 
             playAudioPlayback();
+            setTimeout(() => typingInput.focus(), 100);
         } else {
             optionsContainer.style.display = 'none';
             typingContainer.style.display = 'flex';
             audioPlayerContainer.style.display = 'none';
+            setTimeout(() => typingInput.focus(), 100);
         }
 
         resetTimer();
@@ -2127,14 +2159,15 @@
                 }
             }
         } else {
-            const isCorrect = evaluateTextAnswer(currentTypedText, q.ans);
+            const isCorrect = evaluateTextAnswer(typingInput.value, q.ans);
+            typingInput.disabled = true;
             if (isCorrect) {
-                typingDisplay.classList.add('correct');
+                typingInput.classList.add('correct');
                 score++;
             } else {
-                typingDisplay.classList.add('wrong');
+                typingInput.classList.add('wrong');
                 const displayAnswer = q.ans.split('/')[0];
-                typedText.innerText = `${currentTypedText || 'No Answer'} (Correct: ${displayAnswer})`;
+                typingInput.value = `${typingInput.value || 'No Answer'} (Correct: ${displayAnswer})`;
             }
         }
 
@@ -2357,7 +2390,7 @@
     closeManageBtn.addEventListener('click', closeManageSheet);
     manageScrim.addEventListener('click', closeManageSheet);
 
-    // --- LEADERBOARD BOTTOM SHEET LOGIC WITH TIE BADGES ---
+    // --- LEADERBOARD BOTTOM SHEET LOGIC WITH MATERIAL ICONS ---
     function updateLeaderboardUI() {
         leaderboardContainer.innerHTML = '';
         if (leaderboard.length === 0) {
@@ -2379,9 +2412,9 @@
             let badge = `<span class="rank-badge">${rankLabel}</span>`;
             
             if (isTop) {
-                badge = `<span class="rank-badge rank-1">🏆 ${entry.isTie ? 'T-1' : '1'}</span>`;
+                badge = `<span class="rank-badge rank-1"><span class="material-symbols-outlined" style="font-size: 1.1rem;">emoji_events</span> ${entry.isTie ? 'T-1' : '1'}</span>`;
             } else if (isLowest) {
-                badge = `<span class="rank-badge rank-lowest">⚠️ Lowest${entry.isTie ? ' (Tie)' : ''}</span>`;
+                badge = `<span class="rank-badge rank-lowest"><span class="material-symbols-outlined" style="font-size: 1rem;">warning</span> Lowest${entry.isTie ? ' (Tie)' : ''}</span>`;
             }
 
             let scoreText = entry.isForfeit ? 'Forfeit' : `${entry.score}/10 pts`;
