@@ -1105,8 +1105,8 @@
         "T|Complete the sentence: He is interested _____ learning music.|in",
         "T|Type the correct spelling for: Neccessary|necessary",
         "T|Type the correct past tense of 'teach':|taught",
-        "T|A quiet _____ broke out in the back of the classroom.|snigger/snicker/giggle/chuckle/whisper",
-        "T|Despite his wealth, the old man lived a very _____ life.|frugal/stingy/thrifty/modest",
+        "IMG_OPTS|Who is considered the greatest of all time (G.O.A.T) in american football?|Tom Brady*images/tom-brady.png|Michael Jackson*images/mj.jpg|Lionel Messi*images/messi.jpg|LeBron James*images/lebron.jpg",
+        "Which country has the most natural islands in the world?|Sweden|Norway|Canada|Indonesia",
         "T|Please _____ your seatbelt during the flight.|fasten/secure",
         "What is the capital city of Malaysia?|Kuala Lumpur|George Town|Johor Bahru|Malacca",
         "What is the national flower of Malaysia?|Hibiscus|Orchid|Rafflesia|Lotus",
@@ -1406,8 +1406,6 @@
     function stopAllAudio() {
         if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         if (activeAudioObj) {
-            // Cannot reliably call pause() while a promise is strictly pending, 
-            // but we can catch the exception quietly.
             try { activeAudioObj.pause(); } catch(e) {}
             activeAudioObj.currentTime = 0;
             activeAudioObj = null;
@@ -1420,7 +1418,7 @@
     function toggleAudioPlayback() {
         const q = currentQuestions[currentQuestionIndex];
         if (!q) return;
-        if (isAudioPending) return; // Prevent double trigger that breaks Promises
+        if (isAudioPending) return;
 
         if (q.type === 'file_audio_mcq') {
             if (!activeAudioObj) {
@@ -1908,7 +1906,6 @@
                 keyBtn.className = 'key';
                 keyBtn.type = 'button';
                 
-                // Allow direct execution across mouse/touch without hijacking focus 
                 keyBtn.addEventListener('mousedown', (e) => e.preventDefault());
                 
                 let actionChar = keyChar;
@@ -2320,6 +2317,7 @@
         submitAnswer();
     });
 
+    // --- TOURNAMENT TIE-AWARE RANKING ENGINE ---
     function getRankedLeaderboard() {
         if (leaderboard.length === 0) return [];
         
@@ -2395,6 +2393,7 @@
         showScreen(resultScreen);
     }
 
+    // --- NAVIGATION & UI ---
     function showScreen(screenEl) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         screenEl.classList.add('active');
