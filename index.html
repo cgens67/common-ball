@@ -1071,15 +1071,19 @@
     let classPhotoUsed = false;
 
     function initGroupsMap() {
+        // Create a copy of all students and shuffle them randomly
+        let shuffled = [...rawStudents.map(s => s.name)].sort(() => Math.random() - 0.5);
+        
         groupsMap = {
-            "Group 1": ["ALVIN TANG ZHENG HAO", "NG YU JIN", "ELVIS LOW YI HAO", "TAN YU ZHONG"],
-            "Group 2": ["YEOW JIA WEI", "LEXUS KUEK CHEN XIAN", "XANXUS TAI WEI XUAN", "TAY KIM YAW"],
-            "Group 3": ["TAN GUAN HAN", "RAYSON BANG WEI XIANG", "ALOYSIUS NG YU YI", "GUI CEN EN"],
-            "Group 4": ["GAVIN CHUA WEN JIE", "CLEMENT SEAH JI WEN", "LIM JIA QING", "JONATHAN ONG KAH FATT"],
-            "Group 5": ["NG JING KAI", "ONG ZHI XIAN", "WEE KER SHENG", "PANG MIN ZE"],
-            "Group 6": ["SHADEESHAN A/L KATHIRAVAN", "JEREMY TAN WEI REN", "RYAN CHOK ZI INN", "WONG HUNG RUI"],
-            "Group 7": ["KINGSTON GOH QI HAO", "LAM YU YANG", "LOUIS NG WEI SOONG", "JOSEPH LIM", "TAN YONG XI"]
+            "Group 1": [], "Group 2": [], "Group 3": [], "Group 4": [], 
+            "Group 5": [], "Group 6": [], "Group 7": []
         };
+
+        // Evenly distribute all students across the 7 groups
+        shuffled.forEach((student, index) => {
+            const groupName = `Group ${(index % 7) + 1}`;
+            groupsMap[groupName].push(student);
+        });
     }
 
     function getActiveParticipants() {
@@ -1283,7 +1287,7 @@
     const STORAGE_KEY_GROUPS = 'md3_quiz_groups_2026';
     const STORAGE_KEY_MODE = 'md3_quiz_wheel_mode_2026';
     const STORAGE_KEY_LEADERBOARD = 'md3_quiz_leaderboard_2026';
-    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_v3'; 
+    const STORAGE_KEY_GROUPS_MAP = 'md3_quiz_groups_map_2026_random_v1'; 
     const STORAGE_KEY_CURRENT_STUDENT = 'md3_quiz_current_student';
     const STORAGE_KEY_CURRENT_SCREEN = 'md3_quiz_current_screen';
     const STORAGE_KEY_PHOTO_USED = 'md3_quiz_photo_used_2026';
@@ -2055,17 +2059,7 @@
                 classPhotoUsed = true;
             }
 
-            if (currentStudent === 'Group 1' || currentStudent === 'ALVIN TANG ZHENG HAO') {
-                while (disneyMasterPool.length > 0 && currentQuestions.length < 5) {
-                    const randIdx = Math.floor(Math.random() * disneyMasterPool.length);
-                    addQuestionToCurrent(disneyMasterPool.splice(randIdx, 1)[0]);
-                }
-            } else if (currentStudent === 'Group 5' || currentStudent === 'WEE KER SHENG') {
-                while (geoMasterPool.length > 0 && currentQuestions.length < 5) {
-                    const randIdx = Math.floor(Math.random() * geoMasterPool.length);
-                    addQuestionToCurrent(geoMasterPool.splice(randIdx, 1)[0]);
-                }
-            }
+            // (hello bro)
 
             while (featuredStandardPool.length > 0 && currentQuestions.length < 3) {
                 const randIdx = Math.floor(Math.random() * featuredStandardPool.length);
